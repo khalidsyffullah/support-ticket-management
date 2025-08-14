@@ -213,14 +213,14 @@ function _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $op
     }, {
       default: withCtx((_, _push2, _parent2, _scopeId) => {
         if (_push2) {
-          _push2(`<option${ssrRenderAttr("value", null)}${_scopeId}>${ssrInterpolate(_ctx.$t("Select a department"))}</option><!--[-->`);
+          _push2(`<option${ssrRenderAttr("value", null)}${_scopeId}>${ssrInterpolate(_ctx.$t("Select a departmentzzzz"))}</option><!--[-->`);
           ssrRenderList($props.departments, (department) => {
             _push2(`<option${ssrRenderAttr("value", department.id)}${_scopeId}>${ssrInterpolate(department.name)}</option>`);
           });
           _push2(`<!--]-->`);
         } else {
           return [
-            createVNode("option", { value: null }, toDisplayString(_ctx.$t("Select a department")), 1),
+            createVNode("option", { value: null }, toDisplayString(_ctx.$t("Select a departmentzzzz")), 1),
             (openBlock(true), createBlock(Fragment, null, renderList($props.departments, (department) => {
               return openBlock(), createBlock("option", {
                 key: department.id,

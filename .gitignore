@@ -1,0 +1,13 @@
+# Node, Yarn, Composer deps
+node_modules/
+.yarn/
+vendor/
+
+# Laravel storage
+/storage/*
+!/storage/app/public
+!/storage/framework/cache/data
+!/storage/logs
+GEMINI.md
+public/
+.env

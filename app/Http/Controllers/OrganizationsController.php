@@ -65,6 +65,7 @@ class OrganizationsController extends Controller
                 'region' => ['nullable', 'max:50'],
                 'country' => ['nullable', 'max:2'],
                 'postal_code' => ['nullable', 'max:25'],
+                'max_customers' => ['nullable', 'integer', 'min:1'],
             ])
         );
 
@@ -93,6 +94,7 @@ class OrganizationsController extends Controller
                 'region' => $organization->region,
                 'country' => $organization->country,
                 'postal_code' => $organization->postal_code,
+                'max_customers' => $organization->max_customers,
                 'contacts' => $organization->contacts()->orderByName()->get()->map->only('id', 'name', 'city', 'phone'),
             ],
         ]);
@@ -110,6 +112,7 @@ class OrganizationsController extends Controller
                 'region' => ['nullable', 'max:50'],
                 'country' => ['nullable', 'max:2'],
                 'postal_code' => ['nullable', 'max:25'],
+                'max_customers' => ['nullable', 'integer', 'min:1'],
             ])
         );
 

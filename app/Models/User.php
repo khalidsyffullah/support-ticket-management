@@ -23,6 +23,13 @@ class User extends Authenticatable
         'last_name',
         'email',
         'password',
+        'organization_id',
+        'phone',
+        'city',
+        'address',
+        'country_id',
+        'role_id',
+        'photo_path'
     ];
 
     /**
@@ -115,7 +122,7 @@ class User extends Authenticatable
     }
 
     public function organizations() {
-        return $this->hasMany(Organization::class);
+        return $this->belongsToMany(Organization::class);
     }
 
     /**

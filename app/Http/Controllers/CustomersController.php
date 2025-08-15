@@ -6,6 +6,7 @@ use App\Http\Middleware\RedirectIfCustomer;
 use App\Http\Middleware\RedirectIfNotParmitted;
 use App\Models\City;
 use App\Models\Country;
+use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\App;
@@ -48,6 +49,10 @@ class CustomersController extends Controller {
     public function create(){
         return Inertia::render('Customers/Create',[
             'title' => 'Create a new customer',
+            'organizations' => Organization::orderBy('name')
+                ->get()
+                ->map
+                ->only('id', 'name'),
             'countries' => Country::orderBy('name')
                 ->get()
                 ->map
@@ -66,7 +71,16 @@ class CustomersController extends Controller {
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'role_id' => ['nullable'],
+            'organization_id' => ['nullable', 'exists:organizations,id'],
         ]);
+
+        if (Request::get('organization_id')) {
+            $organization = Organization::find(Request::get('organization_id'));
+            if ($organization->users()->count() >= $organization->max_customers) {
+                return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
+            }
+        }
+
         if(Request::file('photo')){
             $userRequest['photo_path'] = Request::file('photo')->store('users');
         }
@@ -75,7 +89,15 @@ class CustomersController extends Controller {
         if(empty($userRequest['role_id']) && !empty($customerRole)){
             $userRequest['role_id'] = $customerRole->id;
         }
-        User::create($userRequest);
+        
+        $organization_id = $userRequest['organization_id'];
+        unset($userRequest['organization_id']);
+
+        $user = User::create($userRequest);
+
+        if ($organization_id) {
+            $user->organizations()->attach($organization_id);
+        }
 
         return Redirect::route('customers')->with('success', 'User created.');
     }
@@ -99,8 +121,13 @@ class CustomersController extends Controller {
                 'can_delete' => $can_delete,
                 'address' => $user->address,
                 'country_id' => $user->country_id,
+                'organization_id' => $user->organizations->first() ? $user->organizations->first()->id : null,
                 'photo_path' => $user->photo_path,
             ],
+            'organizations' => Organization::orderBy('name')
+                ->get()
+                ->map
+                ->only('id', 'name'),
             'countries' => Country::orderBy('name')
                 ->get()
                 ->map
@@ -128,10 +155,24 @@ class CustomersController extends Controller {
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'role_id' => ['nullable'],
+            'organization_id' => ['nullable', 'exists:organizations,id'],
             'photo' => ['nullable', 'image'],
         ]);
 
+        if (Request::get('organization_id')) {
+            $organization = Organization::find(Request::get('organization_id'));
+            if ($organization->users()->count() >= $organization->max_customers && !$user->organizations->contains($organization->id)) {
+                return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
+            }
+        }
+
         $user->update(Request::only('first_name', 'last_name', 'phone', 'email', 'city', 'address', 'country_id', 'role_id'));
+
+        if (Request::get('organization_id')) {
+            $user->organizations()->sync(Request::get('organization_id'));
+        } else {
+            $user->organizations()->detach();
+        }
 
         if(Request::file('photo')){
             if(isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))){

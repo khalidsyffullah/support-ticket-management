@@ -15,6 +15,7 @@
               <option v-for="c in countries" :key="c.id" :value="c.code">{{ $t(c.name) }}</option>
           </select-input>
           <text-input v-model="form.postal_code" :error="form.errors.postal_code" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Postal code')" />
+          <text-input v-model="form.max_customers" :error="form.errors.max_customers" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Maximum Customers')" />
         </div>
         <div class="flex items-center justify-end px-8 py-4 bg-gray-50 border-t border-gray-100">
           <loading-button :loading="form.processing" class="btn-indigo" type="submit">{{ $t('Create Organization') }}</loading-button>
@@ -54,8 +55,9 @@ export default {
         address: null,
         city: null,
         region: null,
-        country: null,
+        country: 'BD',
         postal_code: null,
+        max_customers: 5,
       }),
     }
   },

@@ -14,6 +14,10 @@
             <option :value="null" />
             <option v-for="c in countries" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
           </select-input>
+          <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')">
+            <option :value="null" />
+            <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
+          </select-input>
           <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
           <file-input v-model="form.photo_path" :error="form.errors.photo_path" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
             <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
@@ -50,6 +54,7 @@ export default {
     user: Object,
     auth: Object,
     countries: Array,
+    organizations: Array,
     cities: Array,
     title: String,
   },
@@ -66,6 +71,7 @@ export default {
         city: this.user.city,
         address: this.user.address,
         country_id: this.user.country_id,
+        organization_id: this.user.organization_id,
         password: '',
           photo_path: null
       }),

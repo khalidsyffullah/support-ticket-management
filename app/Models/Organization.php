@@ -25,4 +25,9 @@ class Organization extends Model
             $query->where('name', 'like', '%'.$search.'%');
         });
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
 }

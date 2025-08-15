@@ -37,10 +37,14 @@ class UsersController extends Controller{
             'title' => 'Users',
             'filters' => Request::all(['search','role_id']),
             'roles' => Role::orderBy('name')
+                ->where('slug', '!=', 'customer')
                 ->get()
                 ->map
                 ->only('id', 'name'),
             'users' => User::orderByName()
+                ->whereHas('role', function ($query) {
+                    $query->where('slug', '!=', 'customer');
+                })
                 ->filter(Request::all(['search','role_id']))
                 ->paginate(10)
                 ->withQueryString()
@@ -61,6 +65,7 @@ class UsersController extends Controller{
         return Inertia::render('Users/Create',[
             'title' => 'Create a new user',
             'roles' => Role::orderBy('name')
+                ->where('slug', '!=', 'customer')
                 ->get()
                 ->map
                 ->only('id', 'name'),
@@ -120,6 +125,7 @@ class UsersController extends Controller{
         return Inertia::render('Users/Edit', [
             'title' => $user->name,
             'roles' => Role::orderBy('name')
+                ->where('slug', '!=', 'customer')
                 ->get()
                 ->map
                 ->only('id', 'name'),

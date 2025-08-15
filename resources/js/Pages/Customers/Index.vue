@@ -15,6 +15,7 @@
           <th class="pb-4 pt-6 px-6">{{ $t('Email') }}</th>
           <th class="pb-4 pt-6 px-6">{{ $t('Phone') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('City') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Organization') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('Created') }}</th>
         </tr>
         <tr v-for="user in users.data" :key="user.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
@@ -36,12 +37,17 @@
           </td>
             <td class="border-t">
                 <Link class="flex items-center px-6 py-4" :href="route('customers.edit',user.id)" tabindex="-1">
-                    {{ $t(user.city) }}
+                    {{ user.city ? $t(user.city) : '' }}
                 </Link>
             </td>
             <td class="border-t">
                 <Link class="flex items-center px-6 py-4" :href="route('customers.edit',user.id)" tabindex="-1">
-                    {{ $t(user.created_at) }}
+                    {{ user.organization ? $t(user.organization) : '' }}
+                </Link>
+            </td>
+            <td class="border-t">
+                <Link class="flex items-center px-6 py-4" :href="route('customers.edit',user.id)" tabindex="-1">
+                    {{ user.created_at ? $t(user.created_at) : '' }}
                 </Link>
             </td>
           <td class="w-px border-t">

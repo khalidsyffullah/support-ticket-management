@@ -60,12 +60,12 @@ class OrganizationsController extends Controller
                 'name' => ['required', 'max:100'],
                 'email' => ['nullable', 'max:50', 'email'],
                 'phone' => ['nullable', 'max:50'],
-                'address' => ['nullable', 'max:150'],
-                'city' => ['nullable', 'max:50'],
-                'region' => ['nullable', 'max:50'],
+                'address' => ['required', 'max:150'],
+                'city' => ['required', 'max:50'],
+                'region' => ['required', 'max:50'],
                 'country' => ['nullable', 'max:2'],
                 'postal_code' => ['nullable', 'max:25'],
-                'max_customers' => ['nullable', 'integer', 'min:1'],
+                'max_customers' => ['required', 'integer', 'min:1'],
             ])
         );
 
@@ -95,7 +95,9 @@ class OrganizationsController extends Controller
                 'country' => $organization->country,
                 'postal_code' => $organization->postal_code,
                 'max_customers' => $organization->max_customers,
-                'contacts' => $organization->contacts()->orderByName()->get()->map->only('id', 'name', 'city', 'phone'),
+                'customers' => $organization->users()->whereHas('role', function ($query) {
+                    $query->where('slug', 'customer');
+                })->orderByName()->get()->map->only('id', 'name', 'email', 'phone'),
             ],
         ]);
     }
@@ -107,12 +109,12 @@ class OrganizationsController extends Controller
                 'name' => ['required', 'max:100'],
                 'email' => ['nullable', 'max:50', 'email'],
                 'phone' => ['nullable', 'max:50'],
-                'address' => ['nullable', 'max:150'],
-                'city' => ['nullable', 'max:50'],
-                'region' => ['nullable', 'max:50'],
+                'address' => ['required', 'max:150'],
+                'city' => ['required', 'max:50'],
+                'region' => ['required', 'max:50'],
                 'country' => ['nullable', 'max:2'],
                 'postal_code' => ['nullable', 'max:25'],
-                'max_customers' => ['nullable', 'integer', 'min:1'],
+                'max_customers' => ['required', 'integer', 'min:1'],
             ])
         );
 

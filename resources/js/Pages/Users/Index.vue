@@ -43,12 +43,12 @@
           </td>
             <td class="border-t">
                 <Link class="flex items-center px-6 py-4" :href="route('users.edit', user.id)" tabindex="-1">
-                    {{ $t(user.country) }}
+                    {{ user.country ? $t(user.country) : '' }}
                 </Link>
             </td>
             <td class="border-t">
                 <Link class="flex items-center px-6 py-4" :href="route('users.edit', user.id)" tabindex="-1">
-                    {{ $t(user.city) }}
+                    {{ user.city ? $t(user.city) : '' }}
                 </Link>
             </td>
           <td class="border-t capitalize">

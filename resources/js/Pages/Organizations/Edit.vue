@@ -4,17 +4,18 @@
     <div class="max-w-full bg-white rounded-md shadow overflow-hidden">
       <form @submit.prevent="update">
         <div class="flex flex-wrap -mb-8 -mr-6 p-8">
-          <text-input v-model="form.name" :error="form.errors.name" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Name')" />
+          <text-input v-model="form.name" :error="form.errors.name" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Name')" :is_required="true" />
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Email')" />
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Phone')" />
-          <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Address')" />
-          <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('City')" />
-          <text-input v-model="form.region" :error="form.errors.region" class="pb-8 pr-6 w-full lg:w-1/2" label="Province/State" />
+          <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Address')" :is_required="true" />
+          <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('City')" :is_required="true" />
+          <text-input v-model="form.region" :error="form.errors.region" class="pb-8 pr-6 w-full lg:w-1/2" label="Province/State" :is_required="true" />
           <select-input v-model="form.country" :error="form.errors.country" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Country')">
               <option :value="null" />
               <option v-for="c in countries" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
           </select-input>
           <text-input v-model="form.postal_code" :error="form.errors.postal_code" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Postal code')" />
+          <text-input v-model="form.max_customers" :error="form.errors.max_customers" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Maximum Customers')" :is_required="true" />
         </div>
         <div class="flex items-center px-8 py-4 bg-gray-50 border-t border-gray-100">
           <button class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
@@ -23,39 +24,39 @@
         </div>
       </form>
     </div>
-    <h2 class="mt-12 text-2xl font-bold">{{  $t('Contacts') }}</h2>
+    <h2 class="mt-12 text-2xl font-bold">{{  $t('Customers') }}</h2>
     <div class="mt-6 bg-white rounded shadow overflow-x-auto">
       <table class="w-full whitespace-nowrap">
           <tbody>
         <tr class="text-left font-bold">
           <th class="pb-4 pt-6 px-6">{{ $t('Name') }}</th>
-          <th class="pb-4 pt-6 px-6">{{ $t('City') }}</th>
+          <th class="pb-4 pt-6 px-6">{{ $t('Email') }}</th>
           <th class="pb-4 pt-6 px-6" colspan="2">{{ $t('Phone') }}</th>
         </tr>
-        <tr v-for="contact in organization.contacts" :key="contact.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
+        <tr v-for="customer in organization.customers" :key="customer.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
           <td class="border-t">
-            <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('contacts.edit', contact.id)">
-              {{ contact.name }}
+            <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('customers.edit', customer.id)">
+              {{ customer.name }}
             </Link>
           </td>
           <td class="border-t">
-            <Link class="flex items-center px-6 py-4" :href="route('contacts.edit', contact.id)" tabindex="-1">
-              {{ contact.city }}
+            <Link class="flex items-center px-6 py-4" :href="route('customers.edit', customer.id)" tabindex="-1">
+              {{ customer.email }}
             </Link>
           </td>
           <td class="border-t">
-            <Link class="flex items-center px-6 py-4" :href="route('contacts.edit', contact.id)" tabindex="-1">
-              {{ contact.phone }}
+            <Link class="flex items-center px-6 py-4" :href="route('customers.edit', customer.id)" tabindex="-1">
+              {{ customer.phone }}
             </Link>
           </td>
           <td class="w-px border-t">
-            <Link class="flex items-center px-4" :href="route('contacts.edit', contact.id)" tabindex="-1">
+            <Link class="flex items-center px-4" :href="route('customers.edit', customer.id)" tabindex="-1">
               <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
             </Link>
           </td>
         </tr>
-        <tr v-if="organization.contacts.length === 0">
-          <td class="px-6 py-4 border-t" colspan="4">No contacts found.</td>
+        <tr v-if="organization.customers.length === 0">
+          <td class="px-6 py-4 border-t" colspan="4">No customers found.</td>
         </tr>
           </tbody>
       </table>
@@ -98,6 +99,7 @@ export default {
         region: this.organization.region,
         country: this.organization.country,
         postal_code: this.organization.postal_code,
+        max_customers: this.organization.max_customers,
       }),
     }
   },

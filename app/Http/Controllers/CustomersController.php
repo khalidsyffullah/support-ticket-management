@@ -40,6 +40,7 @@ class CustomersController extends Controller {
                     'phone' => $user->phone,
                     'role' => $user->role,
                     'role_id' => $user->role_id,
+                    'organization' => $user->organizations->first() ? $user->organizations->first()->name : null,
                     'photo' => $user->photo_path,
                     'created_at' => $user->created_at,
                 ]),
@@ -66,12 +67,12 @@ class CustomersController extends Controller {
             'last_name' => ['required', 'max:50'],
             'phone' => ['nullable', 'max:25'],
             'email' => ['required', 'max:50', 'email', Rule::unique('users')],
-            'password' => ['nullable'],
+            'password' => ['required'],
             'city' => ['nullable'],
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'role_id' => ['nullable'],
-            'organization_id' => ['nullable', 'exists:organizations,id'],
+            'organization_id' => ['required', 'exists:organizations,id'],
         ]);
 
         if (Request::get('organization_id')) {
@@ -89,7 +90,7 @@ class CustomersController extends Controller {
         if(empty($userRequest['role_id']) && !empty($customerRole)){
             $userRequest['role_id'] = $customerRole->id;
         }
-        
+
         $organization_id = $userRequest['organization_id'];
         unset($userRequest['organization_id']);
 
@@ -150,12 +151,12 @@ class CustomersController extends Controller {
             'last_name' => ['required', 'max:50'],
             'phone' => ['nullable', 'max:25'],
             'email' => ['required', 'max:50', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => ['nullable'],
+            'password' => ['required'],
             'city' => ['nullable'],
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'role_id' => ['nullable'],
-            'organization_id' => ['nullable', 'exists:organizations,id'],
+            'organization_id' => ['required', 'exists:organizations,id'],
             'photo' => ['nullable', 'image'],
         ]);
 

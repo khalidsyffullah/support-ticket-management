@@ -4,21 +4,20 @@
     <div class="max-w-full bg-white rounded-md shadow overflow-hidden">
       <form @submit.prevent="update">
         <div class="flex flex-wrap -mb-8 -mr-6 p-8">
-          <text-input v-model="form.first_name" :error="form.errors.first_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('First name')" />
-          <text-input v-model="form.last_name" :error="form.errors.last_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Last name')" />
-          <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Email')" />
+          <text-input v-model="form.first_name" :error="form.errors.first_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('First name')" :is_required="true" />
+          <text-input v-model="form.last_name" :error="form.errors.last_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Last name')" :is_required="true" />
+          <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Email')" :is_required="true" />
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Phone')" />
-            <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('City')" />
-          <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Address')" />
-          <select-input v-model="form.country_id" :error="form.errors.country_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Country')">
-            <option :value="null" />
-            <option v-for="c in countries" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
+            <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('City')"  />
+          <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Address')"  />
+          <select-input v-model="form.country_id" :error="form.errors.country_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Country')" >
+            <option value="19">Bangladesh</option>
           </select-input>
-          <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')">
+          <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')" :is_required="true">
             <option :value="null" />
             <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
           </select-input>
-          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
+          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" :is_required="true" />
           <file-input v-model="form.photo_path" :error="form.errors.photo_path" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
             <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
         </div>

@@ -22,6 +22,10 @@ export default {
         },
         error: String,
         label: String,
+        is_required: {
+            type: Boolean,
+            default: false,
+        },
         required: {
             type: Boolean,
             default() {

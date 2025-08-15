@@ -42,6 +42,8 @@ class CustomersController extends Controller {
                     'role_id' => $user->role_id,
                     'organization' => $user->organizations->first() ? $user->organizations->first()->name : null,
                     'photo' => $user->photo_path,
+                    'approval_status' => $user->approval_status,
+
                     'created_at' => $user->created_at,
                 ]),
         ]);
@@ -77,7 +79,7 @@ class CustomersController extends Controller {
 
         if (Request::get('organization_id')) {
             $organization = Organization::find(Request::get('organization_id'));
-            if ($organization->users()->count() >= $organization->max_customers) {
+            if ($organization->users()->where('approval_status', User::STATUS_APPROVED)->count() >= $organization->max_customers) {
                 return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
             }
         }
@@ -90,6 +92,8 @@ class CustomersController extends Controller {
         if(empty($userRequest['role_id']) && !empty($customerRole)){
             $userRequest['role_id'] = $customerRole->id;
         }
+
+        $userRequest['approval_status'] = User::STATUS_APPROVED;
 
         $organization_id = $userRequest['organization_id'];
         unset($userRequest['organization_id']);
@@ -123,6 +127,7 @@ class CustomersController extends Controller {
                 'address' => $user->address,
                 'country_id' => $user->country_id,
                 'organization_id' => $user->organizations->first() ? $user->organizations->first()->id : null,
+                'approval_status' => $user->approval_status,
                 'photo_path' => $user->photo_path,
             ],
             'organizations' => Organization::orderBy('name')
@@ -151,23 +156,28 @@ class CustomersController extends Controller {
             'last_name' => ['required', 'max:50'],
             'phone' => ['nullable', 'max:25'],
             'email' => ['required', 'max:50', 'email', Rule::unique('users')->ignore($user->id)],
-            'password' => ['required'],
+            'password' => ['nullable'],
             'city' => ['nullable'],
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'role_id' => ['nullable'],
             'organization_id' => ['required', 'exists:organizations,id'],
+            'approval_status' => ['required', Rule::in([User::STATUS_PENDING, User::STATUS_APPROVED, User::STATUS_REJECTED])],
             'photo' => ['nullable', 'image'],
         ]);
 
-        if (Request::get('organization_id')) {
-            $organization = Organization::find(Request::get('organization_id'));
-            if ($organization->users()->count() >= $organization->max_customers && !$user->organizations->contains($organization->id)) {
+        $newApprovalStatus = Request::get('approval_status');
+        $currentApprovalStatus = $user->approval_status;
+        $organizationId = Request::get('organization_id');
+
+        if ($newApprovalStatus === User::STATUS_APPROVED && $currentApprovalStatus !== User::STATUS_APPROVED) {
+            $organization = Organization::find($organizationId);
+            if ($organization && $organization->users()->where('approval_status', User::STATUS_APPROVED)->count() >= $organization->max_customers) {
                 return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
             }
         }
 
-        $user->update(Request::only('first_name', 'last_name', 'phone', 'email', 'city', 'address', 'country_id', 'role_id'));
+        $user->update(Request::only('first_name', 'last_name', 'phone', 'email', 'city', 'address', 'country_id', 'role_id', 'approval_status'));
 
         if (Request::get('organization_id')) {
             $user->organizations()->sync(Request::get('organization_id'));
@@ -202,4 +212,33 @@ class CustomersController extends Controller {
         $user->restore();
         return Redirect::back()->with('success', 'Customer restored!');
     }
+
+    public function approve(User $user)
+    {
+        if (config('app.demo')) {
+            return Redirect::back()->with('error', 'Approving customer is not allowed for the live demo.');
+        }
+
+        $organization = $user->organizations->first();
+
+        if ($organization && $organization->users()->where('approval_status', User::STATUS_APPROVED)->count() >= $organization->max_customers) {
+            return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
+        }
+
+        $user->update(['approval_status' => User::STATUS_APPROVED]);
+
+        return Redirect::back()->with('success', 'Customer approved.');
+    }
+
+    public function reject(User $user)
+    {
+        if (config('app.demo')) {
+            return Redirect::back()->with('error', 'Rejecting customer is not allowed for the live demo.');
+        }
+
+        $user->update(['approval_status' => User::STATUS_REJECTED]);
+
+        return Redirect::back()->with('success', 'Customer rejected.');
+    }
+
 }

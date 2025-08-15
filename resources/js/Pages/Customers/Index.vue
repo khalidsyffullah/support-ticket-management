@@ -17,6 +17,8 @@
             <th class="pb-4 pt-6 px-6">{{ $t('City') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('Organization') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('Created') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Approval Status') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Actions') }}</th>
         </tr>
         <tr v-for="user in users.data" :key="user.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
           <td class="border-t">
@@ -50,6 +52,12 @@
                     {{ user.created_at ? $t(user.created_at) : '' }}
                 </Link>
             </td>
+            <td class="border-t">
+                <Link class="flex items-center px-6 py-4" :href="route('customers.edit',user.id)" tabindex="-1">
+                    {{ user.approval_status ? $t(user.approval_status) : '' }}
+                </Link>
+            </td>
+
           <td class="w-px border-t">
             <Link class="flex items-center px-4" :href="route('customers.edit',user.id)" tabindex="-1">
               <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
@@ -107,6 +115,16 @@ export default {
   methods: {
     reset() {
       this.form = mapValues(this.form, () => null)
+    },
+    approve(id) {
+      if (confirm('Are you sure you want to approve this customer?')) {
+        this.$inertia.put(this.route('customers.approve', id))
+      }
+    },
+    reject(id) {
+      if (confirm('Are you sure you want to reject this customer?')) {
+        this.$inertia.put(this.route('customers.reject', id))
+      }
     },
   },
 }

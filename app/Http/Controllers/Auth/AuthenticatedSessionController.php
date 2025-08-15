@@ -36,7 +36,12 @@ class AuthenticatedSessionController extends Controller
         $is_demo = (int)config('app.demo');
         $env = DotenvEditor::load();
         $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
-        return Inertia::render('Auth/Register', ['is_demo' => $is_demo, 'site_key' => $siteKey]);
+        return Inertia::render('Auth/Register', ['is_demo' => $is_demo, 'site_key' => $siteKey,
+            'organizations' => \App\Models\Organization::orderBy('name')
+                ->get()
+                ->map
+                ->only('id', 'name')
+        ]);
     }
 
     public function forgotPassword() {
@@ -100,6 +105,16 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         $request->authenticate();
+
+        $user = $request->user();
+
+        if ($user->role && $user->role->slug === 'customer' && !$user->isApproved()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return Redirect::back()->withErrors(['email' => 'Your account is not yet approved or has been rejected.']);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(RouteServiceProvider::DASHBOARD);
@@ -117,7 +132,13 @@ class AuthenticatedSessionController extends Controller
             'country_id' => ['nullable', 'max:20'],
             'city' => ['nullable', 'max:30'],
             'address' => ['nullable'],
+            'organization_id' => ['required', 'exists:organizations,id'],
         ]);
+
+        $organization = \App\Models\Organization::find($requestData['organization_id']);
+        if ($organization->users()->where('approval_status', \App\Models\User::STATUS_APPROVED)->count() >= $organization->max_customers) {
+            return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
+        }
 
         $role = Role::where('slug', 'customer')->first();
         if(!empty($role)){
@@ -126,12 +147,15 @@ class AuthenticatedSessionController extends Controller
             $requestData['role_id'] = 2;
         }
 
+        $requestData['approval_status'] = \App\Models\User::STATUS_PENDING;
+
+        $organization_id = $requestData['organization_id'];
+        unset($requestData['organization_id']);
 
         $user = User::create($requestData);
-        Auth::loginUsingId($user->id, true);
+        $user->organizations()->attach($organization_id);
 
-        $request->session()->regenerate();
-        return redirect()->intended(RouteServiceProvider::DASHBOARD);
+        return Redirect::route('login')->with('success', 'Registration successful! Your account is awaiting admin approval.');
     }
 
     /**

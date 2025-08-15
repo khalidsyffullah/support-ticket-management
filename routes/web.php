@@ -584,6 +584,14 @@ Route::prefix('dashboard')->group(function () {
         ->name('customers.restore')
         ->middleware('auth');
 
+    Route::put('customers/{user}/approve', [CustomersController::class, 'approve'])
+        ->name('customers.approve')
+        ->middleware('auth');
+
+    Route::put('customers/{user}/reject', [CustomersController::class, 'reject'])
+        ->name('customers.reject')
+        ->middleware('auth');
+
 
 // Organizations
 
@@ -861,4 +869,8 @@ Route::get('/clear-all', function() {
     Artisan::call('optimize:clear');
     Artisan::call('queue:clear');
     return "All caches cleared!";
+});
+
+Route::get('/run-migration', function() {
+    Artisan::call('migrate');
 });

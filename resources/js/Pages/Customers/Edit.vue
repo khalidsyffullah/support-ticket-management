@@ -22,6 +22,11 @@
             <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
         </div>
         <div class="flex items-center px-8 py-4 bg-gray-50 border-t border-gray-100">
+          <select-input v-model="form.approval_status" :error="form.errors.approval_status" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Approval Status')" @change="updateApprovalStatus">
+            <option value="pending">{{ $t('Pending') }}</option>
+            <option value="approved">{{ $t('Approved') }}</option>
+            <option value="rejected">{{ $t('Rejected') }}</option>
+          </select-input>
           <button v-if="user.id !== auth.user.id && user_access.customer.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
             {{ $t('Delete') }}</button>
           <loading-button :loading="form.processing" class="btn-indigo ml-auto" type="submit">{{ $t('Update') }}</loading-button>
@@ -71,6 +76,7 @@ export default {
         address: this.user.address,
         country_id: this.user.country_id,
         organization_id: this.user.organization_id,
+        approval_status: this.user.approval_status,
         password: '',
           photo_path: null
       }),
@@ -89,6 +95,15 @@ export default {
     update() {
       this.form.post(this.route('customers.update', this.user.id), {
         onSuccess: () => this.form.reset('password', 'photo'),
+      })
+    },
+    updateApprovalStatus() {
+      this.$inertia.put(this.route('customers.updateApprovalStatus', this.user.id), {
+        approval_status: this.form.approval_status,
+        _method: 'put',
+      }, {
+        preserveScroll: true,
+        preserveState: true,
       })
     },
     destroy() {

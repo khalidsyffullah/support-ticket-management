@@ -13,9 +13,18 @@
                 <text-input v-model="form.last_name" :error="form.errors.last_name" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Last name')" type="text" autofocus autocapitalize="off" :is_required="true" required />
                 <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Email')" type="email" autofocus autocapitalize="off" :is_required="true" required />
                 <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Phone')" type="text" autofocus autocapitalize="off" />
-                <text-input v-model="form.country_id" :error="form.errors.country_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Country')" type="text" autofocus autocapitalize="off" />
+                <select-input v-model="form.country_id" :error="form.errors.country_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Country')" :disabled="true">
+                    <option value="19">Bangladesh</option>
+                </select-input>
                 <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('City')" type="text" autofocus autocapitalize="off" />
                 <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full" :label="$t('Address')" type="text" autofocus autocapitalize="off" />
+                <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Organization')" :is_required="true">
+                    <option :value="null" />
+                    <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
+                </select-input>
+                <div v-if="organizations.length === 0" class="pb-8 pr-6 w-full lg:w-1/2 text-red-500">
+                    {{ $t('No organizations available. Please contact support.') }}
+                </div>
                 <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Password')" type="password" :is_required="true" required />
                 <text-input v-model="form.confirm_password" :error="form.errors.confirm_password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Confirm Password')" type="password" :is_required="true" required />
                 <div class="flex justify-center items-center py-3 w-full">
@@ -45,6 +54,7 @@ import LoadingButton from '@/Shared/LoadingButton.vue'
 import FlashMessages from '@/Shared/FlashMessages.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import vueRecaptcha from "vue3-recaptcha2";
+import SelectInput from '@/Shared/SelectInput.vue'
 
 export default {
   metaInfo: { title: 'Login' },
@@ -56,10 +66,12 @@ export default {
       Head,
       Link,
       FlashMessages,
+      SelectInput,
   },
     props: {
         is_demo: Number,
         site_key: String,
+        organizations: Array,
     },
   data() {
     return {
@@ -70,10 +82,11 @@ export default {
           email: '',
           phone: '',
           city: '',
-          country_id: '',
+          country_id: 19,
         address: '',
         password: '',
         confirm_password: '',
+        organization_id: null,
       }),
     }
   },

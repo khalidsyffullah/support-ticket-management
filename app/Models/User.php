@@ -29,8 +29,18 @@ class User extends Authenticatable
         'address',
         'country_id',
         'role_id',
-        'photo_path'
+        'photo_path',
+        'approval_status',
     ];
+
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+
+    public function isApproved()
+    {
+        return $this->approval_status === self::STATUS_APPROVED;
+    }
 
     /**
      * The attributes that should be hidden for serialization.

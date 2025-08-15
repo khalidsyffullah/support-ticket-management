@@ -10,3 +10,4 @@ vendor/
 !/storage/logs
 GEMINI.md
 .env
+requirement.txt

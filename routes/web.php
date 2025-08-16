@@ -913,4 +913,5 @@ Route::get('/clear-all', function() {
 
 Route::get('/run-migration', function() {
     Artisan::call('migrate');
+    return "Migration complete!";
 });

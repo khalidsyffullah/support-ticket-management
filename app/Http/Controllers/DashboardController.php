@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\Status;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\UserNotification;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +31,7 @@ class DashboardController extends Controller {
         $byAssign = null;
         $avgWhere = [];
         $customer_tickets = [];
+        $notifications = [];
         $closed_status = Status::where('slug', 'like', '%closed%')->first();
         $newTicketQuery = Ticket::select(DB::raw('*'));
 
@@ -53,6 +55,11 @@ class DashboardController extends Controller {
                         ];
                     });
             }
+            $notifications = UserNotification::where('expires_at', '>', Carbon::now())
+                ->orWhereNull('expires_at')
+                ->orderBy('created_at', 'desc')
+                ->get(['id', 'title', 'content']);
+
         }elseif(in_array($user['role']['slug'], ['manager'])){
             $byAssign = $user['id'];
             $avgWhere[] = ['assigned_to', '=', $byAssign];
@@ -196,6 +203,7 @@ class DashboardController extends Controller {
                 'this_month' => $thisMonthTotal,
             ],
             'customer_tickets' => $customer_tickets,
+            'notifications' => $notifications,
         ]);
     }
 

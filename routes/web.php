@@ -25,6 +25,7 @@ use App\Http\Controllers\RolesController;
 use App\Http\Controllers\TicketFieldsController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\UserNotificationsController;
 use App\Http\Controllers\PendingUsersController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\PrioritiesController;
@@ -623,6 +624,34 @@ Route::prefix('dashboard')->group(function () {
         ->name('organizations.restore')
         ->middleware('auth');
 
+    /** User Notification Functions */
+    Route::get('notifications', [UserNotificationsController::class, 'index'])
+        ->name('notifications')
+        ->middleware('auth');
+
+    Route::get('notifications/create', [UserNotificationsController::class, 'create'])
+        ->name('notifications.create')
+        ->middleware('auth');
+
+    Route::post('notifications', [UserNotificationsController::class, 'store'])
+        ->name('notifications.store')
+        ->middleware('auth');
+
+    Route::get('notifications/{userNotification}/edit', [UserNotificationsController::class, 'edit'])
+        ->name('notifications.edit')
+        ->middleware('auth');
+
+    Route::put('notifications/{userNotification}', [UserNotificationsController::class, 'update'])
+        ->name('notifications.update')
+        ->middleware('auth');
+
+    Route::delete('notifications/{userNotification}', [UserNotificationsController::class, 'destroy'])
+        ->name('notifications.destroy')
+        ->middleware('auth');
+
+    Route::put('notifications/{userNotification}/restore', [UserNotificationsController::class, 'restore'])
+        ->name('notifications.restore')
+        ->middleware('auth');
 
 
     // Global Settings

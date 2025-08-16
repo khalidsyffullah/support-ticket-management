@@ -54,6 +54,10 @@ export default {
       this.user = this.$page.props.auth.user;
       const user_access = this.user.access
 
+        if(this.user.role.slug === 'admin'){
+            this.menu_items.push({'name': 'Notifications', 'route': 'notifications', 'url': 'notifications', 'icon': 'notification'});
+        }
+
         let enable_option = {}
         if(this.$page.props.enable_options){
             let options = JSON.parse(this.$page.props.enable_options.value)

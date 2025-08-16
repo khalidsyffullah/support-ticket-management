@@ -11,3 +11,4 @@ vendor/
 GEMINI.md
 .env
 requirement.txt
+!public/build

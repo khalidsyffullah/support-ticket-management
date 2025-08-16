@@ -67,4 +67,10 @@ class DepartmentalTeamsController extends Controller
 
         return redirect()->back()->with('success', 'Team head updated successfully.');
     }
+
+    public function isTeamHead(Request $request, Department $department, User $user)
+    {
+        $is_team_head = $department->users()->where('user_id', $user->id)->wherePivot('team_head', true)->exists();
+        return response()->json($is_team_head);
+    }
 }

@@ -18,10 +18,10 @@
                                            :value="ticket.priority" :editable="user_access.ticket.update && !ticket.closed">
                         </select-edit-input>
 
-                        <select-edit-input v-if="auth.user.role.slug !== 'customer' && !(hidden_fields && hidden_fields.includes('assigned_to'))" placeholder="Search user" :onInput="doFilterUsersExceptCustomer" :items="usersExceptCustomers"
+                        <select-edit-input v-if="auth.user.role.slug !== 'customer' && !(hidden_fields && hidden_fields.includes('assigned_to'))" placeholder="Search user" :onInput="doFilterUsersExceptCustomer" :items="department_users"
                                            v-model="form.assigned_to" :error="form.errors.assigned_to"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Assigned to')"
-                                           :value="ticket.assigned_user??'Not Assigned'" :editable="user_access.ticket.update && !ticket.closed">
+                                           :value="ticket.assigned_user??'Not Assigned'" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head">
                         </select-edit-input>
 
                         <select-edit-input placeholder="Select status to change" :items="statuses"
@@ -39,7 +39,7 @@
                         <select-edit-input v-if="!(hidden_fields && hidden_fields.includes('department'))" @change="getCategories()" placeholder="Search department" :items="departments"
                                            v-model="form.department_id" :error="form.errors.department_id"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Department')"
-                                           :value="ticket.department" :editable="user_access.ticket.update && !ticket.closed">
+                                           :value="ticket.department" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head">
                         </select-edit-input>
 
                         <select-edit-input ref="category" v-if="!(hidden_fields && hidden_fields.includes('category')) && form.department_id" @change="getSubCategories()" placeholder="Search category" :items="categories"
@@ -243,6 +243,7 @@ export default {
     data() {
         return {
             user: this.$page.props.auth.user,
+            is_team_head: false,
             type_status: [],
             categories: this.all_categories.filter(cat => cat.department_id === this.ticket.department_id),
             sub_categories: this.all_categories.filter(cat => cat.parent_id === this.ticket.category_id),
@@ -250,6 +251,7 @@ export default {
             editCustomer: false,
             enableEditor: false,
             user_access: this.$page.props.auth.user.access,
+            department_users: this.usersExceptCustomers,
             form: this.$inertia.form({
                 user_id: this.ticket.user_id,
                 priority_id: this.ticket.priority_id,
@@ -277,12 +279,23 @@ export default {
             this.type_status = this.statuses
         }
         this.moment = moment;
+        this.isTeamHead();
     },
     methods: {
+        isTeamHead(){
+            if(this.ticket.department_id && this.auth.user.role.slug !== 'admin'){
+                axios.get(this.route('department.team_head', {department: this.ticket.department_id, user: this.user.id})).then((res)=>{
+                    this.is_team_head = res.data;
+                })
+            }
+        },
         getCategories(){
             this.ticket.category = 'N/A';
             this.form.category_id = null;
             this.categories = this.all_categories.filter(cat=>cat.department_id === this.form.department_id)
+            axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                this.department_users = res.data;
+            })
         },
         getSubCategories(){
             this.sub_categories = this.all_categories.filter(cat=>cat.parent_id === this.form.category_id)
@@ -296,8 +309,12 @@ export default {
             })
         },
         doFilterUsersExceptCustomer(e){
+            if(e.target.value === '' || e.target.value === null){
+                this.department_users = this.usersExceptCustomers;
+                return;
+            }
             axios.get(this.route('filter.users_except_customer', {search: e.target.value})).then((res)=>{
-                this.usersExceptCustomers.splice(0, this.usersExceptCustomers.length, ...res.data);
+                this.department_users = res.data;
             })
         },
         fileInputChange(e) {

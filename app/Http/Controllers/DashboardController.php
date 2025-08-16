@@ -35,6 +35,8 @@ class DashboardController extends Controller {
         $closed_status = Status::where('slug', 'like', '%closed%')->first();
         $newTicketQuery = Ticket::select(DB::raw('*'));
 
+        $notifications = $user->notifications()->latest()->take(10)->get();
+
 
         if(in_array($user['role']['slug'], ['customer'])){
             $byUser = $user['id'];
@@ -55,10 +57,6 @@ class DashboardController extends Controller {
                         ];
                     });
             }
-            $notifications = UserNotification::where('expires_at', '>', Carbon::now())
-                ->orWhereNull('expires_at')
-                ->orderBy('created_at', 'desc')
-                ->get(['id', 'title', 'content']);
 
         }elseif(in_array($user['role']['slug'], ['manager'])){
             $byAssign = $user['id'];

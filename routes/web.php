@@ -632,6 +632,7 @@ Route::prefix('dashboard')->group(function () {
     Route::get('departmental-teams/users', [DepartmentalTeamsController::class, 'getUsers'])->name('departmental_teams.users');
     Route::post('departmental-teams/{department}/add-member', [DepartmentalTeamsController::class, 'addTeamMember'])->name('departmental_teams.add_member');
     Route::put('departmental-teams/{department}/update-head/{user}', [DepartmentalTeamsController::class, 'updateTeamHead'])->name('departmental_teams.update_head');
+    Route::get('departmental-teams/{department}/is-team-head/{user}', [DepartmentalTeamsController::class, 'isTeamHead'])->name('department.team_head');
     Route::delete('departmental-teams/{department}/remove-member/{user}', [DepartmentalTeamsController::class, 'removeTeamMember'])->name('departmental_teams.remove_member');
 
     /** User Notification Functions */

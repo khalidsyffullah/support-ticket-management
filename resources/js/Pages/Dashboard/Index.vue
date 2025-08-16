@@ -101,9 +101,8 @@
                     <h2 class="font-bold text-lg">{{ $t('Notifications') }}</h2>
                 </div>
                 <ul class="divide-y">
-                    <li v-for="notification in notifications" :key="notification.id" class="p-4 hover:bg-gray-100 cursor-pointer">
-                        <h3 class="font-bold">{{ notification.title }}</h3>
-                        <p class="text-gray-600">{{ notification.content }}</p>
+                    <li v-for="notification in notifications" :key="notification.id" class="p-4 hover:bg-gray-100 cursor-pointer" @click="goToLink(notification.data.url)">
+                        <p class="text-gray-600">{{ notification.data.message }}</p>
                     </li>
                 </ul>
             </div>

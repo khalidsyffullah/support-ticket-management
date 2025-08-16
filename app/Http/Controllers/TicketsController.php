@@ -24,11 +24,14 @@ use App\Models\Ticket;
 use App\Models\TicketEntry;
 use App\Models\TicketField;
 use App\Models\Type;
+use App\Notifications\TicketForwardedNotification;
+use App\Notifications\TicketUpdatedNotification;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
@@ -416,6 +419,10 @@ class TicketsController extends Controller
         }
 
         $roles = Role::pluck('id', 'slug')->all();
+        $department_users = [];
+        if($ticket->department_id){
+            $department_users = Department::find($ticket->department_id)->users()->get();
+        }
 
         return Inertia::render('Tickets/Edit', [
             'hidden_fields' => $hiddenFields ? json_decode($hiddenFields->value) : null ,
@@ -426,11 +433,7 @@ class TicketsController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
-            'usersExceptCustomers' => User::where('role_id', '!=', $roles['customer'] ?? 0)->orWhere('id', Request::input('user_id'))->orderBy('first_name')
-                ->limit(6)
-                ->get()
-                ->map
-                ->only('id', 'name'),
+            'usersExceptCustomers' => $department_users,
             'priorities' => Priority::orderBy('name')
                 ->get()
                 ->map
@@ -534,10 +537,34 @@ class TicketsController extends Controller
         }
 
         $assigned = (!empty($request_data['assigned_to']) && ($ticket->assigned_to != $request_data['assigned_to']))??false;
+        $departmentChanged = $ticket->department_id != $request_data['department_id'];
+
+        $old_department = $ticket->department;
 
         $ticket->update($request_data);
 
+        if ($departmentChanged) {
+            $department = Department::find($request_data['department_id']);
+            if($old_department){
+                $message = "Ticket #{$ticket->uid} has been forwarded to {$department->name} from {$old_department->name} by ".auth()->user()->name;
+            }else{
+                $message = "Ticket #{$ticket->uid} has been assigned to {$department->name} department by ".auth()->user()->name;
+            }
+
+            if($department){
+                Notification::send($department->users, new TicketForwardedNotification($ticket, $message));
+            }
+
+            $admin_users = User::whereHas('role', function ($query) {
+                $query->where('slug', 'admin');
+            })->get();
+            Notification::send($admin_users, new TicketForwardedNotification($ticket, $message));
+        }
+
         if($assigned){
+            $user = User::find($request_data['assigned_to']);
+            $message = "You have been assigned a new ticket #{$ticket->uid}";
+            Notification::send($user, new TicketUpdatedNotification($ticket, $message));
             event(new AssignedUser(['ticket_id' => $ticket->id]));
         }
 

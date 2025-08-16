@@ -228,7 +228,7 @@
                     </span>
                   </div>
 
-                  <div class="grid gap-4">
+                  <div class="flex flex-wrap gap-4">
                     <div
                       v-for="faq in suggestions.faqs"
                       :key="'faq-' + faq.id"
@@ -285,7 +285,7 @@
                     </span>
                   </div>
 
-                  <div class="grid gap-4">
+                  <div class="flex flex-wrap gap-4">
                     <div
                       v-for="kb in suggestions.knowledge_base"
                       :key="'kb-' + kb.id"
@@ -544,3 +544,38 @@ export default {
   },
 };
 </script>
+<style scoped>
+/* Custom scrollbar for webkit browsers */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Line clamp utilities for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

@@ -915,3 +915,11 @@ Route::get('/run-migration', function() {
     Artisan::call('migrate');
     return "Migration complete!";
 });
+
+Route::get('/migrate-status', function() {
+    $outputBuffer = '';
+    Artisan::call('migrate:status', [], $outputBuffer);
+    return "<pre>" . $outputBuffer . "</pre>";
+});
+
+

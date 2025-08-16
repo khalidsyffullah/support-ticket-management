@@ -916,10 +916,11 @@ Route::get('/run-migration', function() {
     return "Migration complete!";
 });
 
-Route::get('/migrate-status', function() {
-    $outputBuffer = '';
-    Artisan::call('migrate:status', [], $outputBuffer);
-    return "<pre>" . $outputBuffer . "</pre>";
+Route::get('/pstorage-link', function() {
+    Artisan::call('storage:link');
+    return "done!";
 });
+
+
 
 

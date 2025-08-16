@@ -118,8 +118,11 @@ export default {
         }
 
         if(user_access.department.read || user_access.department.update || user_access.department.create || user_access.department.delete){
+            this.menu_items.push({'name': 'Departmental Teams', 'route': 'departmental_teams', 'url': 'departmental-teams', 'icon': 'users'})
+        }
+
+        if(user_access.department.read || user_access.department.update || user_access.department.create || user_access.department.delete){
             settingSubmenus.push({'name': 'Departments', 'route': 'departments', 'url': 'settings/departments', 'icon': 'departments'})
-            settingSubmenus.push({'name': 'Departmental Teams', 'route': 'departmental_teams', 'url': 'departmental-teams', 'icon': 'users'})
         }
 
         if(user_access.category.read || user_access.category.update || user_access.category.create || user_access.category.delete){

@@ -29,22 +29,40 @@ class DashboardController extends Controller {
         $byUser = null;
         $byAssign = null;
         $avgWhere = [];
-        $opened_status = Status::where('slug', 'like', '%closed%')->first();
+        $customer_tickets = [];
+        $closed_status = Status::where('slug', 'like', '%closed%')->first();
         $newTicketQuery = Ticket::select(DB::raw('*'));
-        if(!empty($opened_status)){
-            $avgWhere[] = ['status_id', '!=', $opened_status->id];
-            $openedTickets = Ticket::byUser($byUser)->byAssign($byAssign)->where('status_id', '!=', $opened_status->id)->count();
-        }
 
 
         if(in_array($user['role']['slug'], ['customer'])){
             $byUser = $user['id'];
             $avgWhere[] = ['user_id', '=', $byUser];
             $newTicketQuery->where('user_id', '=', $byUser);
+            if ($closed_status) {
+                $customer_tickets = Ticket::with('status:id,name')->where('user_id', $user['id'])
+                    ->where('status_id', '!=', $closed_status->id)
+                    ->where('created_at', '>=', Carbon::now()->subDays(30))
+                    ->latest()
+                    ->take(10)
+                    ->get()
+                    ->map(function($ticket){
+                        return [
+                            'uid' => $ticket->uid,
+                            'subject' => $ticket->subject,
+                            'status' => $ticket->status->name,
+                        ];
+                    });
+            }
         }elseif(in_array($user['role']['slug'], ['manager'])){
             $byAssign = $user['id'];
             $avgWhere[] = ['assigned_to', '=', $byAssign];
             $newTicketQuery->where('assigned_to', '=', $byAssign);
+        }
+
+        $openedTickets = 0;
+        if(!empty($closed_status)){
+            $avgWhere[] = ['status_id', '!=', $closed_status->id];
+            $openedTickets = Ticket::byUser($byUser)->byAssign($byAssign)->where('status_id', '!=', $closed_status->id)->count();
         }
 
 
@@ -176,7 +194,8 @@ class DashboardController extends Controller {
                 'total' => $m_total,
                 'last_month' => $lastMonthTotal,
                 'this_month' => $thisMonthTotal,
-            ]
+            ],
+            'customer_tickets' => $customer_tickets,
         ]);
     }
 

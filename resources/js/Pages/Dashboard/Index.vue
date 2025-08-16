@@ -3,7 +3,8 @@
       <Head :title="$t('Dashboard')" />
 
       <div class="badge__items flex flex-col lg:flex-row gap-5">
-          <div class="badge__item h-32 w-full lg:w-1/4 cursor-pointer" @click="goToLink(this.route('tickets', {'type': 'new'}))">
+          <div class="badge__item h-32 w-full lg:w-1/4 cursor-pointer" @click="goToLink(this.route('tickets', {'type': 'new'}))
+">
               <div class="l__items bg-white rounded-lg shadow-lg flex justify-between w-full">
                   <div class="badge__info">
                       <span class="title">{{ $t('New Tickets') }}</span>
@@ -29,7 +30,8 @@
                   </div>
               </div>
           </div>
-          <div class="badge__item h-32 w-full lg:w-1/4 cursor-pointer" @click="goToLink(this.route('tickets', {'search': 'close'}))">
+          <div class="badge__item h-32 w-full lg:w-1/4 cursor-pointer" @click="goToLink(this.route('tickets', {'search': 'close'}))
+">
               <div class="l__items bg-white rounded-lg shadow-lg flex justify-between w-full">
                   <div class="badge__info">
                       <span class="title">{{ $t('Closed Tickets') }}</span>
@@ -42,7 +44,8 @@
                   </div>
               </div>
           </div>
-          <div v-if="auth.user.role.slug !== 'customer'" class="badge__item h-32 w-full lg:w-1/4 cursor-pointer" @click="goToLink(this.route('tickets', {'type': 'un_assigned'}))">
+          <div v-if="auth.user.role.slug !== 'customer'" class="badge__item h-32 w-full lg:w-1/4 cursor-pointer" @click="goToLink(this.route('tickets', {'type': 'un_assigned'}))
+">
               <div class="l__items bg-white rounded-lg shadow-lg flex justify-between w-full">
                   <div class="badge__info">
                       <span class="title">{{ $t('Unassigned Tickets') }}</span>
@@ -56,6 +59,57 @@
               </div>
           </div>
       </div>
+
+      <div class="flex flex-wrap mt-8" v-if="auth.user.role.slug === 'customer'">
+        <div class="w-full lg:w-1/2 pr-3">
+            <div v-if="customer_tickets.length" class="bg-white rounded-md shadow overflow-x-auto">
+                <table class="w-full whitespace-nowrap">
+                    <tr class="text-left font-bold">
+                        <th class="pb-4 pt-6 px-6">{{ $t('Ticket Number') }}</th>
+                        <th class="pb-4 pt-6 px-6">{{ $t('Name') }}</th>
+                        <th class="pb-4 pt-6 px-6">{{ $t('Status') }}</th>
+                    </tr>
+                    <tr v-for="ticket in customer_tickets" :key="ticket.uid" class="hover:bg-gray-100 focus-within:bg-gray-100">
+                        <td class="border-t">
+                            <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('tickets.edit', ticket.uid)">
+                                {{ ticket.uid }}
+                            </Link>
+                        </td>
+                        <td class="border-t">
+                            <Link class="flex items-center px-6 py-4" :href="route('tickets.edit', ticket.uid)" tabindex="-1">
+                                {{ ticket.subject }}
+                            </Link>
+                        </td>
+                        <td class="border-t">
+                            <Link class="flex items-center px-6 py-4" :href="route('tickets.edit', ticket.uid)" tabindex="-1">
+                                {{ ticket.status }}
+                            </Link>
+                        </td>
+                    </tr>
+                    <tr v-if="customer_tickets.length === 0">
+                        <td class="px-6 py-4 border-t" colspan="3">{{ $t('No tickets found.') }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div v-if="customer_tickets.length" class="mt-4 text-center">
+                <Link class="text-indigo-600 hover:text-indigo-900" :href="route('tickets')">{{ $t('View All') }}</Link>
+            </div>
+        </div>
+        <div class="w-full lg:w-1/2 pl-3">
+            <div v-if="notifications.length" class="bg-white rounded-md shadow overflow-hidden">
+                <div class="p-4 border-b">
+                    <h2 class="font-bold text-lg">{{ $t('Notifications') }}</h2>
+                </div>
+                <ul class="divide-y">
+                    <li v-for="notification in notifications" :key="notification.id" class="p-4 hover:bg-gray-100 cursor-pointer">
+                        <h3 class="font-bold">{{ notification.title }}</h3>
+                        <p class="text-gray-600">{{ notification.content }}</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
       <div class="response__details mt-8 flex gap-5 flex-col lg:flex-row" v-if="auth.user.role.slug !== 'customer'">
           <div class="w-full">
               <div class="r__wrapper flex flex-col pl-5 pr-5 pb-5 bg-white items-center rounded-lg shadow-lg rd">
@@ -241,6 +295,8 @@ export default {
         top_types: Array,
         total_customer: Number,
         total_contacts: Number,
+        customer_tickets: Array,
+        notifications: Array,
     },
     data() {
         return {
@@ -264,7 +320,7 @@ export default {
         }
 
         this.months = this.chart_line.previousMonths.map( m =>{
-            return { 'month': m, 'value': this.chart_line.months[m] ? ((this.chart_line.months[m] * 100)/this.chart_line.total)+'%': '0%' }
+            return { 'month': m, 'value': this.chart_line.months[m] ? ((this.chart_line.months[m] * 100)/this.chart_line.total)+'%' : '0%' }
         })
     },
     methods: {

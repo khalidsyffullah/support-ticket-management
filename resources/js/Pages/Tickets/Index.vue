@@ -96,7 +96,7 @@
                     </td>
                     <td class="border-t">
                         <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('tickets.edit', ticket.uid || ticket.id)">
-                            {{ ticket.status }}
+                            <span :class="getStatusColor(ticket.status_slug)" class="px-2 py-1 rounded-full text-xs">{{ ticket.status }}</span>
                         </Link>
                     </td>
                     <td class="border-t">
@@ -210,6 +210,17 @@ export default {
             if(e.target.files.length){
                 this.$inertia.form({file: e.target.files[0]}).post(this.route('ticket.csv.import'))
             }
+        },
+        getStatusColor(slug) {
+            const colors = {
+                pending: 'bg-yellow-400',
+                closed: 'bg-red-400',
+                completed: 'bg-green-400',
+                'delay_processing': 'bg-blue-200',
+                processing: 'bg-indigo-300',
+                'waiting_for_confirmation': 'bg-purple-200',
+            };
+            return colors[slug] || 'bg-gray-200';
         }
     },
     created() {

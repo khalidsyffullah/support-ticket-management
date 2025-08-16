@@ -132,6 +132,7 @@ class TicketsController extends Controller
                         'sub_category' => $ticket->subCategory ? $ticket->subCategory->name: null,
                         'rating' => $ticket->review ? $ticket->review->rating : 0,
                         'status' => $ticket->status ? $ticket->status->name : null,
+                        'status_slug' => $ticket->status ? $ticket->status->slug : null,
                         'due' => $ticket->due,
                         'assigned_to' => $ticket->assignedTo? $ticket->assignedTo->first_name.' '.$ticket->assignedTo->last_name : null,
                         'created_at' => $ticket->created_at,

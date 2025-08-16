@@ -35,18 +35,18 @@ class DepartmentalTeamsController extends Controller
     public function addTeamMember(Request $request, Department $department)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
         ]);
 
-        $user = User::find($request->user_id);
-
-        if ($department->users()->where('user_id', $user->id)->exists()) {
-            return redirect()->back()->with('error', 'User already in the team.');
+        foreach ($request->user_ids as $user_id) {
+            $user = User::find($user_id);
+            if (!$department->users()->where('user_id', $user->id)->exists()) {
+                $department->users()->attach($user);
+            }
         }
 
-        $department->users()->attach($user);
-
-        return redirect()->back()->with('success', 'Team member added successfully.');
+        return redirect()->back()->with('success', 'Team member(s) added successfully.');
     }
 
     public function removeTeamMember(Request $request, Department $department, User $user)

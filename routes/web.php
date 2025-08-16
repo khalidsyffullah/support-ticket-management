@@ -103,6 +103,8 @@ Route::prefix('dashboard')->group(function () {
         ->name('tickets')
         ->middleware('auth');
 
+    Route::get('tickets/suggestions', [TicketsController::class, 'suggestions'])->name('tickets.suggestions')->middleware('auth');
+
     Route::post('ticket/csv/import', [TicketsController::class, 'csvImport'])->name('ticket.csv.import')
         ->middleware('auth');
 

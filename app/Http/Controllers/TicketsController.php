@@ -12,6 +12,8 @@ use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Contact;
 use App\Models\Department;
+use App\Models\Faq;
+use App\Models\KnowledgeBase;
 use App\Models\PendingEmail;
 use App\Models\Priority;
 use App\Models\Review;
@@ -134,6 +136,77 @@ class TicketsController extends Controller
                     ];
                 }),
         ]);
+    }
+
+    public function suggestions()
+    {
+        $searchTerm = Request::input('search');
+
+        if (strlen($searchTerm) < 1) {
+            return response()->json(['faqs' => [], 'knowledge_base' => []]);
+        }
+
+        $searchWords = array_unique(explode(' ', $searchTerm));
+
+        $faqQuery = Faq::query();
+        $kbQuery = KnowledgeBase::query();
+
+        $faqRelevance = "((CASE WHEN name LIKE '%{$searchTerm}%' THEN 2 ELSE 0 END)";
+        $kbRelevance = "((CASE WHEN title LIKE '%{$searchTerm}%' THEN 2 ELSE 0 END)";
+
+        $faqQuery->where(function ($query) use ($searchWords) {
+            foreach ($searchWords as $word) {
+                if (!empty($word)) {
+                    $query->orWhere('name', 'LIKE', "%{$word}%")
+                          ->orWhere('details', 'LIKE', "%{$word}%");
+                }
+            }
+        });
+
+        $kbQuery->where(function ($query) use ($searchWords) {
+            foreach ($searchWords as $word) {
+                if (!empty($word)) {
+                    $query->orWhere('title', 'LIKE', "%{$word}%")
+                          ->orWhere('details', 'LIKE', "%{$word}%");
+                }
+            }
+        });
+
+        foreach ($searchWords as $word) {
+            if (!empty($word)) {
+                $faqRelevance .= " + (CASE WHEN name LIKE '%{$word}%' THEN 1 ELSE 0 END)";
+                $faqRelevance .= " + (CASE WHEN details LIKE '%{$word}%' THEN 1 ELSE 0 END)";
+                $kbRelevance .= " + (CASE WHEN title LIKE '%{$word}%' THEN 1 ELSE 0 END)";
+                $kbRelevance .= " + (CASE WHEN details LIKE '%{$word}%' THEN 1 ELSE 0 END)";
+            }
+        }
+        $faqRelevance .= ")";
+        $kbRelevance .= ")";
+
+
+        $faqs = $faqQuery
+            ->select('id', 'name', 'details')
+            ->selectRaw("{$faqRelevance} as relevance")
+            ->orderBy('relevance', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($faq) {
+                $faq->details = strip_tags($faq->details);
+                return $faq;
+            });
+
+        $knowledge_base = $kbQuery
+            ->select('id', 'title', 'details')
+            ->selectRaw("{$kbRelevance} as relevance")
+            ->orderBy('relevance', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($kb) {
+                $kb->details = strip_tags($kb->details);
+                return $kb;
+            });
+
+        return response()->json(['faqs' => $faqs, 'knowledge_base' => $knowledge_base]);
     }
 
     public function csvImport()
@@ -525,8 +598,7 @@ class TicketsController extends Controller
     }
 
     public function destroy(Ticket $ticket)
-    {
-        $ticket->delete();
+    {        $ticket->delete();
         return Redirect::route('tickets')->with('success', 'Ticket deleted.');
     }
 

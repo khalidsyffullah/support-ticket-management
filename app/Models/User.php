@@ -135,6 +135,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Organization::class);
     }
 
+    public function departments()
+    {
+        return $this->belongsToMany(Department::class);
+    }
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

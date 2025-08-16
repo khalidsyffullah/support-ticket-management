@@ -21,6 +21,11 @@ class Department extends Model
         return $this->hasMany(Ticket::class);
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class);
+    }
+
     public function scopeFilter($query, array $filters){
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {

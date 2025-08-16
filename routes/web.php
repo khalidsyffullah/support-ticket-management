@@ -46,6 +46,7 @@ use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\InstallController;
+use App\Http\Controllers\DepartmentalTeamsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -625,6 +626,13 @@ Route::prefix('dashboard')->group(function () {
     Route::put('organizations/{organization}/restore', [OrganizationsController::class, 'restore'])
         ->name('organizations.restore')
         ->middleware('auth');
+
+    Route::get('departmental-teams', [DepartmentalTeamsController::class, 'index'])->name('departmental_teams');
+    Route::get('departmental-teams/{department}/members', [DepartmentalTeamsController::class, 'getTeamMembers'])->name('departmental_teams.members');
+    Route::get('departmental-teams/users', [DepartmentalTeamsController::class, 'getUsers'])->name('departmental_teams.users');
+    Route::post('departmental-teams/{department}/add-member', [DepartmentalTeamsController::class, 'addTeamMember'])->name('departmental_teams.add_member');
+    Route::put('departmental-teams/{department}/update-head/{user}', [DepartmentalTeamsController::class, 'updateTeamHead'])->name('departmental_teams.update_head');
+    Route::delete('departmental-teams/{department}/remove-member/{user}', [DepartmentalTeamsController::class, 'removeTeamMember'])->name('departmental_teams.remove_member');
 
     /** User Notification Functions */
     Route::get('notifications', [UserNotificationsController::class, 'index'])

@@ -103,10 +103,10 @@ export default {
         }
 
         const settingSubmenus = [];
-        if(this.user.role.slug === 'admin'){
-            settingSubmenus.push({'name': 'License', 'route': 'license.settings', 'url': 'settings/license', 'icon': 'user_role'})
-            settingSubmenus.push({'name': 'User Roles', 'route': 'roles', 'url': 'settings/roles', 'icon': 'user_role'})
-        }
+        // if(this.user.role.slug === 'admin'){
+        //     settingSubmenus.push({'name': 'License', 'route': 'license.settings', 'url': 'settings/license', 'icon': 'user_role'})
+        //     settingSubmenus.push({'name': 'User Roles', 'route': 'roles', 'url': 'settings/roles', 'icon': 'user_role'})
+        // }
 
         if(user_access.global.read || user_access.global.update || user_access.global.create || user_access.global.delete){
             settingSubmenus.push({'name': 'Global', 'route': 'global', 'url': 'settings/global', 'icon': 'global_setting'})

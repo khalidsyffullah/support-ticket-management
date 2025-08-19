@@ -96,13 +96,14 @@
             </div>
         </div>
         <div class="w-full lg:w-1/2 pl-3">
-            <div v-if="notifications.length" class="bg-white rounded-md shadow overflow-hidden">
+            <div v-if="notices.length" class="bg-white rounded-md shadow overflow-hidden">
                 <div class="p-4 border-b">
-                    <h2 class="font-bold text-lg">{{ $t('Notifications') }}</h2>
+                    <h2 class="font-bold text-lg">{{ $t('Notice Board') }}</h2>
                 </div>
                 <ul class="divide-y">
-                    <li v-for="notification in notifications" :key="notification.id" class="p-4 hover:bg-gray-100 cursor-pointer" @click="goToLink(notification.data.url)">
-                        <p class="text-gray-600">{{ notification.data.message }}</p>
+                    <li v-for="notice in notices" :key="notice.id" class="p-4">
+                        <h3 class="font-bold">{{ notice.title }}</h3>
+                        <p class="text-gray-600">{{ notice.content }}</p>
                     </li>
                 </ul>
             </div>
@@ -296,6 +297,7 @@ export default {
         total_contacts: Number,
         customer_tickets: Array,
         notifications: Array,
+        notices: Array,
     },
     data() {
         return {

@@ -32,6 +32,7 @@ class DashboardController extends Controller {
         $avgWhere = [];
         $customer_tickets = [];
         $notifications = [];
+        $notices = [];
         $closed_status = Status::where('slug', 'like', '%closed%')->first();
         $newTicketQuery = Ticket::select(DB::raw('*'));
 
@@ -57,6 +58,11 @@ class DashboardController extends Controller {
                         ];
                     });
             }
+
+            $notices = UserNotification::where('expires_at', '>', now())
+                ->orWhereNull('expires_at')
+                ->latest()
+                ->get();
 
         }elseif(in_array($user['role']['slug'], ['manager'])){
             $byAssign = $user['id'];
@@ -202,6 +208,7 @@ class DashboardController extends Controller {
             ],
             'customer_tickets' => $customer_tickets,
             'notifications' => $notifications,
+            'notices' => $notices,
         ]);
     }
 

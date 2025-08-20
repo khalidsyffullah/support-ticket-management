@@ -745,8 +745,8 @@ Route::get('language/flag/{code}', [PageController::class, 'getFlag'])
 
 Route::get('language/test/{id}', [LanguagesController::class, 'newLanguageManually'])->name('language.test');
 
-Route::get('/settings/license', [LicenseController::class, 'showSettings'])->name('license.settings');
-Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('license.deactivate');
+// Route::get('/settings/license', [LicenseController::class, 'showSettings'])->name('license.settings');
+// Route::post('/settings/license/deactivate', [LicenseController::class, 'deactivate'])->name('license.deactivate');
 
 Route::get('/license/activate', [LicenseController::class, 'showActivationForm'])->name('license.show');
 Route::post('/license/activate', [LicenseController::class, 'activate'])->name('license.activate');

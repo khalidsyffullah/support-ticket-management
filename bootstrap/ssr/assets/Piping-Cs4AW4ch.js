@@ -36,12 +36,12 @@ const _sfc_main = {
   data() {
     return {
       form: this.$inertia.form({
-        IMAP_HOST: this.keys["IMAP_HOST"]["value"],
-        IMAP_PORT: this.keys["IMAP_PORT"]["value"],
-        IMAP_PROTOCOL: this.keys["IMAP_PROTOCOL"]["value"],
-        IMAP_ENCRYPTION: this.keys["IMAP_ENCRYPTION"]["value"],
-        IMAP_USERNAME: this.keys["IMAP_USERNAME"]["value"],
-        IMAP_PASSWORD: this.keys["IMAP_PASSWORD"]["value"],
+        IMAP_HOST: this.keys["IMAP_HOST"] ? this.keys["IMAP_HOST"]["value"] : null,
+        IMAP_PORT: this.keys["IMAP_PORT"] ? this.keys["IMAP_PORT"]["value"] : null,
+        IMAP_PROTOCOL: this.keys["IMAP_PROTOCOL"] ? this.keys["IMAP_PROTOCOL"]["value"] : null,
+        IMAP_ENCRYPTION: this.keys["IMAP_ENCRYPTION"] ? this.keys["IMAP_ENCRYPTION"]["value"] : null,
+        IMAP_USERNAME: this.keys["IMAP_USERNAME"] ? this.keys["IMAP_USERNAME"]["value"] : null,
+        IMAP_PASSWORD: this.keys["IMAP_PASSWORD"] ? this.keys["IMAP_PASSWORD"]["value"] : null,
         enable_piping: this.option
       })
     };

@@ -82,7 +82,7 @@ Route::post('register', [AuthenticatedSessionController::class, 'registerStore']
     ->name('register.store')
     ->middleware('guest');
 
-Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])
+Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 Route::get('/ticket/open', [HomeController::class, 'ticketOpen'])
@@ -557,6 +557,10 @@ Route::prefix('dashboard')->group(function () {
 
     Route::put('users/{user}/restore', [UsersController::class, 'restore'])
         ->name('users.restore')
+        ->middleware('auth');
+
+    Route::put('users/{user}/toggle-lock', [UsersController::class, 'toggleLock'])
+        ->name('users.toggleLock')
         ->middleware('auth');
 
 // Customers

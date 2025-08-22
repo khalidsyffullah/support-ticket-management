@@ -57,6 +57,7 @@ class UsersController extends Controller{
                     'phone' => $user->phone,
                     'role' => $user->role,
                     'photo' => $user->photo_path ?? null,
+                    'is_locked' => $user->is_locked,
                 ]),
         ]);
     }
@@ -206,6 +207,25 @@ class UsersController extends Controller{
     public function restore(User $user){
         $user->restore();
         return Redirect::back()->with('success', 'User restored!');
+    }
+
+    public function toggleLock(User $user)
+    {
+        if ($user->role->slug === 'customer') {
+            return Redirect::back()->with('error', 'Customer users cannot be locked/unlocked.');
+        }
+
+        $user->is_locked = !$user->is_locked;
+        $user->save();
+
+        if ($user->is_locked) {
+            $user->forceFill([
+                'last_logout_at' => now(),
+            ])->save();
+            return Redirect::back()->with('success', 'User locked successfully.');
+        } else {
+            return Redirect::back()->with('success', 'User unlocked successfully.');    
+        }
     }
 
     private function removeUserFromRelatedTables($userId){

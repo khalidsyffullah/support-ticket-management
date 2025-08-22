@@ -115,7 +115,19 @@ class AuthenticatedSessionController extends Controller
             return Redirect::back()->withErrors(['email' => 'Your account is not yet approved or has been rejected.']);
         }
 
+        if ($user->is_locked && $user->role->slug !== 'customer') {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return Redirect::back()->withErrors(['email' => 'Your account has been locked. Please contact an administrator.']);
+        }
+
         $request->session()->regenerate();
+
+        // Update last_logout_at for the logged-in user
+        $user->forceFill([
+            'last_logout_at' => now(),
+        ])->save();
 
         return redirect()->intended(RouteServiceProvider::DASHBOARD);
     }
@@ -171,6 +183,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return Inertia::location('/login');
     }
 }

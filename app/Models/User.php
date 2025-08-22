@@ -31,6 +31,8 @@ class User extends Authenticatable
         'role_id',
         'photo_path',
         'approval_status',
+        'is_locked',
+        'last_logout_at',
     ];
 
     const STATUS_PENDING = 'pending';

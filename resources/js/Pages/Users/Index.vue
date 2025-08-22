@@ -22,7 +22,9 @@
           <th class="pb-4 pt-6 px-6">{{ $t('Phone') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('Country') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('City') }}</th>
-            <th class="pb-4 pt-6 px-6" colspan="2">{{ $t('Role') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Role') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Lock Status') }}</th>
+            <th class="pb-4 pt-6 px-6" colspan="2"></th>
         </tr>
         <tr v-for="user in users.data" :key="user.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
           <td class="border-t">
@@ -56,6 +58,18 @@
               {{ user.role?user.role.name:null }}
             </Link>
           </td>
+          <td class="border-t">
+            <div class="flex items-center px-6 py-4">
+              <span :class="{'text-red-500': user.is_locked, 'text-green-500': !user.is_locked}">
+                {{ user.is_locked ? $t('Locked') : $t('Unlocked') }}
+              </span>
+            </div>
+          </td>
+          <td class="w-px border-t">
+            <button v-if="user.role.slug !== 'customer'" @click="toggleLock(user.id)" class="flex items-center px-4 py-2 text-sm text-white rounded" :class="{'bg-green-500': user.is_locked, 'bg-red-500': !user.is_locked}">
+              {{ user.is_locked ? $t('Unlock') : $t('Lock') }}
+            </button>
+          </td>
           <td class="w-px border-t">
             <Link class="flex items-center px-4" :href="route('users.edit', user.id)" tabindex="-1">
               <icon name="cheveron-right" class="block w-6 h-6 fill-gray-400" />
@@ -63,7 +77,7 @@
           </td>
         </tr>
         <tr v-if="users.data.length === 0">
-          <td class="px-6 py-4 border-t" colspan="6">No users found.</td>
+          <td class="px-6 py-4 border-t" colspan="8">No users found.</td>
         </tr>
           </tbody>
       </table>
@@ -118,6 +132,9 @@ export default {
     reset() {
       this.form = mapValues(this.form, () => null)
     },
+    toggleLock(userId) {
+      this.$inertia.put(this.route('users.toggleLock', userId))
+    }
   },
 }
 </script>

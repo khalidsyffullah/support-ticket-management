@@ -226,6 +226,17 @@
                       </div>
                   </div>
               </div>
+              <div v-if="auth.user.role.slug !== 'customer' && auth.user.role.slug !== 'admin'" class="badge__item h-32 w-full cursor-pointer" @click="lockAccount()">
+                  <div class="l__items bg-white rounded-lg shadow-lg flex justify-between w-full">
+                      <div class="badge__info">
+                          <span class="title">{{ $t('Lock My Account') }}</span>
+                          <span class="number"></span>
+                      </div>
+                      <div class="a__right">
+                          <icon name="lock" class="h-5 fill-gray-400 mr-5 ml-5" />
+                      </div>
+                  </div>
+              </div>
           </div>
       </div>
       <!-- Loading Process -->
@@ -327,6 +338,13 @@ export default {
     methods: {
         goToLink(link){
             window.location.href = link;
+        },
+        lockAccount() {
+            if (confirm('Are you sure you want to lock your account? You will be logged out immediately.')) {
+                this.$inertia.put(this.route('users.toggleLock', this.auth.user.id)).then(() => {
+                    this.$inertia.post(this.route('logout'))
+                })
+            }
         },
     },
 }

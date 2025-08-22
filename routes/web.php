@@ -82,7 +82,7 @@ Route::post('register', [AuthenticatedSessionController::class, 'registerStore']
     ->name('register.store')
     ->middleware('guest');
 
-Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
 Route::get('/ticket/open', [HomeController::class, 'ticketOpen'])

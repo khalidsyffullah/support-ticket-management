@@ -30,7 +30,7 @@ use Inertia\Inertia;
 
 class UsersController extends Controller{
     public function __construct(){
-        $this->middleware(RedirectIfNotParmitted::class.':user');
+        $this->middleware(RedirectIfNotParmitted::class.':user')->except(['toggleLock']);
     }
     public function index(){
         return Inertia::render('Users/Index', [
@@ -211,6 +211,12 @@ class UsersController extends Controller{
 
     public function toggleLock(User $user)
     {
+        // Authorization check: Only allow admins to lock/unlock other users.
+        // Non-admins can only lock/unlock their own account.
+        if (Auth::user()->role->slug !== 'admin' && Auth::id() !== $user->id) {
+            return response()->json(['success' => false, 'message' => 'You are not authorized to perform this action.']);
+        }
+
         if ($user->role->slug === 'customer') {
             return Redirect::back()->with('error', 'Customer users cannot be locked/unlocked.');
         }
@@ -224,7 +230,7 @@ class UsersController extends Controller{
             ])->save();
             return Redirect::back()->with('success', 'User locked successfully.');
         } else {
-            return Redirect::back()->with('success', 'User unlocked successfully.');    
+            return Redirect::back()->with('success', 'User unlocked successfully.');
         }
     }
 

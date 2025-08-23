@@ -16,4 +16,14 @@ class TicketForwardingRequest extends Model
         'requested_by',
         'status',
     ];
+
+    public function oldDepartment()
+    {
+        return $this->belongsTo(Department::class, 'old_department_id');
+    }
+
+    public function newDepartment()
+    {
+        return $this->belongsTo(Department::class, 'new_department_id');
+    }
 }

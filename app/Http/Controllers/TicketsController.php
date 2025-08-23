@@ -428,7 +428,7 @@ class TicketsController extends Controller
             $department_users = Department::find($ticket->department_id)->users()->get();
         }
 
-        $forwarding_request = TicketForwardingRequest::where('ticket_id', $ticket->id)->latest()->first();
+        $forwarding_request = TicketForwardingRequest::with(['oldDepartment', 'newDepartment'])->where('ticket_id', $ticket->id)->latest()->first();
 
         return Inertia::render('Tickets/Edit', [
             'hidden_fields' => $hiddenFields ? json_decode($hiddenFields->value) : null ,

@@ -41,11 +41,11 @@
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Department')"
                                            :value="ticket.department" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || (is_team_head && (!forwarding_request || forwarding_request.status === 'approved'))">
                         </select-edit-input>
-                        <div v-if="forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full lg:w-1/3 text-yellow-600">
-                            A forwarding request for this ticket is pending approval.
-                        </div>
                         <div v-if="forwarding_request && forwarding_request.status === 'rejected'" class="pr-6 pb-8 w-full lg:w-1/3 text-red-600">
                             A forwarding request for this ticket has been rejected.
+                        </div>
+                        <div v-if="is_team_head && forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full lg:w-1/3 text-red-600">
+                            A forwarding request for this ticket has been sent for this ticket. waiting for admin approval.
                         </div>
 
                         <select-edit-input ref="category" v-if="!(hidden_fields && hidden_fields.includes('category')) && form.department_id" @change="getSubCategories()" placeholder="Search category" :items="categories"
@@ -142,8 +142,7 @@
                         </div>
                     </div>
                     <div v-if="auth.user.role.slug === 'admin' && forwarding_request && forwarding_request.status === 'pending'" class="px-8 py-4 bg-yellow-100 border-t border-gray-100 flex items-center">
-                        <div class="mr-4">This ticket has a pending forwarding request.</div>
-                        <button @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</button>
+                            <div class="mr-4">This ticket has a pending forwarding request from {{ forwarding_request.old_department.name }} to {{ forwarding_request.new_department.name }}.</div>                        <button @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</button>
                         <button @click="handleForwardingRequest('rejected')" class="btn-red">Reject</button>
                     </div>
                     <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
@@ -401,10 +400,7 @@ export default {
 
             axios.post(this.route('tickets.forwarding.handle', this.forwarding_request.id), { status: status })
                 .then((response) => {
-                    // Force a full page reload to reflect all changes including department update
-                    this.$inertia.get(this.route('tickets.edit', this.ticket.uid), {}, {
-                        preserveState: false,
-                        preserveScroll: false,
+                    this.$inertia.reload({
                         onSuccess: () => {
                             if (status === 'approved') {
                                 this.$toast?.success('Ticket forwarding request approved and ticket department updated.');

@@ -128,6 +128,10 @@ Route::prefix('dashboard')->group(function () {
         ->name('tickets.update')
         ->middleware('auth');
 
+    Route::post('tickets/forwarding/{id}', [TicketsController::class, 'handleForwardingRequest'])
+        ->name('tickets.forwarding.handle')
+        ->middleware('auth');
+
     Route::delete('tickets/{ticket}', [TicketsController::class, 'destroy'])
         ->name('tickets.destroy')
         ->middleware('auth');

@@ -154,4 +154,15 @@ class Ticket extends Model
             $query->where('department_id', $status);
         });
     }
+
+    // Add this method to your Ticket model
+public function forwardingRequests()
+{
+    return $this->hasMany(TicketForwardingRequest::class);
+}
+
+public function latestForwardingRequest()
+{
+    return $this->hasOne(TicketForwardingRequest::class)->latest();
+}
 }

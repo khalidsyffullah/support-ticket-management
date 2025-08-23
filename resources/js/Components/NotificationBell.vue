@@ -16,11 +16,21 @@ const notifications = ref(page.props.notifications || []);
 const notificationCount = ref(page.props.notification_count || 0);
 
 const markAsReadAndVisit = (notification) => {
-    router.post(route('notifications.read', notification.id), {}, {
-        onSuccess: () => {
-            showDropdown.value = false;
-        },
-    });
+    if (notification.data.url) {
+        router.visit(notification.data.url, {
+            onSuccess: () => {
+                router.post(route('notifications.read', notification.id), {}, {
+                    preserveScroll: true,
+                });
+            }
+        });
+    } else {
+        router.post(route('notifications.read', notification.id), {}, {
+            onSuccess: () => {
+                showDropdown.value = false;
+            },
+        });
+    }
 };
 
 const markAllAsRead = () => {

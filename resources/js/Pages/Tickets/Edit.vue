@@ -39,8 +39,14 @@
                         <select-edit-input v-if="!(hidden_fields && hidden_fields.includes('department'))" @change="getCategories()" placeholder="Search department" :items="departments"
                                            v-model="form.department_id" :error="form.errors.department_id"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Department')"
-                                           :value="ticket.department" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head">
+                                           :value="ticket.department" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || (is_team_head && (!forwarding_request || forwarding_request.status === 'approved'))">
                         </select-edit-input>
+                        <div v-if="forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full lg:w-1/3 text-yellow-600">
+                            A forwarding request for this ticket is pending approval.
+                        </div>
+                        <div v-if="forwarding_request && forwarding_request.status === 'rejected'" class="pr-6 pb-8 w-full lg:w-1/3 text-red-600">
+                            A forwarding request for this ticket has been rejected.
+                        </div>
 
                         <select-edit-input ref="category" v-if="!(hidden_fields && hidden_fields.includes('category')) && form.department_id" @change="getSubCategories()" placeholder="Search category" :items="categories"
                                            v-model="form.category_id" :error="form.errors.category_id"
@@ -134,6 +140,11 @@
                             <textarea-input v-model="form.review" :error="form.errors.review" class="pr-6 pb-4 w-full lg:w-1/3" :label="$t('Feedback')" />
                             <div class="flex lg:w-1/4 mb-4"><button class="btn-indigo" type="submit">{{ $t('Submit') }}</button></div>
                         </div>
+                    </div>
+                    <div v-if="auth.user.role.slug === 'admin' && forwarding_request && forwarding_request.status === 'pending'" class="px-8 py-4 bg-yellow-100 border-t border-gray-100 flex items-center">
+                        <div class="mr-4">This ticket has a pending forwarding request.</div>
+                        <button @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</button>
+                        <button @click="handleForwardingRequest('rejected')" class="btn-red">Reject</button>
                     </div>
                     <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
                         <button v-if="user_access.ticket.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
@@ -238,6 +249,7 @@ export default {
         auth: Object,
         entries: Object,
         hidden_fields: Object,
+        forwarding_request: Object,
     },
     remember: false,
     data() {
@@ -378,6 +390,39 @@ export default {
             }).catch((error) => {
                 console.log(error)
             })
+        },
+        handleForwardingRequest(status) {
+            // Show loading state or disable buttons to prevent multiple clicks
+            const approveBtn = document.querySelector('button.btn-indigo');
+            const rejectBtn = document.querySelector('button.btn-red');
+
+            if (approveBtn) approveBtn.disabled = true;
+            if (rejectBtn) rejectBtn.disabled = true;
+
+            axios.post(this.route('tickets.forwarding.handle', this.forwarding_request.id), { status: status })
+                .then((response) => {
+                    // Force a full page reload to reflect all changes including department update
+                    this.$inertia.get(this.route('tickets.edit', this.ticket.uid), {}, {
+                        preserveState: false,
+                        preserveScroll: false,
+                        onSuccess: () => {
+                            if (status === 'approved') {
+                                this.$toast?.success('Ticket forwarding request approved and ticket department updated.');
+                            } else {
+                                this.$toast?.success('Ticket forwarding request rejected.');
+                            }
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error handling forwarding request:', error);
+
+                    // Re-enable buttons on error
+                    if (approveBtn) approveBtn.disabled = false;
+                    if (rejectBtn) rejectBtn.disabled = false;
+
+                    this.$toast?.error('Error processing the forwarding request. Please try again.');
+                });
         },
     },
 }

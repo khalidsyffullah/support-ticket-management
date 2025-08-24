@@ -688,7 +688,8 @@ class TicketsController extends Controller
                 Notification::send($new_department->users, new TicketForwardedNotification($ticket, $message));
             }
 
-            return redirect()->route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request approved and ticket updated.');
+            session()->flash('success', 'Ticket forwarding request approved and ticket updated.');
+            return response()->json(['success' => true]);
 
         } else {
             $forwarding_request->update(['status' => 'rejected', 'processed_by' => $admin->id]);
@@ -700,7 +701,8 @@ class TicketsController extends Controller
                 Notification::send($old_department->users, new TicketForwardedNotification($ticket, $message));
             }
 
-            return redirect()->route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request rejected.');
+            session()->flash('success', 'Ticket forwarding request rejected.');
+            return response()->json(['success' => true]);
         }
     }
 

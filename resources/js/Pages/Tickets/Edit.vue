@@ -400,15 +400,15 @@ export default {
         },
         handleForwardingRequest(status) {
             this.form.processing = true;
-            this.$inertia.post(this.route('tickets.forwarding.handle', this.forwarding_request.id), { status: status }, {
-                onSuccess: () => {
+            axios.post(this.route('tickets.forwarding.handle', this.forwarding_request.id), { status: status })
+                .then((response) => {
                     this.form.processing = false;
                     this.$inertia.reload();
-                },
-                onError: () => {
+                })
+                .catch((error) => {
                     this.form.processing = false;
-                }
-            })
+                    console.error('Error processing the forwarding request. Please try again.');
+                });
         },
     },
 }

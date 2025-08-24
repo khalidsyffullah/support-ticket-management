@@ -12,3 +12,4 @@ GEMINI.md
 .env
 requirement.txt
 !public/build
+bootstrap/ssr/*

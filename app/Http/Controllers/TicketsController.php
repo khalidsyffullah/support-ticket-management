@@ -27,13 +27,16 @@ use App\Models\Type;
 use App\Notifications\TicketForwardedNotification;
 use App\Notifications\TicketUpdatedNotification;
 use App\Models\User;
+use App\Models\TicketForwardingRequest;
+use App\Notifications\TicketForwardingRequested;
+use App\Notifications\TicketForwardingResult;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -46,7 +49,7 @@ class TicketsController extends Controller
         $this->middleware(RedirectIfNotParmitted::class.':ticket');
     }
 
-    public function index(){
+    public function index(Request $request){
         $byCustomer = null;
         $byAssign = null;
         $user = Auth()->user();
@@ -56,12 +59,12 @@ class TicketsController extends Controller
         }elseif(in_array($user['role']['slug'], ['manager'])){
             $byAssign = $user['id'];
         }else{
-            $byAssign = Request::input('assigned_to');
+            $byAssign = $request->input('assigned_to');
         }
         $whereAll = [];
-        $type = Request::input('type');
-        $limit = Request::input('limit', 10);
-        $customer = Request::input('customer_id');
+        $type = $request->input('type');
+        $limit = $request->input('limit', 10);
+        $customer = $request->input('customer_id');
 
         if(!empty($customer)){
             $whereAll[] = ['user_id', '=', $customer];
@@ -78,13 +81,13 @@ class TicketsController extends Controller
 
         $ticketQuery = Ticket::where($whereAll);
 
-        if (Request::has(['field', 'direction'])) {
-            if(Request::input('field') == 'tech'){
+        if ($request->has(['field', 'direction'])) {
+            if($request->input('field') == 'tech'){
                 $ticketQuery
                     ->join('users', 'tickets.assigned_to', '=', 'users.id')
-                    ->orderBy('users.first_name', Request::input('direction'))->select('tickets.*');
+                    ->orderBy('users.first_name', $request->input('direction'))->select('tickets.*');
             }else{
-                $ticketQuery->orderBy(Request::input('field'), Request::input('direction'));
+                $ticketQuery->orderBy($request->input('field'), $request->input('direction'));
             }
         }else{
             $ticketQuery->orderBy('updated_at', 'DESC');
@@ -92,7 +95,7 @@ class TicketsController extends Controller
 
         return Inertia::render('Tickets/Index', [
             'title' => 'Tickets',
-            'filters' => Request::all(),
+            'filters' => $request->all(),
             'hidden_fields' => $hiddenFields && $hiddenFields->value ? json_decode($hiddenFields->value) : null ,
             'priorities' => Priority::orderBy('name')
                 ->get()
@@ -116,7 +119,7 @@ class TicketsController extends Controller
                 ->map
                 ->only('id', 'name'),
             'tickets' => $ticketQuery
-                ->filter(Request::only(['search', 'priority_id', 'status_id', 'type_id', 'category_id', 'department_id']))
+                ->filter($request->only(['search', 'priority_id', 'status_id', 'type_id', 'category_id', 'department_id']))
                 ->byCustomer($byCustomer)
                 ->byAssign($byAssign)
                 ->paginate($limit)
@@ -142,9 +145,9 @@ class TicketsController extends Controller
         ]);
     }
 
-    public function suggestions()
+    public function suggestions(Request $request)
     {
-        $searchTerm = Request::input('search');
+        $searchTerm = $request->input('search');
 
         if (strlen($searchTerm) < 1) {
             return response()->json(['faqs' => [], 'knowledge_base' => []]);
@@ -213,9 +216,9 @@ class TicketsController extends Controller
         return response()->json(['faqs' => $faqs, 'knowledge_base' => $knowledge_base]);
     }
 
-    public function csvImport()
+    public function csvImport(Request $request)
     {
-        $file = Request::file('file');
+        $file = $request->file('file');
         if(!empty($file)){
 
             $fileContents = $this->csvToArray($file->getPathname());
@@ -320,7 +323,7 @@ class TicketsController extends Controller
         ]);
     }
 
-    public function store(Request $request) {
+    public function store(\Illuminate\Http\Request $request) {
         $required_fields = [];
 
         $get_required_fields = Setting::where('slug', 'required_ticket_fields')->first();
@@ -328,7 +331,7 @@ class TicketsController extends Controller
             $required_fields = json_decode($get_required_fields->value, true);
         }
         $user = Auth()->user();
-        $request_data = Request::validate([
+        $request_data = $this->validate($request, [
             'user_id' => ['nullable', Rule::exists('users', 'id')],
             'priority_id' => ['nullable', Rule::exists('priorities', 'id')],
             'status_id' => ['nullable', Rule::exists('status', 'id')],
@@ -362,15 +365,15 @@ class TicketsController extends Controller
         $request_data['created_by'] = $user['id'];
         $ticket = Ticket::create($request_data);
 
-        if(Request::hasFile('files')){
-            $files = Request::file('files');
+        if($request->hasFile('files')){
+            $files = $request->file('files');
             foreach($files as $file){
                 $file_path = $file->store('tickets', ['disk' => 'file_uploads']);
                 Attachment::create(['ticket_id' => $ticket->id, 'name' => $file->getClientOriginalName(), 'size' => $file->getSize(), 'path' => $file_path]);
             }
         }
 
-        $custom_inputs = Request::input('custom_field');
+        $custom_inputs = $request->input('custom_field');
 
         if(!empty($custom_inputs)){
             foreach ($custom_inputs as $cfk => $cfv){
@@ -391,7 +394,7 @@ class TicketsController extends Controller
         return Redirect::route('tickets')->with('success', 'Ticket created.');
     }
 
-    public function edit($uid){
+    public function edit(Request $request, $uid){
         $user = Auth()->user();
         $byCustomer = null;
         $byAssign = null;
@@ -400,7 +403,7 @@ class TicketsController extends Controller
         }elseif(in_array($user['role']['slug'], ['manager'])){
             $byAssign = $user['id'];
         }else{
-            $byAssign = Request::input('assigned_to');
+            $byAssign = $request->input('assigned_to');
         }
         $ticket = Ticket::byCustomer($byCustomer)
             ->byAssign($byAssign)
@@ -425,11 +428,13 @@ class TicketsController extends Controller
             $department_users = Department::find($ticket->department_id)->users()->get();
         }
 
+        $forwarding_request = TicketForwardingRequest::with(['oldDepartment', 'newDepartment'])->where('ticket_id', $ticket->id)->latest()->first();
+
         return Inertia::render('Tickets/Edit', [
             'hidden_fields' => $hiddenFields ? json_decode($hiddenFields->value) : null ,
             'title' => $ticket->subject ? '#'.$ticket->uid.' '.$ticket->subject : '',
             'entries' => TicketEntry::where('ticket_id', $ticket->id)->get(),
-            'customers' => User::where('role_id', $roles['customer'] ?? 0)->orWhere('id', Request::input('customer_id'))->orderBy('first_name')
+            'customers' => User::where('role_id', $roles['customer'] ?? 0)->orWhere('id', $request->input('customer_id'))->orderBy('first_name')
                 ->limit(6)
                 ->get()
                 ->map
@@ -485,12 +490,13 @@ class TicketsController extends Controller
                 'files' => [],
                 'comment_access' => $comment_access,
             ],
+            'forwarding_request' => $forwarding_request,
         ]);
     }
 
-    public function update(Ticket $ticket){
+    public function update(Request $request, Ticket $ticket){
         $user = Auth()->user();
-        $request_data = Request::validate([
+        $request_data = $this->validate($request, [
             'user_id' => ['nullable', Rule::exists('users', 'id')],
             'contact_id' => ['nullable', Rule::exists('contacts', 'id')],
             'priority_id' => ['nullable', Rule::exists('priorities', 'id')],
@@ -505,10 +511,10 @@ class TicketsController extends Controller
             'details' => ['required'],
         ]);
 
-        if(!empty(Request::input('review')) || !empty(Request::input('rating'))){
+        if(!empty($request->input('review')) || !empty($request->input('rating'))){
             $review = Review::create([
-                'review' => Request::input('review'),
-                'rating' => Request::input('rating'),
+                'review' => $request->input('review'),
+                'rating' => $request->input('rating'),
                 'ticket_id' => $ticket->id,
                 'user_id' => $user['id']
             ]);
@@ -542,6 +548,24 @@ class TicketsController extends Controller
 
         $old_department = $ticket->department;
 
+        if ($departmentChanged && auth()->user()->role->slug != 'admin') {
+            $forwarding_request = TicketForwardingRequest::create([
+                'ticket_id' => $ticket->id,
+                'old_department_id' => $ticket->department_id,
+                'new_department_id' => $request_data['department_id'],
+                'requested_by' => auth()->user()->id,
+            ]);
+
+            $admin_users = User::whereHas('role', function ($query) {
+                $query->where('slug', 'admin');
+            })->get();
+
+            $message = 'Ticket #' . $ticket->uid . ' has a pending forwarding request.';
+            Notification::send($admin_users, new TicketForwardingRequested($ticket, $forwarding_request));
+
+            return Redirect::route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request sent for approval.');
+        }
+
         $ticket->update($request_data);
 
         if ($departmentChanged) {
@@ -573,16 +597,16 @@ class TicketsController extends Controller
             event(new TicketUpdated(['ticket_id' => $ticket->id, 'update_message' => $update_message]));
         }
 
-        if(!empty(Request::input('comment'))){
+        if(!empty($request->input('comment'))){
             Comment::create([
-                'details' => Request::input('comment'),
+                'details' => $request->input('comment'),
                 'ticket_id' => $ticket->id,
                 'user_id' => $user['id']
             ]);
-            $this->sendMailCron( $ticket->id, 'response' , Request::input('comment') );
+            $this->sendMailCron( $ticket->id, 'response' , $request->input('comment') );
         }
 
-        $removedFiles = Request::input('removedFiles');
+        $removedFiles = $request->input('removedFiles');
         if(!empty($removedFiles)){
             $attachments = Attachment::where('ticket_id', $ticket->id)->whereIn('id', $removedFiles)->get();
             foreach ($attachments as $attachment){
@@ -593,8 +617,8 @@ class TicketsController extends Controller
             }
         }
 
-        if(Request::hasFile('files')){
-            $files = Request::file('files');
+        if($request->hasFile('files')){
+            $files = $request->file('files');
             foreach($files as $file){
                 $file_path = $file->store('tickets', ['disk' => 'file_uploads']);
                 Attachment::create(['ticket_id' => $ticket->id, 'user_id' => $user['id'], 'name' => $file->getClientOriginalName(), 'size' => $file->getSize(), 'path' => $file_path]);
@@ -604,21 +628,21 @@ class TicketsController extends Controller
         return Redirect::route('tickets.edit', $ticket->uid)->with('success', 'Ticket updated.');
     }
 
-    public function newComment(){
-        $request = Request::all();
-        $ticket = Comment::where('ticket_id', $request['ticket_id'])->count();
+    public function newComment(Request $request){
+        $requestAll = $request->all();
+        $ticket = Comment::where('ticket_id', $requestAll['ticket_id'])->count();
         if(empty($ticket)){
-            event(new TicketNewComment(['ticket_id' => $request['ticket_id'], 'comment' => $request['comment']]));
+            event(new TicketNewComment(['ticket_id' => $requestAll['ticket_id'], 'comment' => $requestAll['comment']]));
         }
 
         $newComment = new Comment;
-        if(isset($request['user_id'])){
-            $newComment->user_id = $request['user_id'];
+        if(isset($requestAll['user_id'])){
+            $newComment->user_id = $requestAll['user_id'];
         }
-        if(isset($request['ticket_id'])){
-            $newComment->ticket_id = $request['ticket_id'];
+        if(isset($requestAll['ticket_id'])){
+            $newComment->ticket_id = $requestAll['ticket_id'];
         }
-        $newComment->details = $request['comment'];
+        $newComment->details = $requestAll['comment'];
 
         $newComment->save();
 
@@ -633,6 +657,53 @@ class TicketsController extends Controller
     public function restore(Ticket $ticket){
         $ticket->restore();
         return Redirect::back()->with('success', 'Ticket restored.');
+    }
+
+    public function handleForwardingRequest(Request $request, $id)
+    {
+        $forwarding_request = TicketForwardingRequest::findOrFail($id);
+        $ticket = Ticket::findOrFail($forwarding_request->ticket_id);
+        $admin = auth()->user();
+
+        if ($request->status == 'approved') {
+            $ticket->update([
+                'department_id' => $forwarding_request->new_department_id,
+                'assigned_to' => null
+            ]);
+
+            $forwarding_request->update(['status' => 'approved', 'processed_by' => $admin->id]);
+
+            $old_department = Department::find($forwarding_request->old_department_id);
+            $new_department = Department::find($forwarding_request->new_department_id);
+
+            // Notify old department team
+            if ($old_department) {
+                $message = "For Ticket #{$ticket->uid} your forwarding request is accepted by {$admin->name}.";
+                Notification::send($old_department->users, new TicketForwardedNotification($ticket, $message));
+            }
+
+            // Notify new department team
+            if ($new_department) {
+                $message = "Ticket #{$ticket->uid} has been assigned to {$new_department->name} department by {$admin->name}.";
+                Notification::send($new_department->users, new TicketForwardedNotification($ticket, $message));
+            }
+
+            session()->flash('success', 'Ticket forwarding request approved and ticket updated.');
+            return response()->json(['success' => true]);
+
+        } else {
+            $forwarding_request->update(['status' => 'rejected', 'processed_by' => $admin->id]);
+
+            $old_department = Department::find($forwarding_request->old_department_id);
+
+            if ($old_department) {
+                $message = "For Ticket #{$ticket->uid} your forwarding request is rejected by {$admin->name}.";
+                Notification::send($old_department->users, new TicketForwardedNotification($ticket, $message));
+            }
+
+            session()->flash('success', 'Ticket forwarding request rejected.');
+            return response()->json(['success' => true]);
+        }
     }
 
     private function sendMailCron($id, $type = null, $value = null){

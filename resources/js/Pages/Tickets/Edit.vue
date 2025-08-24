@@ -4,6 +4,7 @@
         <div class="flex flex-wrap">
             <div class="max-w-full lg:w-3/5">
                 <form @submit.prevent="update" class="bg-white rounded-md shadow overflow-hidden mr-2">
+                    <flash-messages />
                     <div class="p-8 -mr-6 -mb-8 flex flex-wrap">
                         <!--Super Admin -->
                         <select-edit-input v-if="auth.user.role.slug !== 'customer'" placeholder="Search customer" :onInput="doFilter" :items="customers"
@@ -44,8 +45,8 @@
                         <div v-if="forwarding_request && forwarding_request.status === 'rejected'" class="pr-6 pb-8 w-full lg:w-1/3 text-red-600">
                             A forwarding request for this ticket has been rejected.
                         </div>
-                        <div v-if="is_team_head && forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full lg:w-1/3 text-red-600">
-                            A forwarding request for this ticket has been sent for this ticket. waiting for admin approval.
+                        <div v-if="is_team_head && forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full text-red-600">
+                            A forward request was sent to the admin from your department. Waiting for admin review.
                         </div>
 
                         <select-edit-input ref="category" v-if="!(hidden_fields && hidden_fields.includes('category')) && form.department_id" @change="getSubCategories()" placeholder="Search category" :items="categories"
@@ -142,8 +143,9 @@
                         </div>
                     </div>
                     <div v-if="auth.user.role.slug === 'admin' && forwarding_request && forwarding_request.status === 'pending'" class="px-8 py-4 bg-yellow-100 border-t border-gray-100 flex items-center">
-                            <div class="mr-4">This ticket has a pending forwarding request from {{ forwarding_request.old_department.name }} to {{ forwarding_request.new_department.name }}.</div>                        <button @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</button>
-                        <button @click="handleForwardingRequest('rejected')" class="btn-red">Reject</button>
+                        <div class="mr-4">This ticket has a pending forwarding request from {{ forwarding_request.old_department.name }} to {{ forwarding_request.new_department.name }}.</div>
+                        <loading-button :loading="form.processing" @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</loading-button>
+                        <loading-button :loading="form.processing" @click="handleForwardingRequest('rejected')" class="btn-red">Reject</loading-button>
                     </div>
                     <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
                         <button v-if="user_access.ticket.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
@@ -217,6 +219,7 @@ import moment from 'moment'
 import axios from 'axios'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import FlashMessages from '@/Shared/FlashMessages.vue'
 
 export default {
     components: {
@@ -231,6 +234,7 @@ export default {
         SelectInputFilter,
         SelectEditInput,
         QuillEditor,
+        FlashMessages,
     },
     layout: Layout,
     props: {
@@ -358,7 +362,11 @@ export default {
             this.form.files = this.$refs.files.files
         },
         update() {
-            this.form.post(this.route('tickets.update', this.ticket.id))
+            this.form.post(this.route('tickets.update', this.ticket.id), {
+                onSuccess: () => {
+                    //
+                },
+            })
             this.form.files = []
             this.form.comment = ''
         },
@@ -391,34 +399,16 @@ export default {
             })
         },
         handleForwardingRequest(status) {
-            // Show loading state or disable buttons to prevent multiple clicks
-            const approveBtn = document.querySelector('button.btn-indigo');
-            const rejectBtn = document.querySelector('button.btn-red');
-
-            if (approveBtn) approveBtn.disabled = true;
-            if (rejectBtn) rejectBtn.disabled = true;
-
-            axios.post(this.route('tickets.forwarding.handle', this.forwarding_request.id), { status: status })
-                .then((response) => {
-                    this.$inertia.reload({
-                        onSuccess: () => {
-                            if (status === 'approved') {
-                                this.$toast?.success('Ticket forwarding request approved and ticket department updated.');
-                            } else {
-                                this.$toast?.success('Ticket forwarding request rejected.');
-                            }
-                        }
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error handling forwarding request:', error);
-
-                    // Re-enable buttons on error
-                    if (approveBtn) approveBtn.disabled = false;
-                    if (rejectBtn) rejectBtn.disabled = false;
-
-                    this.$toast?.error('Error processing the forwarding request. Please try again.');
-                });
+            this.form.processing = true;
+            this.$inertia.post(this.route('tickets.forwarding.handle', this.forwarding_request.id), { status: status }, {
+                onSuccess: () => {
+                    this.form.processing = false;
+                    this.$inertia.reload();
+                },
+                onError: () => {
+                    this.form.processing = false;
+                }
+            })
         },
     },
 }

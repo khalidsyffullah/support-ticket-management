@@ -660,62 +660,49 @@ class TicketsController extends Controller
     }
 
     public function handleForwardingRequest(Request $request, $id)
-{
-    $forwarding_request = TicketForwardingRequest::findOrFail($id);
-    $ticket = Ticket::findOrFail($forwarding_request->ticket_id);
+    {
+        $forwarding_request = TicketForwardingRequest::findOrFail($id);
+        $ticket = Ticket::findOrFail($forwarding_request->ticket_id);
+        $admin = auth()->user();
 
-    if ($request->status == 'approved') {
-        // Update ticket with new department and reset assigned_to
-        $ticket->update([
-            'department_id' => $forwarding_request->new_department_id,
-            'assigned_to' => null
-        ]);
+        if ($request->status == 'approved') {
+            $ticket->update([
+                'department_id' => $forwarding_request->new_department_id,
+                'assigned_to' => null
+            ]);
 
-        $forwarding_request->update(['status' => 'approved']);
+            $forwarding_request->update(['status' => 'approved', 'processed_by' => $admin->id]);
 
-        // Get department names for notification
-        $old_department = Department::find($forwarding_request->old_department_id);
-        $new_department = Department::find($forwarding_request->new_department_id);
+            $old_department = Department::find($forwarding_request->old_department_id);
+            $new_department = Department::find($forwarding_request->new_department_id);
 
-        // Send notifications to relevant users
-        $old_department_head = User::whereHas('department_user', function ($query) use ($forwarding_request) {
-            $query->where('department_id', $forwarding_request->old_department_id)->where('team_head', 1);
-        })->first();
+            // Notify old department team
+            if ($old_department) {
+                $message = "For Ticket #{$ticket->uid} your forwarding request is accepted by {$admin->name}.";
+                Notification::send($old_department->users, new TicketForwardedNotification($ticket, $message));
+            }
 
-        if ($old_department_head) {
-            Notification::send($old_department_head, new TicketForwardingResult($ticket, 'approved'));
+            // Notify new department team
+            if ($new_department) {
+                $message = "Ticket #{$ticket->uid} has been assigned to {$new_department->name} department by {$admin->name}.";
+                Notification::send($new_department->users, new TicketForwardedNotification($ticket, $message));
+            }
+
+            return redirect()->route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request approved and ticket updated.');
+
+        } else {
+            $forwarding_request->update(['status' => 'rejected', 'processed_by' => $admin->id]);
+
+            $old_department = Department::find($forwarding_request->old_department_id);
+
+            if ($old_department) {
+                $message = "For Ticket #{$ticket->uid} your forwarding request is rejected by {$admin->name}.";
+                Notification::send($old_department->users, new TicketForwardedNotification($ticket, $message));
+            }
+
+            return redirect()->route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request rejected.');
         }
-
-        $new_department_head = User::whereHas('department_user', function ($query) use ($forwarding_request) {
-            $query->where('department_id', $forwarding_request->new_department_id)->where('team_head', 1);
-        })->first();
-
-        if ($new_department_head) {
-            Notification::send($new_department_head, new TicketForwardingResult($ticket, 'approved'));
-        }
-
-        // Notify all users in the new department
-        if ($new_department) {
-            $message = "Ticket #{$ticket->uid} has been forwarded to {$new_department->name} department.";
-            Notification::send($new_department->users, new TicketForwardedNotification($ticket, $message));
-        }
-
-        return Redirect::route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request approved and ticket updated.');
-
-    } else {
-        $forwarding_request->update(['status' => 'rejected']);
-
-        $old_department_head = User::whereHas('department_user', function ($query) use ($forwarding_request) {
-            $query->where('department_id', $forwarding_request->old_department_id)->where('team_head', 1);
-        })->first();
-
-        if ($old_department_head) {
-            Notification::send($old_department_head, new TicketForwardingResult($ticket, 'rejected'));
-        }
-
-        return Redirect::route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request rejected.');
     }
-}
 
     private function sendMailCron($id, $type = null, $value = null){
         PendingEmail::create(['ticket_id' => $id, 'type' => $type, 'value' => $value]);

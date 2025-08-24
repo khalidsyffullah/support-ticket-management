@@ -25,6 +25,8 @@ return new class extends Migration
             $table->integer('requested_by')->unsigned();
             $table->foreign('requested_by')->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->integer('processed_by')->unsigned()->nullable();
+            $table->foreign('processed_by')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

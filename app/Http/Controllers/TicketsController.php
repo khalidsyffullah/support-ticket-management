@@ -283,7 +283,7 @@ class TicketsController extends Controller
         return Response::make('', 200, $headers);
     }
 
-    public function create(){
+    public function create(Request $request){
         $user = Auth()->user();
         $roles = Role::pluck('id', 'slug')->all();
         $hiddenFields = Setting::where('slug', 'hide_ticket_fields')->first();
@@ -292,12 +292,12 @@ class TicketsController extends Controller
             'title' => 'Create a new ticket',
             'custom_fields' => $custom_fields,
             'hidden_fields' => $hiddenFields && $hiddenFields->value ? json_decode($hiddenFields->value) : null ,
-            'customers' => User::where('role_id', $roles['customer'] ?? 0)->orWhere('id', Request::input('customer_id'))->orderBy('first_name')
+            'customers' => User::where('role_id', $roles['customer'] ?? 0)->orWhere('id', $request->input('customer_id'))->orderBy('first_name')
                 ->limit(6)
                 ->get()
                 ->map
                 ->only('id', 'name'),
-            'usersExceptCustomers' => User::where('role_id', '!=', $roles['customer'] ?? 0)->orWhere('id', Request::input('user_id'))->orderBy('first_name')
+            'usersExceptCustomers' => User::where('role_id', '!=', $roles['customer'] ?? 0)->orWhere('id', $request->input('user_id'))->orderBy('first_name')
                 ->limit(6)
                 ->get()
                 ->map

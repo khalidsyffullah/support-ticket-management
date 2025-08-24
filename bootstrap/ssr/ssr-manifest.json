@@ -177,7 +177,7 @@
     "/build/assets/Index-Bpc3HCtX.js"
   ],
   "resources/js/Pages/Landing/OpenTicket.vue": [
-    "/build/assets/OpenTicket-BN5iZcMe.js",
+    "/build/assets/OpenTicket-aeGRZmkF.js",
     "/build/assets/vue-quill-C6BMMmVC.css"
   ],
   "resources/js/Pages/Landing/PrivacyPolicy.vue": [
@@ -273,17 +273,17 @@
     "/build/assets/Index-BlSV5p4N.js"
   ],
   "resources/js/Pages/Tickets/Create.vue": [
-    "/build/assets/Create-BV8QTKy8.js",
-    "/build/assets/Create--Cm3T-sN.css",
+    "/build/assets/Create-B671Khta.js",
+    "/build/assets/Create-DQ4oIu9I.css",
     "/build/assets/vue-quill-C6BMMmVC.css"
   ],
-  "resources/js/Pages/Tickets/Create.vue?vue&type=style&index=0&scoped=7fe9ccff&lang.css": [
-    "/build/assets/Create-BV8QTKy8.js",
-    "/build/assets/Create--Cm3T-sN.css",
+  "resources/js/Pages/Tickets/Create.vue?vue&type=style&index=0&scoped=66c06259&lang.css": [
+    "/build/assets/Create-B671Khta.js",
+    "/build/assets/Create-DQ4oIu9I.css",
     "/build/assets/vue-quill-C6BMMmVC.css"
   ],
   "resources/js/Pages/Tickets/Edit.vue": [
-    "/build/assets/Edit-jJCwYkz-.js",
+    "/build/assets/Edit-D5T5d3gP.js",
     "/build/assets/vue-quill-C6BMMmVC.css"
   ],
   "resources/js/Pages/Tickets/Index.vue": [
@@ -377,7 +377,7 @@
     "/build/assets/SearchInput-BIRABGY0.js"
   ],
   "resources/js/Shared/SelectEditInput.vue": [
-    "/build/assets/Edit-jJCwYkz-.js",
+    "/build/assets/Edit-D5T5d3gP.js",
     "/build/assets/vue-quill-C6BMMmVC.css"
   ],
   "resources/js/Shared/SelectInput.vue": [
@@ -387,7 +387,7 @@
     "/build/assets/SelectInputFilter-BWStuymG.js"
   ],
   "resources/js/Shared/TextEditInput.vue": [
-    "/build/assets/Edit-jJCwYkz-.js",
+    "/build/assets/Edit-D5T5d3gP.js",
     "/build/assets/vue-quill-C6BMMmVC.css"
   ],
   "resources/js/Shared/TextInput.vue": [

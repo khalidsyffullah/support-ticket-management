@@ -75,7 +75,7 @@
                         <!-- Attachments -->
                         <input ref="file" type="file" accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf, .zip" class="hidden" multiple="multiple" @change="fileInputChange" />
                         <div class="pr-6 pb-8 w-full lg:w-full flex-col">
-                            <button type="button" class="btn flex justify-center items-center border-0" @click="fileBrowse">
+                            <button type="button" class="btn flex justify-center items-center relative z-10 border-0" @click="fileBrowse">
                                 <icon name="file" class="flex-shrink-0 h-8 fill-gray-400 pr-1" /> <h4>{{ $t('Attach files') }}</h4>
                             </button>
                             <div v-if="form.files.length" class="flex items-center justify-between pr-6 pt-8 w-full lg:w-1/2" v-for="(file, fi) in form.files" :key="fi">

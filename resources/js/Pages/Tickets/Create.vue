@@ -352,7 +352,7 @@
           <div class="pr-6 pb-8 w-full lg:w-full flex-col">
             <button
               type="button"
-              class="btn flex justify-center items-center"
+              class="btn flex justify-center items-center relative z-10"
               @click="fileBrowse"
             >
               <icon name="file" class="flex-shrink-0 h-8 fill-gray-400 pr-1" />

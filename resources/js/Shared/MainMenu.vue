@@ -55,7 +55,7 @@ export default {
       const user_access = this.user.access
 
         if(this.user.role.slug === 'admin'){
-            this.menu_items.push({'name': 'Notifications', 'route': 'notifications', 'url': 'notifications', 'icon': 'notification'});
+            this.menu_items.push({'name': 'Notice Boards', 'route': 'notifications', 'url': 'notifications', 'icon': 'notification'});
         }
 
         let enable_option = {}

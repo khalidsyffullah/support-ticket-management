@@ -20,6 +20,11 @@ class UserNotification extends Model
         'expires_at' => 'datetime',
     ];
 
+    public function attachments()
+    {
+        return $this->hasMany(UserNotificationAttachment::class);
+    }
+
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['search'] ?? null, function ($query, $search) {

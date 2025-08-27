@@ -59,7 +59,7 @@ class DashboardController extends Controller {
                     });
             }
 
-            $notices = UserNotification::where('expires_at', '>', now())
+            $notices = UserNotification::with('attachments')->where('expires_at', '>', now())
                 ->orWhereNull('expires_at')
                 ->latest()
                 ->get();

@@ -13,3 +13,5 @@ GEMINI.md
 requirement.txt
 !public/build
 bootstrap/ssr/*
+
+/public/files/noticeboards

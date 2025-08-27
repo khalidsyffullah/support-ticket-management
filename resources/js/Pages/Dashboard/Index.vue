@@ -95,15 +95,23 @@
                 <Link class="text-indigo-600 hover:text-indigo-900" :href="route('tickets')">{{ $t('View All') }}</Link>
             </div>
         </div>
-        <div class="w-full lg:w-1/2 pl-3">
+        <div class="w-full lg:w-1/2 pl-3 ">
             <div v-if="notices.length" class="bg-white rounded-md shadow overflow-hidden">
                 <div class="p-4 border-b">
                     <h2 class="font-bold text-lg">{{ $t('Notice Board') }}</h2>
                 </div>
                 <ul class="divide-y">
-                    <li v-for="notice in notices" :key="notice.id" class="p-4">
+                    <li v-for="notice in notices" :key="notice.id" class="p-4 bg-gray-200 m-4">
                         <h3 class="font-bold">{{ notice.title }}</h3>
-                        <p class="text-gray-600">{{ notice.content }}</p>
+                        <div class="text-gray-600" v-html="notice.content"></div>
+                        <div v-if="notice.attachments && notice.attachments.length" class="mt-2 ">
+                            <strong>{{ $t('Attachments:') }}</strong>
+                            <ul class="list-none ml-5">
+                                <li class="pt-2" v-for="file in notice.attachments" :key="file.id">
+                                    <a :href="`/files/${file.path}`" target="_blank" class="text-indigo-600 hover:underline" download>{{ file.name }}</a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                 </ul>
             </div>

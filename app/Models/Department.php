@@ -26,6 +26,11 @@ class Department extends Model
         return $this->belongsToMany(User::class);
     }
 
+    public function teamHead()
+    {
+        return $this->belongsToMany(User::class)->wherePivot('team_head', true)->first();
+    }
+
     public function scopeFilter($query, array $filters){
         $query->when($filters['search'] ?? null, function ($query, $search) {
             $query->where(function ($query) use ($search) {

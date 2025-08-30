@@ -121,6 +121,19 @@ export default {
             this.menu_items.push({'name': 'Departmental Teams', 'route': 'departmental_teams', 'url': 'departmental-teams', 'icon': 'users'})
         }
 
+        // New SLA Menu Item
+        if(this.user.role.slug === 'admin'){ // Check for admin role
+            this.menu_items.push(
+                {'name': 'SLA', 'route': '', 'url': 'sla', 'icon': 'settings', // Using 'settings' icon
+                    'submenu': [
+                        {'name': 'SLA Policies', 'route': 'sla.index', 'url': 'sla', 'icon': 'dash'},
+                        {'name': 'User Reports', 'route': 'sla.reports.users', 'url': 'sla/reports/users', 'icon': 'dash'},
+
+                    ]
+                },
+            )
+        }
+
         if(user_access.department.read || user_access.department.update || user_access.department.create || user_access.department.delete){
             settingSubmenus.push({'name': 'Departments', 'route': 'departments', 'url': 'settings/departments', 'icon': 'departments'})
         }

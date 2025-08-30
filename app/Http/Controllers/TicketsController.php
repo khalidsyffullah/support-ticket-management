@@ -23,6 +23,8 @@ use App\Models\Status;
 use App\Models\Ticket;
 use App\Models\TicketEntry;
 use App\Models\TicketField;
+use App\Models\Sla;
+use App\Models\TicketSla;
 use App\Models\Type;
 use App\Notifications\TicketForwardedNotification;
 use App\Notifications\TicketUpdatedNotification;
@@ -429,6 +431,7 @@ class TicketsController extends Controller
         }
 
         $forwarding_request = TicketForwardingRequest::with(['oldDepartment', 'newDepartment'])->where('ticket_id', $ticket->id)->latest()->first();
+        $ticket_sla = TicketSla::with('sla')->where('ticket_id', $ticket->id)->first();
 
         return Inertia::render('Tickets/Edit', [
             'hidden_fields' => $hiddenFields ? json_decode($hiddenFields->value) : null ,
@@ -491,6 +494,7 @@ class TicketsController extends Controller
                 'comment_access' => $comment_access,
             ],
             'forwarding_request' => $forwarding_request,
+            'ticket_sla' => $ticket_sla,
         ]);
     }
 
@@ -527,6 +531,18 @@ class TicketsController extends Controller
         $update_message = null;
         if($closed_status && ($ticket->status_id != $closed_status->id) && $request_data['status_id'] == $closed_status->id){
             $update_message = 'The ticket has been closed.';
+            $ticketSla = TicketSla::where('ticket_id', $ticket->id)->where('status', 'active')->first();
+            if ($ticketSla) {
+                $resolutionSlaEndsAt = Carbon::now();
+                $responseSlaStartsAt = Carbon::parse($ticketSla->response_sla_starts_at);
+                $totalSlaTime = $resolutionSlaEndsAt->diffInMinutes($responseSlaStartsAt);
+
+                $ticketSla->update([
+                    'status' => 'completed',
+                    'resolution_sla_ends_at' => $resolutionSlaEndsAt,
+                    'total_sla_time' => $totalSlaTime,
+                ]);
+            }
         }elseif($ticket->status_id != $request_data['status_id']){
             $update_message = 'The status has been changed for this ticket.';
         }
@@ -591,6 +607,17 @@ class TicketsController extends Controller
             $message = "You have been assigned a new ticket #{$ticket->uid}";
             Notification::send($user, new TicketUpdatedNotification($ticket, $message));
             event(new AssignedUser(['ticket_id' => $ticket->id]));
+
+            $sla = Sla::where('priority_id', $ticket->priority_id)->first();
+            if ($sla) {
+                TicketSla::create([
+                    'ticket_id' => $ticket->id,
+                    'sla_id' => $sla->id,
+                    'user_id' => $request_data['assigned_to'],
+                    'status' => 'active',
+                    'response_sla_starts_at' => Carbon::now(),
+                ]);
+            }
         }
 
         if(!empty($update_message)){

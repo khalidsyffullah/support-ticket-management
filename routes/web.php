@@ -47,6 +47,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\DepartmentalTeamsController;
+use App\Http\Controllers\SlaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -744,6 +745,11 @@ Route::prefix('dashboard')->group(function () {
         ->name('roles.destroy')
         ->middleware('auth');
     /** end - User Roles */
+
+    Route::resource('sla', SlaController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::get('sla/reports/users', [SlaController::class, 'userReportsIndex'])->name('sla.reports.users');
+    Route::get('sla/reports/users/{user}', [SlaController::class, 'userSlaReport'])->name('sla.reports.users.show');
+    Route::get('sla/reports/overall', [SlaController::class, 'overallSlaReport'])->name('sla.reports.overall');
 
 });
 

@@ -29,6 +29,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('license:ping')->daily();
+    $schedule->command('sla:check')->everyMinute();
     }
 
     /**

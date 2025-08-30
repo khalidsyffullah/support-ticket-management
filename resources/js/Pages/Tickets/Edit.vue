@@ -71,6 +71,18 @@
                             <div class="font-light text-sm">{{ entry.value }}</div>
                         </div>
 
+                        <div v-if="ticket_sla && ticket.assigned_to === auth.user.id" class="pr-6 pb-8 w-full lg:w-1/3">
+                            <div class="font-bold text-sm mb-1">SLA Timer</div>
+                            <div class="font-light text-sm">
+                                <div v-if="remainingTime.total > 0">
+                                    <p>Resolution Time: {{ remainingTime.hours }}h {{ remainingTime.minutes }}m {{ remainingTime.seconds }}s</p>
+                                </div>
+                                <div v-else>
+                                    <p class="text-red-500">SLA Breached</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <text-edit-input :editable="user_access.ticket.update && !ticket.closed" v-model="form.subject" :value="ticket.subject" :error="form.errors.subject" class="pr-6 pb-8 w-full lg:w-2/3" :label="$t('Subject')" />
 
 
@@ -253,6 +265,7 @@ export default {
         entries: Object,
         hidden_fields: Object,
         forwarding_request: Object,
+        ticket_sla: Object,
     },
     remember: false,
     data() {
@@ -285,6 +298,13 @@ export default {
                 rating: 0,
                 review: '',
             }),
+            remainingTime: {
+                total: 0,
+                hours: 0,
+                minutes: 0,
+                seconds: 0,
+            },
+            timerInterval: null,
         }
     },
     created() {
@@ -295,6 +315,10 @@ export default {
         }
         this.moment = moment;
         this.isTeamHead();
+        this.startTimer();
+    },
+    beforeUnmount() {
+        clearInterval(this.timerInterval);
     },
     methods: {
         isTeamHead(){
@@ -409,6 +433,31 @@ export default {
                     this.form.processing = false;
                     console.error('Error processing the forwarding request. Please try again.');
                 });
+        },
+        startTimer() {
+            if (!this.ticket_sla) {
+                return;
+            }
+
+            const endTime = moment(this.ticket_sla.response_sla_starts_at).add(this.ticket_sla.sla.resolution_time, 'minutes');
+
+            this.timerInterval = setInterval(() => {
+                const now = moment();
+                const duration = moment.duration(endTime.diff(now));
+                const totalSeconds = duration.asSeconds();
+
+                if (totalSeconds > 0) {
+                    this.remainingTime = {
+                        total: totalSeconds,
+                        hours: Math.floor(duration.asHours()),
+                        minutes: duration.minutes(),
+                        seconds: duration.seconds(),
+                    };
+                } else {
+                    this.remainingTime = { total: 0, hours: 0, minutes: 0, seconds: 0 };
+                    clearInterval(this.timerInterval);
+                }
+            }, 1000);
         },
     },
 }

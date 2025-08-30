@@ -1,0 +1,3 @@
+0 */6 * * * cd /home/khalid/frappe-bench && /usr/local/bin/bench --verbose --site all backup >> /home/khalid/frappe-be>
+* * * * * cd /home/khalid/Desktop/railway\ accountings && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home/khalid/Downloads/ticket/support-ticket-management && php artisan schedule:run >> /dev/null 2>&1

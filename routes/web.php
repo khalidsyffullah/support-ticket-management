@@ -747,6 +747,9 @@ Route::prefix('dashboard')->group(function () {
     /** end - User Roles */
 
     Route::resource('sla', SlaController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::get('sla/reports/users', [SlaController::class, 'userReportsIndex'])->name('sla.reports.users');
+    Route::get('sla/reports/users/{user}', [SlaController::class, 'userSlaReport'])->name('sla.reports.users.show');
+    Route::get('sla/reports/overall', [SlaController::class, 'overallSlaReport'])->name('sla.reports.overall');
 
 });
 

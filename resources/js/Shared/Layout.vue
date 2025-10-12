@@ -109,14 +109,24 @@
           <main-menu class="hidden md:block sidebar shrink-0 md:w-60 overflow-y-auto" />
           <div class="md:flex-1 md:overflow-y-auto" scroll-region>
               <div class="container-head">
-                  <div class="ch-left">
-                      <h1 class="page-title">{{ $t(title || '') }}</h1>
-                      <div class="breadcrumb text-sm">
-                          <Link :href="route('dashboard')"><icon class="w-3 h-3" name="home" /></Link>
-                          <span class="b-item">/</span>
-                          <Link v-if="edit_route" :href="route(edit_route)" class="capitalize">{{ edit_route }}</Link>
-                          <span v-if="edit_route" class="b-item">/</span>
-                          <span class="b-item">{{ $t(title || '') }}</span>
+                  <div class="ch-left flex items-center gap-4">
+                      <div class="flex items-center gap-2">
+                          <button @click="goBack" :disabled="!canGoBack" class="p-1 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" title="Go back">
+                              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                          </button>
+                          <button @click="goForward" :disabled="!canGoForward" class="p-1 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" title="Go forward">
+                              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                          </button>
+                      </div>
+                      <div>
+                          <h1 class="page-title">{{ $t(title || '') }}</h1>
+                          <div class="breadcrumb text-sm">
+                              <Link :href="route('dashboard')"><icon class="w-3 h-3" name="home" /></Link>
+                              <span class="b-item">/</span>
+                              <Link v-if="edit_route" :href="route(edit_route)" class="capitalize">{{ edit_route }}</Link>
+                              <span v-if="edit_route" class="b-item">/</span>
+                              <span class="b-item">{{ $t(title || '') }}</span>
+                          </div>
                       </div>
                   </div>
                   <div class="ch-right cursor-pointer">
@@ -158,7 +168,7 @@ import Logo from '@/Shared/Logo.vue'
 import Dropdown from '@/Shared/Dropdown.vue'
 import MainMenu from '@/Shared/MainMenu.vue'
 import FlashMessages from '@/Shared/FlashMessages.vue'
-import {Link, usePage} from '@inertiajs/vue3'
+import {Link, usePage, router} from '@inertiajs/vue3'
 import moment from 'moment'
 import { loadLanguageAsync, getActiveLanguage } from 'laravel-vue-i18n';
 import axios from 'axios'
@@ -185,6 +195,8 @@ export default {
             modes: ['dark', 'light'],
             edit_route: '',
             locale: this.$page.props.auth.user.locale || this.$page.props.settings.default_language,
+            history: [],
+            currentIndex: -1,
         }
     },
     computed: {
@@ -193,6 +205,12 @@ export default {
         },
         languages_except_selected(){
             return this.$page.props.languages.filter(language => language.code !== this.$page.props.locale)
+        },
+        canGoBack() {
+            return this.currentIndex > 0;
+        },
+        canGoForward() {
+            return this.currentIndex < this.history.length - 1;
         }
     },
     setup() {
@@ -204,6 +222,16 @@ export default {
         };
     },
     methods:{
+        goBack() {
+            if (this.canGoBack) {
+                window.history.back();
+            }
+        },
+        goForward() {
+            if (this.canGoForward) {
+                window.history.forward();
+            }
+        },
         updateLanguage(code){
             axios.post(this.route('language', code), {}).then((response) => {
                 if(response.data){
@@ -261,6 +289,27 @@ export default {
         if(getActiveLanguage() !== this.locale){
             loadLanguageAsync(this.locale)
         }
+
+        // History logic using sessionStorage
+        let history = JSON.parse(sessionStorage.getItem('navigationHistory') || '[]');
+        let currentIndex = parseInt(sessionStorage.getItem('navigationIndex') || '-1', 10);
+        const currentUrl = this.$page.url;
+
+        if (history[currentIndex] !== currentUrl) {
+            const existingIndex = history.indexOf(currentUrl);
+            if (existingIndex !== -1) {
+                currentIndex = existingIndex;
+            } else {
+                history = history.slice(0, currentIndex + 1);
+                history.push(currentUrl);
+                currentIndex = history.length - 1;
+            }
+        }
+
+        this.history = history;
+        this.currentIndex = currentIndex;
+        sessionStorage.setItem('navigationHistory', JSON.stringify(this.history));
+        sessionStorage.setItem('navigationIndex', this.currentIndex);
     }
 }
 </script>

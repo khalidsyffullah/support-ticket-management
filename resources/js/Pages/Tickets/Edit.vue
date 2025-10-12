@@ -66,6 +66,17 @@
                             <div class="font-light text-sm">{{ moment(ticket.created_at).fromNow() }}</div>
                         </div>
 
+                        <div v-if="ticket.created_by && ticket.created_by.role.slug !== 'customer'" class="assigned_user pr-6 pb-8 w-full lg:w-1/3 flex flex-col ">
+                            <div class="font-bold text-sm mb-1">{{ $t('Created By') }}</div>
+                            <div class="font-light text-sm bg-warning">
+                                {{ ticket.created_by.first_name }} {{ ticket.created_by.last_name }}
+                                <span v-if="ticket.created_by.role">({{ ticket.created_by.role.name }})</span>
+                                <span v-if="ticket.created_by.departments && ticket.created_by.departments.length > 0">
+                                    - {{ ticket.created_by.departments.map(d => d.name).join(', ') }}
+                                </span>
+                            </div>
+                        </div>
+
                         <div v-for="entry in entries" class="assigned_user pr-6 pb-8 w-full lg:w-1/3 flex flex-col" :key="entry.id">
                             <div class="font-bold text-sm mb-1">{{ $t(entry.label) }} </div>
                             <div class="font-light text-sm">{{ entry.value }}</div>

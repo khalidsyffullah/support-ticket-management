@@ -20,11 +20,18 @@ class OrganizationsController extends Controller
 
     public function index()
     {
+        $organizationsQuery = Organization::with('parent')
+            ->orderBy('name')
+            ->filter(Request::only('search'));
+
+        if (Request::has('parent_id') && Request::input('parent_id') !== null) {
+            $organizationsQuery->where('parent_id', Request::input('parent_id'));
+        }
+
         return Inertia::render('Organizations/Index', [
             'title' => 'Organizations',
-            'filters' => Request::all('search'),
-            'organizations' => Organization::orderBy('name')
-                ->filter(Request::only('search'))
+            'filters' => Request::all('search', 'parent_id'),
+            'organizations' => $organizationsQuery
                 ->paginate(8)
                 ->withQueryString()
                 ->through(function ($organization) {
@@ -33,8 +40,10 @@ class OrganizationsController extends Controller
                         'name' => $organization->name,
                         'phone' => $organization->phone,
                         'city' => $organization->city,
+                        'parent' => $organization->parent ? $organization->parent->only('id', 'name') : null,
                     ];
-                } ),
+                }),
+            'parent_organizations' => Organization::orderBy('name')->get()->map->only('id', 'name'),
         ]);
     }
 
@@ -50,6 +59,7 @@ class OrganizationsController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
+            'parent_organizations' => Organization::parents()->orderBy('name')->get()->map->only('id', 'name'),
         ]);
     }
 
@@ -66,6 +76,7 @@ class OrganizationsController extends Controller
                 'country' => ['nullable', 'max:2'],
                 'postal_code' => ['nullable', 'max:25'],
                 'max_customers' => ['required', 'integer', 'min:1'],
+                'parent_id' => ['nullable', 'exists:organizations,id'],
             ])
         );
 
@@ -84,6 +95,7 @@ class OrganizationsController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
+            'parent_organizations' => Organization::parents()->orderBy('name')->get()->map->only('id', 'name'),
             'organization' => [
                 'id' => $organization->id,
                 'name' => $organization->name,
@@ -95,6 +107,7 @@ class OrganizationsController extends Controller
                 'country' => $organization->country,
                 'postal_code' => $organization->postal_code,
                 'max_customers' => $organization->max_customers,
+                'parent_id' => $organization->parent_id,
                 'customers' => $organization->users()->whereHas('role', function ($query) {
                     $query->where('slug', 'customer');
                 })->orderByName()->get()->map->only('id', 'name', 'email', 'phone'),
@@ -115,6 +128,7 @@ class OrganizationsController extends Controller
                 'country' => ['nullable', 'max:2'],
                 'postal_code' => ['nullable', 'max:25'],
                 'max_customers' => ['required', 'integer', 'min:1'],
+                'parent_id' => ['nullable', 'exists:organizations,id'],
             ])
         );
 

@@ -15,6 +15,10 @@
           </select-input>
           <text-input v-model="form.postal_code" :error="form.errors.postal_code" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Postal code')" />
           <text-input v-model="form.max_customers" :error="form.errors.max_customers" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Maximum Customers')" :is_required="true" />
+          <select-input v-model="form.parent_id" :error="form.errors.parent_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Parent Organization')">
+            <option :value="null" />
+            <option v-for="org in parent_organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
+          </select-input>
         </div>
         <div class="flex items-center justify-end px-8 py-4 bg-gray-50 border-t border-gray-100">
           <loading-button :loading="form.processing" class="btn-indigo" type="submit">{{ $t('Create Organization') }}</loading-button>
@@ -43,6 +47,7 @@ export default {
     props: {
         countries: Array,
         title: String,
+        parent_organizations: Array,
     },
   remember: 'form',
   data() {
@@ -57,6 +62,7 @@ export default {
         country: 'BD',
         postal_code: null,
         max_customers: 5,
+        parent_id: null,
       }),
     }
   },

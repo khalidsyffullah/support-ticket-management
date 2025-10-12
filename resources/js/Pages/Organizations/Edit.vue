@@ -16,6 +16,10 @@
           </select-input>
           <text-input v-model="form.postal_code" :error="form.errors.postal_code" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Postal code')" />
           <text-input v-model="form.max_customers" :error="form.errors.max_customers" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Maximum Customers')" :is_required="true" />
+          <select-input v-model="form.parent_id" :error="form.errors.parent_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Parent Organization')">
+            <option :value="null" />
+            <option v-for="org in parent_organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
+          </select-input>
         </div>
         <div class="flex items-center px-8 py-4 bg-gray-50 border-t border-gray-100">
           <button class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
@@ -82,25 +86,27 @@ export default {
     TextInput,
   },
   layout: Layout,
-  props: {
-    organization: Object,
-    countries: Array,
+      props: {
+      organization: Object,
+      countries: Array,
       title: String,
-  },
-  remember: 'form',
-  data() {
-    return {
-      form: this.$inertia.form({
-        name: this.organization.name,
-        email: this.organization.email,
-        phone: this.organization.phone,
-        address: this.organization.address,
-        city: this.organization.city,
-        region: this.organization.region,
-        country: this.organization.country,
-        postal_code: this.organization.postal_code,
-        max_customers: this.organization.max_customers,
-      }),
+      parent_organizations: Array,
+    },
+    remember: 'form',
+    data() {
+      return {
+        form: this.$inertia.form({
+          _method: 'put',
+          name: this.organization.name,
+          email: this.organization.email,
+          phone: this.organization.phone,
+          address: this.organization.address,
+          city: this.organization.city,
+          region: this.organization.region,
+          country: this.organization.country,
+          postal_code: this.organization.postal_code,
+          max_customers: this.organization.max_customers,
+          parent_id: this.organization.parent_id,      }),
     }
   },
   methods: {

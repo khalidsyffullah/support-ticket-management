@@ -3,6 +3,10 @@
     <Head :title="title" />
     <div class="flex items-center justify-between mb-6">
         <search-input v-model="form.search" class="mr-4 w-full max-w-md" @reset="reset"></search-input>
+        <select-input v-model="form.parent_id" class="mr-4 w-full max-w-md" :label="$t('Filter by Parent')">
+            <option :value="null">{{ $t('All Organizations') }}</option>
+            <option v-for="org in parent_organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
+        </select-input>
       <Link class="btn-indigo" :href="route('organizations.create')">
         <span>{{ $t('Create') }}</span>
         <span class="hidden md:inline"> {{ $t('Organization') }} </span>
@@ -13,6 +17,7 @@
         <thead>
           <tr class="text-left font-bold">
             <th class="pb-4 pt-6 px-6">{{ $t('Name') }}</th>
+            <th class="pb-4 pt-6 px-6">{{ $t('Parent Organization') }}</th>
             <th class="pb-4 pt-6 px-6">{{ $t('City') }}</th>
             <th class="pb-4 pt-6 px-6" colspan="2">{{ $t('Phone') }}</th>
           </tr>
@@ -22,6 +27,12 @@
             <td class="border-t">
               <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('organizations.edit', organization.id)">
                 {{ organization.name }}
+              </Link>
+            </td>
+            <td class="border-t">
+              <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('organizations.edit', organization.id)">
+                <span v-if="organization.parent">{{ organization.parent.name }}</span>
+                <span v-else>{{ $t('None') }}</span>
               </Link>
             </td>
             <td class="border-t">
@@ -72,12 +83,14 @@ export default {
   props: {
     filters: Object,
     organizations: Object,
-      title: String,
+    title: String,
+    parent_organizations: Array,
   },
   data() {
     return {
       form: {
         search: this.filters.search,
+        parent_id: this.filters.parent_id,
       },
     }
   },

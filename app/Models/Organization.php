@@ -30,4 +30,24 @@ class Organization extends Model
     {
         return $this->belongsToMany(User::class);
     }
+
+    public function parent()
+    {
+        return $this->belongsTo(Organization::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Organization::class, 'parent_id');
+    }
+
+    public function scopeParents($query)
+    {
+        return $query->whereNull('parent_id');
+    }
+
+    public function scopeChildrenOf($query, $parentId)
+    {
+        return $query->where('parent_id', $parentId);
+    }
 }

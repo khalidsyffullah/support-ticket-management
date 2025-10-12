@@ -170,11 +170,11 @@
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</loading-button>
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('rejected')" class="btn-red">Reject</loading-button>
                     </div>
-                    <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
+                    <!-- <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
                         <button v-if="user_access.ticket.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
                             {{ $t('Delete') }}</button>
                         <loading-button :loading="form.processing" class="btn-indigo ml-auto" type="submit">{{ $t('Save') }}</loading-button>
-                    </div>
+                    </div> -->
                 </form>
             </div>
             <div class="max-w-full lg:w-2/5">

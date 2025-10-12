@@ -105,7 +105,7 @@
           <select-input-filter
             placeholder="Start typing"
             :onInput="doFilterUsersExceptCustomer"
-            :items="usersExceptCustomers"
+            :items="department_users"
             v-if="
               auth.user.role.slug !== 'customer' &&
               user_access.ticket.update &&
@@ -115,6 +115,10 @@
             :error="form.errors.assigned_to"
             class="pr-6 pb-8 w-full lg:w-1/3"
             :label="$t('Assigned to')"
+            :disabled="!form.department_id"
+            :empty-message="emptyMessage"
+            :key="form.department_id"
+            @focus="fetchDepartmentUsers"
           >
           </select-input-filter>
 
@@ -419,7 +423,6 @@ export default {
   layout: Layout,
   props: {
     customers: Array,
-    usersExceptCustomers: Array,
     priorities: Array,
     statuses: Array,
     types: Array,
@@ -435,6 +438,8 @@ export default {
       user_access: this.$page.props.auth.user.access,
       categories: [],
       sub_categories: [],
+      department_users: [],
+      search_term: '',
       suggestions: {
         faqs: [],
         knowledge_base: [],
@@ -455,9 +460,14 @@ export default {
       }),
     };
   },
-  created() {
-    this.setDefaultValue(this.statuses, "status_id", "Pending");
-    this.setDefaultValue(this.priorities, "priority_id", "Generally");
+  computed: {
+    emptyMessage() {
+        if (this.search_term) {
+            const department = this.departments.find(d => d.id === this.form.department_id);
+            return `'${this.search_term}' not available in ${department ? department.name : ''} department`;
+        }
+        return 'There is no user available';
+    }
   },
   methods: {
     truncate(text, length) {
@@ -485,6 +495,15 @@ export default {
       );
       this.form.category_id = null;
       this.$refs.category.selected = null;
+        this.form.assigned_to = null;
+        if(this.form.department_id){
+            axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                this.department_users = res.data.map(user => ({ ...user, name: `${user.first_name} ${user.last_name}` }));
+                console.log(this.department_users);
+            })
+        }else{
+            this.department_users = [];
+        }
     },
     getSubCategories() {
       this.sub_categories = this.all_categories.filter(
@@ -501,12 +520,19 @@ export default {
         });
     },
     doFilterUsersExceptCustomer(e) {
+        this.search_term = e.target.value;
+        if(e.target.value === '' || e.target.value === null){
+            axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                this.department_users = res.data;
+            })
+            return;
+        }
       axios
-        .get(this.route("filter.users_except_customer", { search: e.target.value }))
+        .get(this.route("filter.users_except_customer", { search: e.target.value, department_id: this.form.department_id }))
         .then((res) => {
-          this.usersExceptCustomers.splice(
+          this.department_users.splice(
             0,
-            this.usersExceptCustomers.length,
+            this.department_users.length,
             ...res.data
           );
         });
@@ -541,6 +567,13 @@ export default {
       }
       this.form.post(this.route("tickets.store"));
     },
+    fetchDepartmentUsers(){
+        if(this.form.department_id && this.department_users.length === 0){
+            axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                this.department_users = res.data;
+            })
+        }
+    }
   },
 };
 </script>

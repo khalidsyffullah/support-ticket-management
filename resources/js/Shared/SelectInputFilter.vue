@@ -22,6 +22,11 @@
         <li v-for="(item, index) in items" :key="index" @click="selectItem(item)">{{ item.name }}</li>
       </ul>
     </div>
+    <div v-if="isListVisible && !items.length" class="i__filter__list">
+        <ul>
+            <li>{{ emptyMessage }}</li>
+        </ul>
+    </div>
   </div>
 </template>
 
@@ -49,6 +54,10 @@ export default {
     },
     error: String,
     label: String,
+    emptyMessage: {
+        type: String,
+        default: 'No results found'
+    },
     modelValue: [String, Number, Boolean],
   },
   emits: ['update:modelValue'],
@@ -78,6 +87,7 @@ export default {
     },
     onFocus(){
       this.isListVisible = true
+      this.$emit('focus')
     },
     selectItem(item){
       this.$refs.input.value = item.name

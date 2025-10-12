@@ -27,6 +27,11 @@
         <li v-for="(item, index) in items" :key="index" @click="selectItem(item, e)">{{ item.name }}</li>
       </ul>
     </div>
+    <div v-if="isListVisible && !items.length" class="i__filter__list">
+        <ul>
+            <li>{{ emptyMessage }}</li>
+        </ul>
+    </div>
   </div>
 </template>
 
@@ -60,6 +65,10 @@ export default {
     error: String,
     label: String,
     value: String,
+    emptyMessage: {
+        type: String,
+        default: 'No results found'
+    },
     modelValue: [String, Number, Boolean],
   },
   emits: ['update:modelValue', 'update:value', 'change'],

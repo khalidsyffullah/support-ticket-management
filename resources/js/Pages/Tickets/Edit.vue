@@ -22,7 +22,7 @@
                         <select-edit-input v-if="auth.user.role.slug !== 'customer' && !(hidden_fields && hidden_fields.includes('assigned_to'))" placeholder="Search user" :onInput="doFilterUsersExceptCustomer" :items="department_users"
                                            v-model="form.assigned_to" :error="form.errors.assigned_to"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Assigned to')"
-                                           :value="ticket.assigned_user??'Not Assigned'" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head">
+                                           :value="ticket.assigned_user??'Not Assigned'" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head" :disabled="!form.department_id" :empty-message="emptyMessage" :key="form.department_id">
                         </select-edit-input>
 
                         <select-edit-input placeholder="Select status to change" :items="statuses"
@@ -291,6 +291,7 @@ export default {
             enableEditor: false,
             user_access: this.$page.props.auth.user.access,
             department_users: this.usersExceptCustomers,
+            search_term: '',
             form: this.$inertia.form({
                 user_id: this.ticket.user_id,
                 priority_id: this.ticket.priority_id,
@@ -327,10 +328,21 @@ export default {
         this.moment = moment;
         this.isTeamHead();
         this.startTimer();
+        if(this.form.department_id){
+            axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                this.department_users = res.data.map(user => ({ ...user, name: `${user.first_name} ${user.last_name}` }));
+            })
+        }
     },
-    beforeUnmount() {
-        clearInterval(this.timerInterval);
-    },
+  computed: {
+    emptyMessage() {
+        if (this.search_term) {
+            const department = this.departments.find(d => d.id === this.form.department_id);
+            return `'${this.search_term}' not available in ${department ? department.name : ''} department`;
+        }
+        return 'There is no user available';
+    }
+  },
     methods: {
         isTeamHead(){
             if(this.ticket.department_id && this.auth.user.role.slug !== 'admin'){
@@ -342,10 +354,15 @@ export default {
         getCategories(){
             this.ticket.category = 'N/A';
             this.form.category_id = null;
+            this.form.assigned_to = null;
             this.categories = this.all_categories.filter(cat=>cat.department_id === this.form.department_id)
-            axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
-                this.department_users = res.data;
-            })
+            if(this.form.department_id){
+                axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                    this.department_users = res.data.map(user => ({ ...user, name: `${user.first_name} ${user.last_name}` }));
+                })
+            }else{
+                this.department_users = [];
+            }
         },
         getSubCategories(){
             this.sub_categories = this.all_categories.filter(cat=>cat.parent_id === this.form.category_id)
@@ -359,12 +376,19 @@ export default {
             })
         },
         doFilterUsersExceptCustomer(e){
+            this.search_term = e.target.value;
             if(e.target.value === '' || e.target.value === null){
-                this.department_users = this.usersExceptCustomers;
+                if(this.form.department_id){
+                    axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
+                        this.department_users = res.data.map(user => ({ ...user, name: `${user.first_name} ${user.last_name}` }));
+                    })
+                }else{
+                    this.department_users = this.usersExceptCustomers.map(user => ({ ...user, name: `${user.first_name} ${user.last_name}` }));
+                }
                 return;
             }
-            axios.get(this.route('filter.users_except_customer', {search: e.target.value})).then((res)=>{
-                this.department_users = res.data;
+            axios.get(this.route('filter.users_except_customer', {search: e.target.value, department_id: this.form.department_id})).then((res)=>{
+                this.department_users = res.data.map(user => ({ ...user, name: `${user.first_name} ${user.last_name}` }));
             })
         },
         fileInputChange(e) {

@@ -41,11 +41,18 @@ class FilterController extends Controller {
         return response()->json($assignees);
     }
 
-    public function usersExceptCustomer(){
+    public function usersExceptCustomer(\Illuminate\Http\Request $request){
         $customerRole = Role::where('slug', 'customer')->first();
-        $customers = User::where('role_id', '!=', $customerRole ? $customerRole->id : 0)
-            ->filter(Request::only('search'))
-            ->limit(6)
+        $query = User::where('role_id', '!=', $customerRole ? $customerRole->id : 0)
+            ->filter($request->only('search'));
+
+        if ($request->has('department_id') && $request->input('department_id')) {
+            $query->whereHas('departments', function ($q) use ($request) {
+                $q->where('department_id', $request->input('department_id'));
+            });
+        }
+
+        $customers = $query->limit(6)
             ->get()
             ->map
             ->only('id', 'name');

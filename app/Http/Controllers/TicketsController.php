@@ -299,11 +299,6 @@ class TicketsController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
-            'usersExceptCustomers' => User::where('role_id', '!=', $roles['customer'] ?? 0)->orWhere('id', $request->input('user_id'))->orderBy('first_name')
-                ->limit(6)
-                ->get()
-                ->map
-                ->only('id', 'name'),
             'priorities' => Priority::orderBy('name')
                 ->get()
                 ->map
@@ -436,7 +431,6 @@ class TicketsController extends Controller
         return Inertia::render('Tickets/Edit', [
             'hidden_fields' => $hiddenFields ? json_decode($hiddenFields->value) : null ,
             'title' => $ticket->subject ? '#'.$ticket->uid.' '.$ticket->subject : '',
-            'entries' => TicketEntry::where('ticket_id', $ticket->id)->get(),
             'customers' => User::where('role_id', $roles['customer'] ?? 0)->orWhere('id', $request->input('customer_id'))->orderBy('first_name')
                 ->limit(6)
                 ->get()

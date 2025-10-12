@@ -128,9 +128,9 @@
 
         <!-- Add Member Modal -->
         <Modal :show="showAddMemberModal" @close="closeAddMemberModal">
-            <div class="bg-white ">
+            <div class="bg-white flex flex-col h-screen md:h-auto md:max-h-[90vh]">
                 <!-- Modal Header -->
-                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
                     <h3 class="text-xl font-semibold text-gray-900">{{ $t('Add Team Member') }}</h3>
                     <button @click="closeAddMemberModal"
                             class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -140,8 +140,8 @@
                     </button>
                 </div>
 
-                <!-- Modal Body -->
-                <div class="p-6">
+                <!-- Modal Body - Scrollable -->
+                <div class="flex-1 overflow-y-auto p-6" style="min-height: 42vh;">
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('Select User') }}</label>
                         <div class="relative" ref="dropdownContainer">
@@ -179,12 +179,12 @@
                                 </span>
                             </button>
 
-                            <!-- Dropdown Panel -->
+                            <!-- Dropdown Panel - Inside Modal Body -->
                             <div v-show="showDropdown"
                                  @click.stop
-                                 class="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-60 rounded-lg py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none">
+                                 class="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-64 rounded-lg py-1 text-base ring-1 ring-black ring-opacity-5 overflow-y-auto focus:outline-none">
                                 <!-- Search Input -->
-                                <div class="sticky top-0 bg-white p-2 border-b border-gray-200">
+                                <div class="sticky top-0 bg-white p-2 border-b border-gray-200 z-10">
                                     <div class="relative">
                                         <input v-model="searchQuery"
                                                ref="searchInput"
@@ -245,7 +245,7 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <div class="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
                     <button @click="closeAddMemberModal"
                             type="button"
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
@@ -318,7 +318,6 @@ export default {
         toggleDropdown() {
             this.showDropdown = !this.showDropdown
             if (this.showDropdown) {
-                // Focus search input when dropdown opens
                 this.$nextTick(() => {
                     if (this.$refs.searchInput) {
                         this.$refs.searchInput.focus()
@@ -330,13 +329,10 @@ export default {
         toggleUserSelection(user) {
             const index = this.selectedUsers.findIndex(u => u.id === user.id)
             if (index > -1) {
-                // Remove user if already selected
                 this.selectedUsers.splice(index, 1)
             } else {
-                // Add user if not selected
                 this.selectedUsers.push(user)
             }
-            // Update form data
             this.form.user_ids = this.selectedUsers.map(u => u.id)
         },
 
@@ -368,14 +364,12 @@ export default {
         },
 
         onSearchInput() {
-            // Keep dropdown open while searching
             if (!this.showDropdown) {
                 this.showDropdown = true
             }
         },
 
         handleClickOutside(event) {
-            // Check if click is outside the dropdown container
             if (this.$refs.dropdownContainer && !this.$refs.dropdownContainer.contains(event.target)) {
                 this.showDropdown = false
             }
@@ -435,12 +429,10 @@ export default {
     },
 
     mounted() {
-        // Add click outside event listener
         document.addEventListener('click', this.handleClickOutside)
     },
 
     beforeUnmount() {
-        // Clean up event listener
         document.removeEventListener('click', this.handleClickOutside)
     },
 }

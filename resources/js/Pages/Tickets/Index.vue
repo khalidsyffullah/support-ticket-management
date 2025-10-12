@@ -29,30 +29,55 @@
         </div>
         <div class="flex flex-col gap-3 mb-4 md:flex-row w-full items-center ticket-filters">
             <div class="mr-2 w-full">{{ $t('Filter Ticket By') }}:</div>
-            <select-input v-if="!(hidden_fields && hidden_fields.includes('ticket_type'))" v-model="form.type_id" class="mr-2 w-full">
+            <select-input v-if="!(hidden_fields && hidden_fields.includes('ticket_type'))" v-model="form.type_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Type') }}</option>
                 <option v-for="s in types" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
-            <select-input v-if="!(hidden_fields && hidden_fields.includes('category'))" v-model="form.category_id" class="mr-2 w-full">
+            <select-input v-if="!(hidden_fields && hidden_fields.includes('category'))" v-model="form.category_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Category') }}</option>
                 <option v-for="s in categories" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
-            <select-input v-if="!(hidden_fields && hidden_fields.includes('department'))" v-model="form.department_id" class="mr-2 w-full">
+            <select-input v-if="!(hidden_fields && hidden_fields.includes('department'))" v-model="form.department_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Department') }}</option>
                 <option v-for="s in departments" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
-            <select-input v-model="form.priority_id" class="mr-2 w-full">
+            <select-input v-model="form.organization_id" :key="renderComponent" class="mr-2 w-full">
+                <option :value="null">{{ $t('Organization') }}</option>
+                <optgroup v-for="org in organizations" :key="org.id" :label="org.name">
+                    <option :value="org.id">{{ org.name }}</option>
+                    <option v-for="child in org.children" :key="child.id" :value="child.id">
+                        &nbsp;&nbsp;&nbsp;{{ child.name }}
+                    </option>
+                </optgroup>
+            </select-input>
+            <select-input v-model="form.assigned_by" :key="renderComponent" class="mr-2 w-full">
+                <option :value="null">{{ $t('Assigned By') }}</option>
+                <option v-for="assignee in assignees" :key="assignee.id" :value="assignee.id">{{ assignee.name }}</option>
+            </select-input>
+            <select-input v-model="form.priority_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Priority') }}</option>
                 <option v-for="s in priorities" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
-            <select-input v-model="form.status_id" class="mr-2 w-full">
+            <select-input v-model="form.status_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Status') }}</option>
                 <option v-for="s in statuses" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
             <select-input-filter :placeholder="$t('Assign To')" :onInput="doFilter" @focus="doFilter" :items="assignees"
                                  v-if="!(hidden_fields && hidden_fields.includes('assigned_to')) && user_access.ticket.update"
-                                 v-model="form.assigned_to" class="w-full">
+                                 v-model="form.assigned_to" :key="renderComponent" class="w-full">
             </select-input-filter>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-4" v-if="hasActiveFilters">
+            <span v-for="(value, key) in activeFilters" :key="key" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                {{ value }}
+                <button type="button" @click="clearFilter(key)" class="flex-shrink-0 ml-1.5 inline-flex text-indigo-400 hover:text-indigo-500 focus:outline-none focus:text-indigo-500">
+                    <span class="sr-only">Remove filter for {{ key }}</span>
+                    <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                        <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+                    </svg>
+                </button>
+            </span>
+            <button type="button" @click="resetAllFilters" class="btn-gray">{{ $t('Reset Filters') }}</button>
         </div>
         <div class="bg-white rounded-md shadow overflow-x-auto">
             <table class="min-w-full whitespace-nowrap ticket_list">
@@ -182,8 +207,10 @@ export default {
                 category_id: this.filters.category_id ?? null,
                 department_id: this.filters.department_id ?? null,
                 organization_id: this.filters.organization_id ?? null,
+                assigned_by: this.filters.assigned_by ?? null,
                 assigned_to: this.filters.assigned_to ?? null,
             },
+            renderComponent: 0,
         }
     },
     watch: {
@@ -207,6 +234,13 @@ export default {
         reset() {
             this.form = mapValues(this.form, () => null)
         },
+        clearFilter(key) {
+            this.form[key] = null;
+        },
+        resetAllFilters() {
+            this.form = mapValues(this.form, () => null);
+            this.renderComponent += 1;
+        },
         uploadImportCSV(e){
             if(e.target.files.length){
                 this.$inertia.form({file: e.target.files[0]}).post(this.route('ticket.csv.import'))
@@ -228,6 +262,66 @@ export default {
                 'sort': h.sort,
                 'active': this.form.field === h.value,
             };
+        },
+    },
+    computed: {
+        hasActiveFilters() {
+            // Exclude 'limit' and 'search' from active filters display if they have default values
+            const defaultValues = { limit: 10, search: null };
+            return Object.keys(this.form).some(key => {
+                const value = this.form[key];
+                const defaultValue = defaultValues[key];
+                return value !== null && value !== '' && value !== defaultValue;
+            });
+        },
+        activeFilters() {
+            const active = {};
+            const defaultValues = { limit: 10, search: null };
+            for (const key in this.form) {
+                const value = this.form[key];
+                const defaultValue = defaultValues[key];
+                if (value !== null && value !== '' && value !== defaultValue) {
+                    let displayValue = value;
+                    // Map IDs to names for display
+                    if (key === 'priority_id') {
+                        const priority = this.priorities.find(p => p.id === value);
+                        displayValue = priority ? priority.name : value;
+                    } else if (key === 'status_id') {
+                        const status = this.statuses.find(s => s.id === value);
+                        displayValue = status ? status.name : value;
+                    } else if (key === 'type_id') {
+                        const type = this.types.find(t => t.id === value);
+                        displayValue = type ? type.name : value;
+                    } else if (key === 'category_id') {
+                        const category = this.categories.find(c => c.id === value);
+                        displayValue = category ? category.name : value;
+                    } else if (key === 'department_id') {
+                        const department = this.departments.find(d => d.id === value);
+                        displayValue = department ? department.name : value;
+                    } else if (key === 'organization_id') {
+                        let organization = null;
+                        for (const org of this.organizations) {
+                            if (org.id === value) {
+                                organization = org;
+                                break;
+                            }
+                            if (org.children) {
+                                const child = org.children.find(c => c.id === value);
+                                if (child) {
+                                    organization = child;
+                                    break;
+                                }
+                            }
+                        }
+                        displayValue = organization ? organization.name : value;
+                    } else if (key === 'assigned_by') {
+                        const assignee = this.assignees.find(a => a.id === value);
+                        displayValue = assignee ? assignee.name : value;
+                    }
+                    active[key] = displayValue;
+                }
+            }
+            return active;
         },
     },
     created() {

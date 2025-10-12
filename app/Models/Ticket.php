@@ -12,6 +12,10 @@ class Ticket extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'assigned_by',
+    ];
+
     protected static function booted()
     {
 
@@ -106,6 +110,10 @@ class Ticket extends Model
 
     public function assignedTo(){
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function assignedBy(){
+        return $this->belongsTo(User::class, 'assigned_by');
     }
 
     public function getDueAttribute($date){

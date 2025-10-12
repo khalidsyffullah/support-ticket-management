@@ -77,6 +77,13 @@
                             </div>
                         </div>
 
+                        <div v-if="ticket.assigned_by" class="assigned_user pr-6 pb-8 w-full lg:w-1/3 flex flex-col ">
+                            <div class="font-bold text-sm mb-1">{{ $t('Assigned By') }}</div>
+                            <div class="font-light text-sm ">
+                                {{ ticket.assigned_by }}
+                            </div>
+                        </div>
+
                         <div v-for="entry in entries" class="assigned_user pr-6 pb-8 w-full lg:w-1/3 flex flex-col" :key="entry.id">
                             <div class="font-bold text-sm mb-1">{{ $t(entry.label) }} </div>
                             <div class="font-light text-sm">{{ entry.value }}</div>
@@ -170,11 +177,11 @@
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</loading-button>
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('rejected')" class="btn-red">Reject</loading-button>
                     </div>
-                    <!-- <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
-                        <button v-if="user_access.ticket.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
-                            {{ $t('Delete') }}</button>
+                     <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
+                        <!--<button v-if="user_access.ticket.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
+                            {{ $t('Delete') }}</button>-->
                         <loading-button :loading="form.processing" class="btn-indigo ml-auto" type="submit">{{ $t('Save') }}</loading-button>
-                    </div> -->
+                    </div>
                 </form>
             </div>
             <div class="max-w-full lg:w-2/5">

@@ -83,6 +83,18 @@ class TicketsController extends Controller
 
         $ticketQuery = Ticket::where($whereAll);
 
+        if ($request->filled('organization_id')) {
+            $organizationId = $request->input('organization_id');
+            $userIds = User::whereHas('organizations', function ($query) use ($organizationId) {
+                $query->where('organization_id', $organizationId);
+            })->pluck('id');
+            $ticketQuery->whereIn('user_id', $userIds);
+        }
+
+        if ($request->filled('assigned_by')) {
+            $ticketQuery->where('assigned_by', $request->input('assigned_by'));
+        }
+
         if ($request->has(['field', 'direction'])) {
             if($request->input('field') == 'tech'){
                 $ticketQuery
@@ -103,7 +115,21 @@ class TicketsController extends Controller
                 ->get()
                 ->map
                 ->only('id', 'name'),
-            'assignees' => [],
+            'assignees' => User::whereHas('role', function ($query) {
+                $query->where('slug', 'admin')->orWhere('slug', 'manager');
+            })->get()->map->only('id', 'name'),
+            'organizations' => \App\Models\Organization::with('children')->parents()->get()->map(function ($organization) {
+                return [
+                    'id' => $organization->id,
+                    'name' => $organization->name,
+                    'children' => $organization->children->map(function ($child) {
+                        return [
+                            'id' => $child->id,
+                            'name' => $child->name,
+                        ];
+                    }),
+                ];
+            }),
             'types' => Type::orderBy('name')
                 ->get()
                 ->map
@@ -360,6 +386,9 @@ class TicketsController extends Controller
         }
 
         $request_data['created_by'] = $user['id'];
+        if (isset($request_data['assigned_to'])) {
+            $request_data['assigned_by'] = $user['id'];
+        }
         $ticket = Ticket::create($request_data);
 
         if($request->hasFile('files')){
@@ -407,7 +436,7 @@ class TicketsController extends Controller
             ->where(function($query) use ($uid){
                 $query->where('uid', $uid);
                 $query->orWhere('id', $uid);
-            })->with('createdBy.role', 'createdBy.departments')->first();
+            })->with('createdBy.role', 'createdBy.departments', 'assignedBy')->first();
         if(empty($ticket)){
             abort(404);
         }
@@ -480,6 +509,7 @@ class TicketsController extends Controller
                 'sub_category' => $ticket->subCategory ? $ticket->subCategory->name : 'N/A',
                 'assigned_to' => $ticket->assigned_to,
                 'assigned_user' => $ticket->assignedTo ? $ticket->assignedTo->first_name .' '.$ticket->assignedTo->last_name : 'N/A',
+                'assigned_by' => $ticket->assignedBy ? $ticket->assignedBy->first_name .' '.$ticket->assignedBy->last_name : 'N/A',
                 'type_id' => $ticket->type_id,
                 'type' => $ticket->ticketType ? $ticket->ticketType->name : 'N/A',
                 'ticket_id' => $ticket->ticket_id,
@@ -555,6 +585,9 @@ class TicketsController extends Controller
         }
 
         $assigned = (!empty($request_data['assigned_to']) && ($ticket->assigned_to != $request_data['assigned_to']))??false;
+        if ($assigned) {
+            $request_data['assigned_by'] = $user['id'];
+        }
         $departmentChanged = $ticket->department_id != $request_data['department_id'];
 
         $old_department = $ticket->department;

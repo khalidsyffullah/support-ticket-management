@@ -4,7 +4,7 @@
         <div class="bg-white rounded-md shadow overflow-hidden">
             <div class="p-6">
                 <h2 class="text-2xl font-bold">{{ title }}</h2>
-                <div class="mt-6">
+                <div class="mt-6 overflow-x-auto">
                     <table class="w-full whitespace-nowrap">
                         <tr class="text-left font-bold">
                             <th class="pb-4 pt-6 px-6">

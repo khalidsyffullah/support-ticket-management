@@ -1285,8 +1285,8 @@ input:-webkit-autofill:focus {
     line-height: 1.5;
   position: relative;
 }
-body .dark .dd_container .form-input,body .dark .dd_container 
-.form-textarea,body .dark .dd_container 
+body .dark .dd_container .form-input,body .dark .dd_container
+.form-textarea,body .dark .dd_container
 .form-select {
   background-color: #262932;
 }
@@ -1314,25 +1314,25 @@ body .dark .dd_container .form-input,body .dark .dd_container
 .form-select {
   height: 4rem;
 }
-.dark .chat_public .form-input,.dark .chat_public 
-.form-textarea,.dark .chat_public 
+.dark .chat_public .form-input,.dark .chat_public
+.form-textarea,.dark .chat_public
 .form-select {
   background-color: rgb(15, 23, 42);
   border: 1px solid #374558;
 }
-body .dark .form-input,body .dark 
-.form-textarea,body .dark 
+body .dark .form-input,body .dark
+.form-textarea,body .dark
 .form-select {
   background-color: #262932;
   border: 1px solid #374558;
 }
-body .dark .form-input svg,body .dark 
-.form-textarea svg,body .dark 
+body .dark .form-input svg,body .dark
+.form-textarea svg,body .dark
 .form-select svg {
   fill: rgba(255, 255, 255, 0.7019607843);
 }
-body .dark.layout_landing .form-input,body .dark.layout_landing 
-.form-textarea,body .dark.layout_landing 
+body .dark.layout_landing .form-input,body .dark.layout_landing
+.form-textarea,body .dark.layout_landing
 .form-select {
   border: initial;
 }
@@ -4126,6 +4126,9 @@ input:checked ~ .toggle__dot {
 .bg-primary {
   --tw-bg-opacity: 1;
   background-color: rgb(48 86 211/var(--tw-bg-opacity));
+}
+.bg-warning{
+    background-color: #9bfc63;
 }
 .text-primary {
   --tw-bg-opacity: 1;

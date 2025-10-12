@@ -412,7 +412,7 @@ class TicketsController extends Controller
             ->where(function($query) use ($uid){
                 $query->where('uid', $uid);
                 $query->orWhere('id', $uid);
-            })->first();
+            })->with('createdBy.role', 'createdBy.departments')->first();
         if(empty($ticket)){
             abort(404);
         }
@@ -469,6 +469,7 @@ class TicketsController extends Controller
                 'user_id' => $ticket->user_id,
                 'contact_id' => $ticket->contact_id,
                 'user' => $ticket->user?$ticket->user->name: 'N/A',
+                'created_by' => $ticket->createdBy,
                 'contact' => $ticket->contact?: null,
                 'priority_id' => $ticket->priority_id,
                 'created_at' => $ticket->created_at,

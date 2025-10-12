@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { BellIcon, CheckCircleIcon, EllipsisVerticalIcon } from '@heroicons/vue/24/outline';
 import Icon from "@/Shared/Icon.vue";
@@ -10,6 +10,8 @@ const showOptionsMenu = ref(false);
 const isBellShaking = ref(false); // For animation
 
 const page = usePage();
+const dropdownRef = ref(null);
+const bellButtonRef = ref(null);
 
 // Get initial data from Inertia
 const notifications = ref(page.props.notifications || []);
@@ -66,6 +68,7 @@ const markAllAsRead = () => {
 }
 
 onMounted(() => {
+    document.addEventListener('click', onClickOutside);
     if (window.Echo && page.props.auth.user) {
         window.Echo.private(`App.Models.User.${page.props.auth.user.id}`)
             .notification((notification) => {
@@ -86,18 +89,29 @@ onMounted(() => {
             });
     }
 });
+
+onUnmounted(() => {
+    document.removeEventListener('click', onClickOutside);
+});
+
+const onClickOutside = (event) => {
+    if (dropdownRef.value && !dropdownRef.value.contains(event.target) && bellButtonRef.value && !bellButtonRef.value.contains(event.target)) {
+        showDropdown.value = false;
+        showOptionsMenu.value = false;
+    }
+};
 </script>
 
 <template>
     <div class="relative flex">
-        <button @click="showDropdown = !showDropdown" type="button" class="relative rounded-full text-gray-600 hover:text-black focus:outline-none">
+        <button @click="showDropdown = !showDropdown" type="button" ref="bellButtonRef" class="relative rounded-full text-gray-600 hover:text-black focus:outline-none">
             <span class="sr-only">View notifications</span>
             <Icon name="notification" class="h-7 w-7" :class="{ 'animate-bell-shake': isBellShaking }" aria-hidden="true" />
             <span v-if="notificationCount > 0" class="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">{{ notificationCount }}</span>
         </button>
 
         <!-- Dropdown -->
-        <div v-if="showDropdown" @click.away="showDropdown = false" class="absolute right-0 z-10 top-7 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <div v-if="showDropdown" ref="dropdownRef" class="absolute right-0 z-10 top-7 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div class="flex justify-between items-center px-4 py-2 text-sm text-gray-700 font-bold border-b">
                 <span>Notifications</span>
                 <!-- 3-Dot Options Menu -->

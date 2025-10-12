@@ -10,6 +10,7 @@ use App\Models\Blog;
 use App\Models\City;
 use App\Models\Comment;
 use App\Models\Country;
+use App\Models\Department;
 use App\Models\Message;
 use App\Models\Note;
 use App\Models\Participant;
@@ -28,14 +29,17 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
-class UsersController extends Controller{
-    public function __construct(){
-        $this->middleware(RedirectIfNotParmitted::class.':user')->except(['toggleLock']);
+class UsersController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware(RedirectIfNotParmitted::class . ':user')->except(['toggleLock']);
     }
-    public function index(){
+    public function index()
+    {
         return Inertia::render('Users/Index', [
             'title' => 'Users',
-            'filters' => Request::all(['search','role_id']),
+            'filters' => Request::all(['search', 'role_id']),
             'roles' => Role::orderBy('name')
                 ->where('slug', '!=', 'customer')
                 ->get()
@@ -45,13 +49,13 @@ class UsersController extends Controller{
                 ->whereHas('role', function ($query) {
                     $query->where('slug', '!=', 'customer');
                 })
-                ->filter(Request::all(['search','role_id']))
+                ->filter(Request::all(['search', 'role_id']))
                 ->paginate(10)
                 ->withQueryString()
-                ->through(fn ($user) => [
+                ->through(fn($user) => [
                     'id' => $user->id,
                     'name' => $user->name,
-                    'country' => $user->country_id ? $user->country->name: null,
+                    'country' => $user->country_id ? $user->country->name : null,
                     'city' => $user->city,
                     'email' => $user->email,
                     'phone' => $user->phone,
@@ -62,8 +66,9 @@ class UsersController extends Controller{
         ]);
     }
 
-    public function create(){
-        return Inertia::render('Users/Create',[
+    public function create()
+    {
+        return Inertia::render('Users/Create', [
             'title' => 'Create a new user',
             'roles' => Role::orderBy('name')
                 ->where('slug', '!=', 'customer')
@@ -77,11 +82,16 @@ class UsersController extends Controller{
             'cities' => City::orderBy('name')
                 ->get()
                 ->map
-                ->only('id', 'name')
+                ->only('id', 'name'),
+            'departments' => Department::orderBy('name')
+                ->get()
+                ->map
+                ->only('id', 'name'),
         ]);
     }
 
-    public function store(){
+    public function store()
+    {
         $userRequest = Request::validate([
             'first_name' => ['required', 'max:50'],
             'last_name' => ['required', 'max:50'],
@@ -92,34 +102,45 @@ class UsersController extends Controller{
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'role_id' => ['nullable'],
+            'department_id' => ['nullable', Rule::exists('departments', 'id')],
         ]);
 
-        if(Request::file('photo')){
-            $userRequest['photo_path'] = '/files/'.Request::file('photo')->store('users', ['disk' => 'file_uploads']);
+        if (Request::file('photo')) {
+            $userRequest['photo_path'] = '/files/' . Request::file('photo')->store('users', ['disk' => 'file_uploads']);
         }
 
         $customerRole = Role::where('slug', 'customer')->first();
-        if(empty($userRequest['role_id']) && !empty($customerRole)){
+        if (empty($userRequest['role_id']) && !empty($customerRole)) {
             $userRequest['role_id'] = $customerRole->id;
         }
 
+        $departmentId = $userRequest['department_id'] ?? null;
+        unset($userRequest['department_id']);
+
         $user = User::create($userRequest);
+
+        if (!empty($departmentId)) {
+            $user->departments()->sync([$departmentId]);
+        } else {
+            $user->departments()->detach();
+        }
 
         event(new UserCreated(['id' => $user->id, 'password' => $userRequest['password']]));
 
         return Redirect::route('users')->with('success', 'User created.');
     }
 
-    public function edit(User $user) {
+    public function edit(User $user)
+    {
         $a_user = Auth()->user();
 
         $roles = Role::pluck('id', 'slug')->all();
-        if($a_user['role']['slug'] == 'customer'){
-            if($user->id !=$a_user['id']){
+        if ($a_user['role']['slug'] == 'customer') {
+            if ($user->id != $a_user['id']) {
                 return Redirect::back();
             }
-        }elseif($a_user['role']['slug'] == 'manager'){
-            if($user->id !=$a_user['id'] && $user->role_id != $roles['customer']??0){
+        } elseif ($a_user['role']['slug'] == 'manager') {
+            if ($user->id != $a_user['id'] && $user->role_id != $roles['customer'] ?? 0) {
                 return Redirect::back();
             }
         }
@@ -143,6 +164,7 @@ class UsersController extends Controller{
                 'country_id' => $user->country_id,
                 'photo' => $user->photo_path ?? null,
                 'photo_path' => $user->photo_path ?? null,
+                'department_id' => $user->departments->first()->id ?? null,
             ],
             'countries' => Country::orderBy('name')
                 ->get()
@@ -151,11 +173,16 @@ class UsersController extends Controller{
             'cities' => City::orderBy('name')
                 ->get()
                 ->map
-                ->only('id', 'name')
+                ->only('id', 'name'),
+            'departments' => Department::orderBy('name')
+                ->get()
+                ->map
+                ->only('id', 'name'),
         ]);
     }
 
-    public function update(User $user) {
+    public function update(User $user)
+    {
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Updating user is not allowed for the live demo.');
         }
@@ -170,19 +197,29 @@ class UsersController extends Controller{
             'address' => ['nullable'],
             'country_id' => ['nullable'],
             'photo' => ['nullable', 'image'],
+            'department_id' => ['nullable', Rule::exists('departments', 'id')],
         ]);
 
-        $user->update(Request::only(['first_name', 'last_name', 'phone', 'email', 'city', 'address', 'country_id']));
+        $departmentId = Request::get('department_id') ?? null;
+        $userRequest = Request::only(['first_name', 'last_name', 'phone', 'email', 'city', 'address', 'country_id']);
 
-        if(!empty(Request::get('role_id'))){
+        $user->update($userRequest);
+
+        if (!empty($departmentId)) {
+            $user->departments()->sync([$departmentId]);
+        } else {
+            $user->departments()->detach();
+        }
+
+        if (!empty(Request::get('role_id'))) {
             $user->update(['role_id' => Request::get('role_id')]);
         }
 
-        if(Request::file('photo')){
-            if(isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))){
+        if (Request::file('photo')) {
+            if (isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))) {
                 File::delete(public_path($user->photo_path));
             }
-            $user->update(['photo_path' => '/files/'.Request::file('photo')->store('users', ['disk' => 'file_uploads'])]);
+            $user->update(['photo_path' => '/files/' . Request::file('photo')->store('users', ['disk' => 'file_uploads'])]);
         }
 
         if (Request::get('password')) {
@@ -192,7 +229,8 @@ class UsersController extends Controller{
         return Redirect::back()->with('success', 'Profile updated.');
     }
 
-    public function destroy(User $user) {
+    public function destroy(User $user)
+    {
 
         if (config('app.demo')) {
             return Redirect::back()->with('error', 'Deleting user is not allowed for the live demo.');
@@ -204,7 +242,8 @@ class UsersController extends Controller{
 
         return Redirect::route('users')->with('success', 'User deleted!');
     }
-    public function restore(User $user){
+    public function restore(User $user)
+    {
         $user->restore();
         return Redirect::back()->with('success', 'User restored!');
     }
@@ -234,7 +273,8 @@ class UsersController extends Controller{
         }
     }
 
-    private function removeUserFromRelatedTables($userId){
+    private function removeUserFromRelatedTables($userId)
+    {
         Note::where('user_id', $userId)->update(['user_id' => null]);
         PendingEmail::where('user_id', $userId)->update(['user_id' => null]);
         Review::where('user_id', $userId)->update(['user_id' => null]);

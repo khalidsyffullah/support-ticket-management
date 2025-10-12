@@ -19,6 +19,10 @@
               <option :value="null" />
               <option v-for="c in roles" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
           </select-input>
+          <select-input v-model="form.department_id" :error="form.errors.department_id" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Departments')">
+``              <option :value="null" />
+              <option v-for="d in departments" :key="d.id" :value="d.id">{{ $t(d.name) }}</option>
+          </select-input>
           <file-input v-model="form.photo" :error="form.errors.photo" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
             <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
         </div>
@@ -55,6 +59,7 @@ export default {
     auth: Object,
     countries: Array,
     roles: Array,
+    departments: Array,
     cities: Array,
     title: String,
   },
@@ -74,6 +79,7 @@ export default {
         password: '',
         role: this.user.role,
         role_id: this.user.role_id,
+        department_id: this.user.department_id,
         photo: null
       }),
     }

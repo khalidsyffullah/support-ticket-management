@@ -15,11 +15,15 @@
             <option v-for="c in countries" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
           </select-input>
           <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
-            <select-input v-model="form.role_id" :error="form.errors.role_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Role')">
+            <select-input v-model="form.role_id" :error="form.errors.role_id" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Role')">
                 <option :value="null" />
                 <option v-for="(r, ri) in roles" :key="ri" :value="r.id">{{ r.name }}</option>
             </select-input>
-          <file-input v-model="form.photo" :error="form.errors.photo" class="pb-8 pr-6 w-full lg:w-1/2" type="file" accept="image/*" :label="$t('Photo')" />
+                        <select-input v-model="form.department_id" :error="form.errors.department_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Departments')">
+                            <option :value="null" />
+                            <option v-for="d in departments" :key="d.id" :value="d.id">{{ $t(d.name) }}</option>
+                        </select-input>
+          <file-input v-model="form.photo" :error="form.errors.photo" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" :label="$t('Photo')" />
         </div>
         <div class="flex items-center justify-end px-8 py-4 bg-gray-50 border-t border-gray-100">
           <loading-button :loading="form.processing" class="btn-indigo" type="submit">{{ $t('Create') }} {{ $t('User') }}</loading-button>
@@ -52,6 +56,7 @@ export default {
     cities: Array,
     title: String,
     roles: Array,
+    departments: Array,
   },
   remember: 'form',
   data() {
@@ -65,6 +70,7 @@ export default {
         address: '',
         country_id: null,
         role_id: null,
+        department_id: null,
         password: '',
         photo: null
       }),

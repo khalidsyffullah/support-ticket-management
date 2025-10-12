@@ -16,20 +16,39 @@ const notifications = ref(page.props.notifications || []);
 const notificationCount = ref(page.props.notification_count || 0);
 
 const markAsReadAndVisit = (notification) => {
+    // Optimistically update the UI
+    const originalNotification = { ...notification };
+
+    // Find the notification and update its read_at status
+    const notificationIndex = notifications.value.findIndex(n => n.id === notification.id);
+    if (notificationIndex !== -1 && !notifications.value[notificationIndex].read_at) {
+        notifications.value[notificationIndex].read_at = new Date().toISOString();
+        if (notificationCount.value > 0) {
+            notificationCount.value--;
+        }
+    }
+
+    const request = () => {
+        router.post(route('notifications.read', notification.id), {}, {
+            preserveScroll: true,
+            onError: () => {
+                // Revert on error
+                if (notificationIndex !== -1) {
+                    notifications.value[notificationIndex] = originalNotification;
+                    notificationCount.value++;
+                }
+            }
+        });
+    };
+
     if (notification.data.url) {
         router.visit(notification.data.url, {
             onSuccess: () => {
-                router.post(route('notifications.read', notification.id), {}, {
-                    preserveScroll: true,
-                });
+                request();
             }
         });
     } else {
-        router.post(route('notifications.read', notification.id), {}, {
-            onSuccess: () => {
-                showDropdown.value = false;
-            },
-        });
+        request();
     }
 };
 
@@ -93,7 +112,7 @@ onMounted(() => {
                 </div>
             </div>
             <div v-if="notifications.length > 0" class="max-h-96 overflow-y-auto">
-                <a v-for="notification in notifications" :key="notification.id" @click.prevent="markAsReadAndVisit(notification)" href="#" class="block px-4 py-3 text-sm text-gray-600 hover:bg-gray-100 border-b" :class="{'font-semibold': !notification.read_at}">
+                <a v-for="notification in notifications" :key="notification.id" @click.prevent="markAsReadAndVisit(notification)" href="#" class="block px-4 py-3 text-sm text-gray-600 border-b" :class="{'font-semibold': !notification.read_at, 'bg-gray-200': !notification.read_at, 'hover:bg-gray-200': !notification.read_at, 'hover:bg-gray-50': notification.read_at}">
                     <p class="text-gray-800">{{ notification.data.message }}</p>
                     <p class="text-xs text-gray-400 mt-1">{{ $t('Ticket') }}: {{ notification.data.ticket_subject }}</p>
                 </a>

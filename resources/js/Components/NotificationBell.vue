@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { BellIcon, CheckCircleIcon, EllipsisVerticalIcon } from '@heroicons/vue/24/outline';
 import Icon from "@/Shared/Icon.vue";
+import axios from 'axios';
 
 // Reactive state for local component
 const showDropdown = ref(false);
@@ -17,41 +18,51 @@ const bellButtonRef = ref(null);
 const notifications = ref(page.props.notifications || []);
 const notificationCount = ref(page.props.notification_count || 0);
 
-const markAsReadAndVisit = (notification) => {
-    // Optimistically update the UI
-    const originalNotification = { ...notification };
+const handleCommentNotificationClick = (notification) => {
+    const visitUrl = route('tickets.edit', notification.data.ticket_uid);
+    const markAsReadUrl = route('notifications.ticket.read', notification.data.ticket_id);
 
-    // Find the notification and update its read_at status
-    const notificationIndex = notifications.value.findIndex(n => n.id === notification.id);
-    if (notificationIndex !== -1 && !notifications.value[notificationIndex].read_at) {
-        notifications.value[notificationIndex].read_at = new Date().toISOString();
-        if (notificationCount.value > 0) {
-            notificationCount.value--;
-        }
-    }
-
-    const request = () => {
-        router.post(route('notifications.read', notification.id), {}, {
-            preserveScroll: true,
-            onError: () => {
-                // Revert on error
-                if (notificationIndex !== -1) {
-                    notifications.value[notificationIndex] = originalNotification;
-                    notificationCount.value++;
+    axios.post(markAsReadUrl).then(() => {
+        // Manually update UI for all notifications of this ticket
+        notifications.value.forEach(n => {
+            if (n.data.ticket_id === notification.data.ticket_id) {
+                if (!n.read_at) {
+                    n.read_at = new Date().toISOString();
+                    if (notificationCount.value > 0) {
+                        notificationCount.value--;
+                    }
                 }
             }
         });
-    };
+        router.visit(visitUrl);
+    }).catch(error => {
+        console.error('Failed to mark notification as read', error);
+        router.visit(visitUrl); // Navigate even if it fails
+    });
+};
 
-    if (notification.data.url) {
-        router.visit(notification.data.url, {
-            onSuccess: () => {
-                request();
+const markAsReadAndVisit = (notification) => {
+    const markAsReadUrl = route('notifications.read', notification.id);
+    const visitUrl = notification.data.url;
+
+    axios.post(markAsReadUrl).then(() => {
+        // Manually update UI
+        const notificationIndex = notifications.value.findIndex(n => n.id === notification.id);
+        if (notificationIndex !== -1 && !notifications.value[notificationIndex].read_at) {
+            notifications.value[notificationIndex].read_at = new Date().toISOString();
+            if (notificationCount.value > 0) {
+                notificationCount.value--;
             }
-        });
-    } else {
-        request();
-    }
+        }
+        if (visitUrl) {
+            router.visit(visitUrl);
+        }
+    }).catch(error => {
+        console.error('Failed to mark notification as read', error);
+        if (visitUrl) {
+            router.visit(visitUrl); // Navigate even if it fails
+        }
+    });
 };
 
 const markAllAsRead = () => {
@@ -74,9 +85,10 @@ onMounted(() => {
             .notification((notification) => {
                 // Manually add id and data wrapper to match structure of database notifications
                 const newNotification = {
-                    id: notification.id, // Pusher doesn't send the UUID, so we need to generate it or get it from the payload
+                    id: notification.id,
                     data: { ...notification },
                     read_at: null,
+                    type: notification.type,
                 };
                 notifications.value.unshift(newNotification);
                 notificationCount.value++;
@@ -126,10 +138,20 @@ const onClickOutside = (event) => {
                 </div>
             </div>
             <div v-if="notifications.length > 0" class="max-h-96 overflow-y-auto">
-                <a v-for="notification in notifications" :key="notification.id" @click.prevent="markAsReadAndVisit(notification)" href="#" class="block px-4 py-3 text-sm text-gray-600 border-b" :class="{'font-semibold': !notification.read_at, 'bg-gray-200': !notification.read_at, 'hover:bg-gray-200': !notification.read_at, 'hover:bg-gray-50': notification.read_at}">
-                    <p class="text-gray-800">{{ notification.data.message }}</p>
-                    <p class="text-xs text-gray-400 mt-1">{{ $t('Ticket') }}: {{ notification.data.ticket_subject }}</p>
-                </a>
+                <div v-for="notification in notifications" :key="notification.id">
+                    <div v-if="notification.type && notification.type.includes('NewCommentNotification')">
+                        <a @click.prevent="handleCommentNotificationClick(notification)" :href="route('tickets.edit', notification.data.ticket_uid)" class="block px-4 py-3 text-sm text-gray-600 border-b" :class="{'font-semibold': !notification.read_at, 'bg-gray-200': !notification.read_at, 'hover:bg-gray-200': !notification.read_at, 'hover:bg-gray-50': notification.read_at}">
+                            <p class="text-gray-800">New comment on: "{{ notification.data.ticket_subject }}"</p>
+                            <p class="text-xs text-gray-400 mt-1">#{{ notification.data.ticket_uid }} by {{ notification.data.commenter_name }}</p>
+                        </a>
+                    </div>
+                    <div v-else>
+                         <a @click.prevent="markAsReadAndVisit(notification)" href="#" class="block px-4 py-3 text-sm text-gray-600 border-b" :class="{'font-semibold': !notification.read_at, 'bg-gray-200': !notification.read_at, 'hover:bg-gray-200': !notification.read_at, 'hover:bg-gray-50': notification.read_at}">
+                            <p class="text-gray-800">{{ notification.data.message || 'You have a new notification.' }}</p>
+                            <p v-if="notification.data.ticket_subject" class="text-xs text-gray-400 mt-1">{{ $t('Ticket') }}: {{ notification.data.ticket_subject }}</p>
+                        </a>
+                    </div>
+                </div>
             </div>
             <div v-else class="px-4 py-5 text-center">
                 <CheckCircleIcon class="h-8 w-8 text-green-400 mx-auto mb-2" />

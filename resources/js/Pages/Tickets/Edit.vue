@@ -219,7 +219,7 @@
                         <div class="write bg-white shadow flex rounded-lg">
                             <div class="flex-1 ticket_comment_edit">
 <!--                                <textarea v-model="comment" name="message" @keydown.enter.exact.prevent="submitComment" class="w-full block outline-none py-4 px-4 text-sm bg-transparent overflow-hidden" rows="1" :placeholder="$t('Write a comment and press enter to send...')" autofocus></textarea>-->
-                                <QuillEditor theme="snow" toolbar="full" v-model:content="comment" contentType="html" />
+                                <QuillEditor ref="quillEditor" theme="snow" toolbar="full" v-model:content="comment" contentType="html" />
                             </div>
                             <div class="flex-2 w-35 p-2 flex content-center items-center">
                                 <div class="flex-1">
@@ -456,10 +456,10 @@ export default {
                 _token: this.$page.props.csrf_token,
                 ticket_id: this.ticket.id
             }
-            this.comment = ''
             axios.post(this.route('ticket.comment'), messageData).then((response) => {
                 if(response.data){
                     that.comments.push(response.data)
+                    that.$refs.quillEditor.setHTML('');
                 }
                 this.$emit('comment submitted!')
             }).catch((error) => {

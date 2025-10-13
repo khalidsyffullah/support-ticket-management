@@ -32,6 +32,7 @@ use App\Models\User;
 use App\Models\TicketForwardingRequest;
 use App\Notifications\TicketForwardingRequested;
 use App\Notifications\TicketForwardingResult;
+use App\Notifications\NewCommentNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -107,6 +108,10 @@ class TicketsController extends Controller
             $ticketQuery->orderBy('updated_at', 'DESC');
         }
 
+        $unread_notification_ticket_ids = Auth::user()->unreadNotifications
+            ->where('type', 'App\Notifications\NewCommentNotification')
+            ->pluck('data.ticket_id');
+
         return Inertia::render('Tickets/Index', [
             'title' => 'Tickets',
             'filters' => $request->all(),
@@ -152,7 +157,7 @@ class TicketsController extends Controller
                 ->byAssign($byAssign)
                 ->paginate($limit)
                 ->withQueryString()
-                ->through(function ($ticket){
+                ->through(function ($ticket) use ($unread_notification_ticket_ids) {
                     return [
                         'id' => $ticket->id,
                         'uid' => $ticket->uid,
@@ -168,6 +173,7 @@ class TicketsController extends Controller
                         'assigned_to' => $ticket->assignedTo? $ticket->assignedTo->first_name.' '.$ticket->assignedTo->last_name : null,
                         'created_at' => $ticket->created_at,
                         'updated_at' => $ticket->updated_at,
+                        'has_unread_comments' => $unread_notification_ticket_ids->contains($ticket->id),
                     ];
                 }),
         ]);
@@ -801,6 +807,11 @@ class TicketsController extends Controller
         $newComment->details = $requestAll['comment'];
 
         $newComment->save();
+
+        $ticket = Ticket::with('user')->find($newComment->ticket_id);
+        if ($ticket && $ticket->user && $ticket->user->id != $newComment->user_id) {
+            $ticket->user->notify(new NewCommentNotification($ticket, $newComment->load('user')));
+        }
 
         return response()->json($newComment);
     }

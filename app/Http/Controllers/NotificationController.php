@@ -21,6 +21,15 @@ class NotificationController extends Controller
     /**
      * Mark a single notification as read and redirect.
      */
+    public function markTicketNotificationsAsRead(Request $request, \App\Models\Ticket $ticket)
+    {
+        Auth::user()->unreadNotifications()
+            ->where('data->ticket_id', $ticket->id)
+            ->update(['read_at' => now()]);
+
+        return response()->noContent();
+    }
+
     public function markAsRead(Request $request, $notificationId)
     {
         $notification = Auth::user()->notifications()->findOrFail($notificationId);

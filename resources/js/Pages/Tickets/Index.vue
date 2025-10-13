@@ -92,7 +92,7 @@
                         </span>
                     </th>
                 </tr>
-                <tr v-for="ticket in tickets.data" :key="ticket.id" class="hover:bg-gray-100 focus-within:bg-gray-100">
+                <tr v-for="ticket in tickets.data" :key="ticket.id" class="hover:bg-gray-100 focus-within:bg-gray-100" :class="{'bg-gray-300 font-bold': ticket.has_unread_comments}">
                     <td class="border-t">
                         <Link class="flex items-center px-6 py-4 focus:text-indigo-500" :href="route('tickets.edit', ticket.uid || ticket.id)">
                             #{{ ticket.uid }}

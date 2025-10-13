@@ -61,6 +61,20 @@
       </div>
 
       <div class="flex flex-wrap mt-8" v-if="auth.user.role.slug === 'customer'">
+          <div class="w-full mb-8" v-if="notifications && notifications.length">
+              <div class="bg-white rounded-md shadow overflow-hidden">
+                  <div class="p-4 border-b">
+                      <h2 class="font-bold text-lg">{{ $t('Comment Notifications') }}</h2>
+                  </div>
+                  <ul class="divide-y">
+                      <li v-for="notification in notifications" :key="notification.id">
+                          <a @click.prevent="markAsReadAndVisit(notification)" :href="route('tickets.edit', notification.data.ticket_uid)" class="p-4 flex hover:bg-gray-100 cursor-pointer">
+                              You have {{ notification.data.comments_count }} new comment(s) on ticket: "{{ notification.data.ticket_subject }}" (#{{ notification.data.ticket_uid }})
+                          </a>
+                      </li>
+                  </ul>
+              </div>
+          </div>
         <div class="w-full lg:w-1/2 pr-3">
             <div v-if="customer_tickets.length" class="bg-white rounded-md shadow overflow-x-auto">
                 <table class="w-full whitespace-nowrap">
@@ -288,6 +302,7 @@
 import {Head, Link} from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import Icon from '@/Shared/Icon.vue'
+import axios from 'axios'
 
 export default {
   metaInfo: { title: 'Dashboard' },
@@ -344,6 +359,14 @@ export default {
         })
     },
     methods: {
+        markAsReadAndVisit(notification) {
+            axios.post(this.route('notifications.ticket.read', notification.data.ticket_id)).then(() => {
+                this.$inertia.visit(this.route('tickets.edit', notification.data.ticket_uid));
+            }).catch(error => {
+                console.error('Failed to mark notification as read', error);
+                this.$inertia.visit(this.route('tickets.edit', notification.data.ticket_uid));
+            });
+        },
         goToLink(link){
             window.location.href = link;
         },

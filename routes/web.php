@@ -916,6 +916,7 @@ Route::group(['prefix' => 'update', 'as' => 'LaravelUpdater::', 'middleware' => 
 Route::middleware('auth')->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::post('/notifications/ticket/{ticket}/read', [NotificationController::class, 'markTicketNotificationsAsRead'])->name('notifications.ticket.read');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
 

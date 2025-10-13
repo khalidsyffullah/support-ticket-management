@@ -36,7 +36,17 @@ class DashboardController extends Controller {
         $closed_status = Status::where('slug', 'like', '%closed%')->first();
         $newTicketQuery = Ticket::select(DB::raw('*'));
 
-        $notifications = $user->notifications()->latest()->take(10)->get();
+        if($user->role->slug == 'customer'){
+            $notifications = $user->unreadNotifications()->where('type', 'App\Notifications\NewCommentNotification')->get()->groupBy('data.ticket_id')->map(function($group){
+                $notification = $group->first();
+                $data = $notification->data;
+                $data['comments_count'] = $group->count();
+                $notification->data = $data;
+                return $notification;
+            })->values();
+        }else{
+            $notifications = $user->notifications()->latest()->take(10)->get();
+        }
 
 
         if(in_array($user['role']['slug'], ['customer'])){

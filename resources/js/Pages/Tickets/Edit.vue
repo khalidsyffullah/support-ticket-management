@@ -178,8 +178,10 @@
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('rejected')" class="btn-red">Reject</loading-button>
                     </div>
                      <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
-                        <!--<button v-if="user_access.ticket.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
-                            {{ $t('Delete') }}</button>-->
+                        <a :href="`/dashboard/ticket/csv/export/${ticket.id}`" class="uppercase gap-[1px] cursor-pointer text-sm px-3 py-1 flex items-center justify-center">
+                            <img class="w-6 h-6" src="/images/svg/export-csv.svg" alt="Export CSV" />
+                            <span>{{ $t('Export') }}</span>
+                        </a>
                         <loading-button :loading="form.processing" class="btn-indigo ml-auto" type="submit">{{ $t('Save') }}</loading-button>
                     </div>
                 </form>

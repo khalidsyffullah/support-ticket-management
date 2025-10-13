@@ -311,6 +311,32 @@ class TicketsController extends Controller
         return Response::make('', 200, $headers);
     }
 
+    public function csvExportSingle(Ticket $ticket)
+    {
+        $csvFileName = 'ticket-'.$ticket->uid.'.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $csvFileName . '"',
+        ];
+
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, ['UID', 'Subject', 'Priority', 'Category', 'Sub Category', 'Department', 'Status', 'Assigned To Email', 'Assigned To Name', 'Created']);
+
+        fputcsv($handle, [$ticket->uid, $ticket->subject, $ticket->priority ? $ticket->priority->name : null,
+            $ticket->category ? $ticket->category->name: null, $ticket->subCategory ? $ticket->subCategory->name: null,
+            $ticket->department ? $ticket->department->name: null,
+            $ticket->status ? $ticket->status->name : null,
+            $ticket->assignedTo? $ticket->assignedTo->email : null,
+            $ticket->assignedTo? $ticket->assignedTo->first_name.' '.$ticket->assignedTo->last_name : null,
+            $ticket->created_at
+            ]);
+
+        fclose($handle);
+
+        return Response::make('', 200, $headers);
+    }
+
     public function create(Request $request){
         $user = Auth()->user();
         $roles = Role::pluck('id', 'slug')->all();

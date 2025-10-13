@@ -31,25 +31,23 @@ class DashboardController extends Controller {
         $byAssign = null;
         $avgWhere = [];
         $customer_tickets = [];
-        $notifications = [];
+        $dashboard_comment_notifications = [];
         $notices = [];
         $closed_status = Status::where('slug', 'like', '%closed%')->first();
         $newTicketQuery = Ticket::select(DB::raw('*'));
 
-        if($user->role->slug == 'customer'){
-            $notifications = $user->unreadNotifications()->where('type', 'App\Notifications\NewCommentNotification')->get()->groupBy('data.ticket_id')->map(function($group){
+        // For the shared notification bell, always pass a flat list of unread notifications
+        $notifications = $user->unreadNotifications;
+
+
+        if(in_array($user['role']['slug'], ['customer'])){
+            $dashboard_comment_notifications = $notifications->where('type', 'App\Notifications\NewCommentNotification')->groupBy('data.ticket_id')->map(function($group){
                 $notification = $group->first();
                 $data = $notification->data;
                 $data['comments_count'] = $group->count();
                 $notification->data = $data;
                 return $notification;
             })->values();
-        }else{
-            $notifications = $user->notifications()->latest()->take(10)->get();
-        }
-
-
-        if(in_array($user['role']['slug'], ['customer'])){
             $byUser = $user['id'];
             $avgWhere[] = ['user_id', '=', $byUser];
             $newTicketQuery->where('user_id', '=', $byUser);
@@ -218,6 +216,8 @@ class DashboardController extends Controller {
             ],
             'customer_tickets' => $customer_tickets,
             'notifications' => $notifications,
+            'notification_count' => $notifications->count(),
+            'dashboard_comment_notifications' => $dashboard_comment_notifications,
             'notices' => $notices,
         ]);
     }

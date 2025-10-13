@@ -61,13 +61,13 @@
       </div>
 
       <div class="flex flex-wrap mt-8" v-if="auth.user.role.slug === 'customer'">
-          <div class="w-full mb-8" v-if="notifications && notifications.length">
+          <div class="w-full mb-8" v-if="dashboard_comment_notifications && dashboard_comment_notifications.length">
               <div class="bg-white rounded-md shadow overflow-hidden">
                   <div class="p-4 border-b">
                       <h2 class="font-bold text-lg">{{ $t('Comment Notifications') }}</h2>
                   </div>
                   <ul class="divide-y">
-                      <li v-for="notification in notifications" :key="notification.id">
+                      <li v-for="notification in dashboard_comment_notifications" :key="notification.id">
                           <a @click.prevent="markAsReadAndVisit(notification)" :href="route('tickets.edit', notification.data.ticket_uid)" class="p-4 flex hover:bg-gray-100 cursor-pointer">
                               You have {{ notification.data.comments_count }} new comment(s) on ticket: "{{ notification.data.ticket_subject }}" (#{{ notification.data.ticket_uid }})
                           </a>
@@ -331,6 +331,7 @@ export default {
         total_contacts: Number,
         customer_tickets: Array,
         notifications: Array,
+        dashboard_comment_notifications: Array,
         notices: Array,
     },
     data() {

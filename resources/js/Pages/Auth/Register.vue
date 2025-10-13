@@ -1,7 +1,7 @@
 <template>
     <Head title="Login" />
   <div class="p-6 min-h-screen flex justify-center items-center light">
-    <div class="w-full max-w-xl	">
+    <div class="w-full max-w-xl">
         <Link :href="route('home')"><logo class="block w-48 mx-auto fill-white" /></Link>
       <form class="mt-8 bg-white dark:bg-slate-900 border border-gray-100 rounded-lg shadow-xl overflow-hidden" @submit.prevent="login">
         <div class="px-10 py-12">
@@ -25,7 +25,7 @@
                 <div v-if="organizations.length === 0" class="pb-8 pr-6 w-full lg:w-1/2 text-red-500">
                     {{ $t('No organizations available. Please contact support.') }}
                 </div>
-                <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Password')" type="password" :is_required="true" required />
+                <password-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Password')" :is_required="true" @strength="updatePasswordStrength" />
                 <text-input v-model="form.confirm_password" :error="form.errors.confirm_password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Confirm Password')" type="password" :is_required="true" required />
                 <div class="flex justify-center items-center py-3 w-full">
                     <vue-recaptcha v-if="site_key" :sitekey="site_key"
@@ -38,7 +38,12 @@
                                    ref="vueRecaptcha">
                     </vue-recaptcha>
                 </div>
-                <loading-button :disabled="disable_button && site_key" :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center" type="submit" :class="{'opacity-50 cursor-not-allowed': disable_button && site_key}">{{ $t('Submit') }}</loading-button>
+                <loading-button :disabled="isFormInvalid" :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center" type="submit">{{ $t('Submit') }}</loading-button>
+                <div v-if="isFormInvalid" class="mt-4 text-sm text-red-600">
+                    <ul>
+                        <li v-for="requirement in formRequirements" :key="requirement">{{ requirement }}</li>
+                    </ul>
+                </div>
             </div>
             <div class="mt-4 flex justify-center">{{ $t('Already have an account?') }} <Link class="ml-2" :href="route('login')">{{ $t('Login') }}</Link></div>
         </div>
@@ -55,6 +60,7 @@ import FlashMessages from '@/Shared/FlashMessages.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import vueRecaptcha from "vue3-recaptcha2";
 import SelectInput from '@/Shared/SelectInput.vue'
+import PasswordInput from '@/Shared/PasswordInput.vue'
 
 export default {
   metaInfo: { title: 'Login' },
@@ -67,6 +73,7 @@ export default {
       Link,
       FlashMessages,
       SelectInput,
+      PasswordInput,
   },
     props: {
         is_demo: Number,
@@ -76,6 +83,7 @@ export default {
   data() {
     return {
         disable_button: true,
+        passwordStrength: '',
       form: this.$inertia.form({
         first_name: '',
         last_name: '',
@@ -90,7 +98,29 @@ export default {
       }),
     }
   },
+  computed: {
+      isFormInvalid() {
+          if (this.site_key && this.disable_button) {
+              return true;
+          }
+          return !this.form.first_name || !this.form.last_name || !this.form.email || !this.form.organization_id || this.passwordStrength !== 'Strong' || this.form.password !== this.form.confirm_password;
+      },
+      formRequirements() {
+          const requirements = [];
+          if (!this.form.first_name) requirements.push('First name is required.');
+          if (!this.form.last_name) requirements.push('Last name is required.');
+          if (!this.form.email) requirements.push('Email is required.');
+          if (!this.form.organization_id) requirements.push('Organization is required.');
+          if (this.passwordStrength !== 'Strong') requirements.push('Password must be strong.');
+          if (this.form.password !== this.form.confirm_password) requirements.push('Passwords do not match.');
+          if (this.site_key && this.disable_button) requirements.push('reCAPTCHA verification is required.');
+          return requirements;
+      }
+  },
   methods: {
+      updatePasswordStrength(strength) {
+          this.passwordStrength = strength;
+      },
       recaptchaVerified(response) {
           this.disable_button = false
       },
@@ -103,10 +133,6 @@ export default {
           console.log(reason)
       },
       login() {
-          if(this.form.password !== this.form.confirm_password){
-              alert('Your password is not matched correctly.')
-              return
-          }
           this.form.post(this.route('register.store'))
       },
       autofillLogin(e, role){

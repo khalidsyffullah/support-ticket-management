@@ -9,9 +9,14 @@
           <h2 class="text-center font-bold text-xl">{{ $t('Update Password') }}</h2>
           <div class="mx-auto mt-3 w-24 border-b" />
           <p class="text-center text-gray-600 mt-4">Your password has expired. Please choose a new one.</p>
-            <text-input v-model="form.password" :error="form.errors.password" class="mt-6" :label="$t('New Password')" type="password" autocomplete="off" aria-autocomplete="none" />
+            <password-input v-model="form.password" :error="form.errors.password" class="mt-6" :label="$t('New Password')" @strength="updatePasswordStrength" />
             <text-input v-model="form.password_confirmation" :error="form.errors.password_confirmation" class="mt-6" :label="$t('Confirm New Password')" type="password" autocomplete="off" aria-autocomplete="none" />
-            <loading-button :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center mt-8" type="submit">{{ $t('Update Password') }}</loading-button>
+            <loading-button :disabled="isFormInvalid" :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center mt-8" type="submit">{{ $t('Update Password') }}</loading-button>
+            <div v-if="isFormInvalid" class="mt-4 text-sm text-red-600">
+                <ul>
+                    <li v-for="requirement in formRequirements" :key="requirement">{{ requirement }}</li>
+                </ul>
+            </div>
         </div>
       </form>
     </div>
@@ -24,6 +29,7 @@ import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import FlashMessages from '@/Shared/FlashMessages.vue'
+import PasswordInput from '@/Shared/PasswordInput.vue'
 
 export default {
   metaInfo: { title: 'Update Password' },
@@ -34,16 +40,32 @@ export default {
       Head,
       Link,
       FlashMessages,
+      PasswordInput,
   },
   data() {
     return {
+      passwordStrength: '',
       form: this.$inertia.form({
         password: '',
         password_confirmation: '',
       }),
     }
   },
+  computed: {
+      isFormInvalid() {
+          return this.passwordStrength !== 'Strong' || this.form.password.trim() !== this.form.password_confirmation.trim();
+      },
+      formRequirements() {
+          const requirements = [];
+          if (this.passwordStrength !== 'Strong') requirements.push('Password must be strong.');
+          if (this.form.password.trim() !== this.form.password_confirmation.trim()) requirements.push('Passwords do not match.');
+          return requirements;
+      }
+  },
   methods: {
+      updatePasswordStrength(strength) {
+          this.passwordStrength = strength;
+      },
       updatePassword() {
           this.form.post(this.route('password.expired.update'))
       },

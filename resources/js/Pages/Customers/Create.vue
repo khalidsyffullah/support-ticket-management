@@ -17,11 +17,17 @@
             <option :value="null" />
             <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
           </select-input>
-          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" :is_required="true" />
+          <password-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Password')" :is_required="true" @strength="updatePasswordStrength" />
+          <text-input v-model="form.confirm_password" :error="form.errors.confirm_password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Confirm Password')" :is_required="true" />
           <file-input v-model="form.photo" :error="form.errors.photo" class="pb-8 pr-6 w-full lg:w-1/2" type="file" accept="image/*" :label="$t('Photo')" />
         </div>
         <div class="flex items-center justify-end px-8 py-4 bg-gray-50 border-t border-gray-100">
-          <loading-button :loading="form.processing" class="btn-indigo" type="submit">{{ $t('create') }}</loading-button>
+          <loading-button :disabled="isFormInvalid" :loading="form.processing" class="btn-indigo" type="submit">{{ $t('create') }}</loading-button>
+        </div>
+        <div v-if="isFormInvalid" class="px-8 py-4 bg-gray-50 border-t border-gray-100 text-sm text-red-600">
+            <ul>
+                <li v-for="requirement in formRequirements" :key="requirement">{{ requirement }}</li>
+            </ul>
         </div>
       </form>
     </div>
@@ -35,6 +41,7 @@ import FileInput from '@/Shared/FileInput.vue'
 import TextInput from '@/Shared/TextInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
+import PasswordInput from '@/Shared/PasswordInput.vue'
 
 export default {
   components: {
@@ -44,6 +51,7 @@ export default {
     LoadingButton,
     SelectInput,
     TextInput,
+    PasswordInput,
   },
   layout: Layout,
   props: {
@@ -55,6 +63,7 @@ export default {
   remember: 'form',
   data() {
     return {
+      passwordStrength: '',
       form: this.$inertia.form({
         first_name: '',
         last_name: '',
@@ -65,15 +74,34 @@ export default {
         country_id: 19,
         organization_id: null,
         password: '',
+        confirm_password: '',
         role_id: null,
         photo: null
       }),
     }
   },
+  computed: {
+      isFormInvalid() {
+          return !this.form.first_name || !this.form.last_name || !this.form.email || !this.form.organization_id || this.passwordStrength !== 'Strong' || this.form.password !== this.form.confirm_password;
+      },
+      formRequirements() {
+          const requirements = [];
+          if (!this.form.first_name) requirements.push('First name is required.');
+          if (!this.form.last_name) requirements.push('Last name is required.');
+          if (!this.form.email) requirements.push('Email is required.');
+          if (!this.form.organization_id) requirements.push('Organization is required.');
+          if (this.passwordStrength !== 'Strong') requirements.push('Password must be strong.');
+          if (this.form.password !== this.form.confirm_password) requirements.push('Passwords do not match.');
+          return requirements;
+      }
+  },
   created() {
     // this.setDefaultValue(this.countries, 'country_id', 'United States')
   },
   methods: {
+    updatePasswordStrength(strength) {
+        this.passwordStrength = strength;
+    },
     setDefaultValue(arr, key, value){
       const find = arr.find(i=>i.name.match(new RegExp(value + ".*")))
       if(find){

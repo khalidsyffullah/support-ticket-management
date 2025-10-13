@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\RedirectIfCustomer;
 use App\Http\Middleware\RedirectIfNotParmitted;
+use App\Mail\NewUserWelcome;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Organization;
@@ -11,6 +12,8 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\URL;
@@ -98,11 +101,16 @@ class CustomersController extends Controller {
         $organization_id = $userRequest['organization_id'];
         unset($userRequest['organization_id']);
 
+        $plainPassword = $userRequest['password'];
+        $userRequest['password'] = Hash::make($plainPassword);
+
         $user = User::create($userRequest);
 
         if ($organization_id) {
             $user->organizations()->attach($organization_id);
         }
+
+        Mail::to($user->email)->send(new NewUserWelcome($user, $plainPassword));
 
         return Redirect::route('customers')->with('success', 'User created.');
     }
@@ -193,7 +201,7 @@ class CustomersController extends Controller {
         }
 
         if (Request::get('password')) {
-            $user->update(['password' => Request::get('password')]);
+            $user->update(['password' => Hash::make(Request::get('password'))]);
         }
 
         return Redirect::back()->with('success', 'Customer updated.');

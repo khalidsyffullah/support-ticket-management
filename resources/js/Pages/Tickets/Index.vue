@@ -197,10 +197,10 @@ export default {
             ],
             user_access: this.$page.props.auth.user.access,
             form: {
-                search: this.filters.search,
+                search: this.filters.search ?? null,
                 limit: this.filters.limit ?? 10,
-                field: this.filters.field,
-                direction: this.filters.direction,
+                field: this.filters.field ?? null,
+                direction: this.filters.direction ?? null,
                 priority_id: this.filters.priority_id ?? null,
                 status_id: this.filters.status_id ?? null,
                 type_id: this.filters.type_id ?? null,
@@ -267,47 +267,53 @@ export default {
     },
     computed: {
         hasActiveFilters() {
-            // Exclude 'limit' and 'search' from active filters display if they have default values
-            const defaultValues = { limit: 10, search: null };
-            return Object.keys(this.form).some(key => {
-                const value = this.form[key];
-                const defaultValue = defaultValues[key];
-                return value !== null && value !== '' && value !== defaultValue;
-            });
+            return Object.keys(this.activeFilters).length > 0;
         },
         activeFilters() {
             const active = {};
-            const defaultValues = { limit: 10, search: null };
-            for (const key in this.form) {
-                const value = this.form[key];
-                const defaultValue = defaultValues[key];
-                if (value !== null && value !== '' && value !== defaultValue) {
+            const filters = {
+                search: this.form.search,
+                type_id: this.form.type_id,
+                category_id: this.form.category_id,
+                department_id: this.form.department_id,
+                organization_id: this.form.organization_id,
+                assigned_by: this.form.assigned_by,
+                priority_id: this.form.priority_id,
+                status_id: this.form.status_id,
+                assigned_to: this.form.assigned_to,
+            };
+
+            for (const key in filters) {
+                const value = filters[key];
+                if (value) {
                     let displayValue = value;
+                    const numValue = (key !== 'search') ? Number(value) : value;
+
                     // Map IDs to names for display
                     if (key === 'priority_id') {
-                        const priority = this.priorities.find(p => p.id === value);
+                        const priority = this.priorities.find(p => p.id === numValue);
                         displayValue = priority ? priority.name : value;
                     } else if (key === 'status_id') {
-                        const status = this.statuses.find(s => s.id === value);
+                        const status = this.statuses.find(s => s.id === numValue);
                         displayValue = status ? status.name : value;
                     } else if (key === 'type_id') {
-                        const type = this.types.find(t => t.id === value);
+                        const type = this.types.find(t => t.id === numValue);
                         displayValue = type ? type.name : value;
                     } else if (key === 'category_id') {
-                        const category = this.categories.find(c => c.id === value);
+                        const category = this.categories.find(c => c.id === numValue);
                         displayValue = category ? category.name : value;
                     } else if (key === 'department_id') {
-                        const department = this.departments.find(d => d.id === value);
+                        const department = this.departments.find(d => d.id === numValue);
                         displayValue = department ? department.name : value;
                     } else if (key === 'organization_id') {
                         let organization = null;
                         for (const org of this.organizations) {
-                            if (org.id === value) {
+                            if (org.id === numValue) {
                                 organization = org;
                                 break;
                             }
                             if (org.children) {
-                                const child = org.children.find(c => c.id === value);
+                                const child = org.children.find(c => c.id === numValue);
                                 if (child) {
                                     organization = child;
                                     break;
@@ -315,8 +321,8 @@ export default {
                             }
                         }
                         displayValue = organization ? organization.name : value;
-                    } else if (key === 'assigned_by') {
-                        const assignee = this.assignees.find(a => a.id === value);
+                    } else if (key === 'assigned_by' || key === 'assigned_to') {
+                        const assignee = this.assignees.find(a => a.id === numValue);
                         displayValue = assignee ? assignee.name : value;
                     }
                     active[key] = displayValue;

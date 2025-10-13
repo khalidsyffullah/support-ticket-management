@@ -391,6 +391,7 @@ class TicketsController extends Controller
             'type_id' => [in_array('ticket_type', $required_fields)?'required':'nullable', Rule::exists('types', 'id')],
             'subject' => ['required'],
             'details' => ['required'],
+            'files.*' => ['nullable', 'file', 'mimes:pdf,zip,jpg,png,jpeg'],
         ]);
 
         if(in_array($user['role']['slug'], ['customer'])){
@@ -419,6 +420,33 @@ class TicketsController extends Controller
 
         if($request->hasFile('files')){
             $files = $request->file('files');
+
+            // Validate zip contents
+            foreach($files as $file) {
+                if (strtolower($file->getClientOriginalExtension()) === 'zip') {
+                    $zip = new \ZipArchive();
+                    if ($zip->open($file->getRealPath()) === TRUE) {
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $filename = $zip->getNameIndex($i);
+                            if (substr($filename, -1) == '/') { continue; }
+                            $fileInfo = pathinfo($filename);
+                            $content_extension = strtolower($fileInfo['extension'] ?? '');
+                            if (!in_array($content_extension, ['pdf', 'jpg', 'jpeg', 'png'])) {
+                                $zip->close();
+                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                   'files' => 'ZIP file \''.$file->getClientOriginalName().'\' contains a disallowed file type: .'.$content_extension,
+                                ]);
+                            }
+                        }
+                        $zip->close();
+                    } else {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                           'files' => 'Could not open ZIP file: '.$file->getClientOriginalName(),
+                        ]);
+                    }
+                }
+            }
+
             foreach($files as $file){
                 $file_path = $file->store('tickets', ['disk' => 'file_uploads']);
                 Attachment::create(['ticket_id' => $ticket->id, 'name' => $file->getClientOriginalName(), 'size' => $file->getSize(), 'path' => $file_path]);

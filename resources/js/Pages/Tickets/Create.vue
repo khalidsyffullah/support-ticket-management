@@ -545,9 +545,18 @@ export default {
     },
     fileInputChange(e) {
       let selectedFiles = e.target.files;
+      const allowedExtensions = ["pdf", "zip", "jpg", "jpeg", "png"];
       for (let i = 0; i < selectedFiles.length; i++) {
-        this.form.files.push(selectedFiles[i]);
+        const file = selectedFiles[i];
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+        if (allowedExtensions.includes(fileExtension)) {
+          this.form.files.push(file);
+        } else {
+          alert(`File type not allowed for ${file.name}. Allowed types are: pdf, zip, jpg, png.`);
+        }
       }
+      // Clear the file input so the user can select again if they made a mistake
+      this.$refs.file.value = null;
     },
     fileRemove(image, index) {
       this.form.files.splice(index, 1);

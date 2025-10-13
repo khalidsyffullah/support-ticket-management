@@ -77,7 +77,7 @@
                     </svg>
                 </button>
             </span>
-            <button type="button" @click="resetAllFilters" class="btn-gray">{{ $t('Reset Filters') }}</button>
+            <button type="button" @click="resetAllFilters" class="btn bg-red-500 text-white p-2">{{ $t('Reset Filters') }}</button>
         </div>
         <div class="bg-white rounded-md shadow overflow-x-auto">
             <table class="min-w-full whitespace-nowrap ticket_list">
@@ -236,6 +236,7 @@ export default {
         },
         clearFilter(key) {
             this.form[key] = null;
+            this.renderComponent += 1;
         },
         resetAllFilters() {
             this.form = mapValues(this.form, () => null);

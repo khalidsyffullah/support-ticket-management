@@ -380,6 +380,7 @@ class TicketsController extends Controller
             $required_fields = json_decode($get_required_fields->value, true);
         }
         $user = Auth()->user();
+        // The 'mimes' rule provides a good first-pass filter based on MIME types.
         $request_data = $this->validate($request, [
             'user_id' => ['nullable', Rule::exists('users', 'id')],
             'priority_id' => ['nullable', Rule::exists('priorities', 'id')],
@@ -393,6 +394,57 @@ class TicketsController extends Controller
             'details' => ['required'],
             'files.*' => ['nullable', 'file', 'mimes:pdf,zip,jpg,png,jpeg'],
         ]);
+
+        if($request->hasFile('files')){
+            $files = $request->file('files');
+
+            // Deeper validation of file contents
+            foreach($files as $file) {
+                $extension = strtolower($file->getClientOriginalExtension());
+                $content = $file->get();
+
+                if ($extension === 'zip') {
+                    $zip = new \ZipArchive();
+                    if ($zip->open($file->getRealPath()) === TRUE) {
+                        for ($i = 0; $i < $zip->numFiles; $i++) {
+                            $filename = $zip->getNameIndex($i);
+                            if (substr($filename, -1) == '/') { continue; } // Skip directories
+
+                            $fileInfo = pathinfo($filename);
+                            $content_extension = strtolower($fileInfo['extension'] ?? '');
+
+                            $entryStream = $zip->getStream($filename);
+                            if (!$entryStream) {
+                                 throw \Illuminate\Validation\ValidationException::withMessages([
+                                   'files' => 'Could not read file \''.$filename.'\' within the zip archive.',
+                                ]);
+                            }
+                            $entryContent = stream_get_contents($entryStream);
+                            fclose($entryStream);
+
+                            if (!$this->isValidContent($entryContent, $content_extension)) {
+                                $zip->close();
+                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                   'files' => 'Disallowed file content detected in ZIP file for \''.$filename.'\'. The file is not a valid '.$content_extension.' file.',
+                                ]);
+                            }
+                        }
+                        $zip->close();
+                    } else {
+                         throw \Illuminate\Validation\ValidationException::withMessages([
+                           'files' => 'Could not open ZIP file: '.$file->getClientOriginalName(),
+                        ]);
+                    }
+                } else {
+                    if (!$this->isValidContent($content, $extension)) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                           'files' => 'The file \''.$file->getClientOriginalName().'\' is not a valid '.$extension.' file.',
+                        ]);
+                    }
+                }
+            }
+        }
+
 
         if(in_array($user['role']['slug'], ['customer'])){
             $request_data['user_id'] = $user['id'];
@@ -416,37 +468,15 @@ class TicketsController extends Controller
         if (isset($request_data['assigned_to'])) {
             $request_data['assigned_by'] = $user['id'];
         }
+        
+        if(isset($request_data['files'])) {
+            unset($request_data['files']);
+        }
+        
         $ticket = Ticket::create($request_data);
 
         if($request->hasFile('files')){
             $files = $request->file('files');
-
-            // Validate zip contents
-            foreach($files as $file) {
-                if (strtolower($file->getClientOriginalExtension()) === 'zip') {
-                    $zip = new \ZipArchive();
-                    if ($zip->open($file->getRealPath()) === TRUE) {
-                        for ($i = 0; $i < $zip->numFiles; $i++) {
-                            $filename = $zip->getNameIndex($i);
-                            if (substr($filename, -1) == '/') { continue; }
-                            $fileInfo = pathinfo($filename);
-                            $content_extension = strtolower($fileInfo['extension'] ?? '');
-                            if (!in_array($content_extension, ['pdf', 'jpg', 'jpeg', 'png'])) {
-                                $zip->close();
-                                throw \Illuminate\Validation\ValidationException::withMessages([
-                                   'files' => 'ZIP file \''.$file->getClientOriginalName().'\' contains a disallowed file type: .'.$content_extension,
-                                ]);
-                            }
-                        }
-                        $zip->close();
-                    } else {
-                        throw \Illuminate\Validation\ValidationException::withMessages([
-                           'files' => 'Could not open ZIP file: '.$file->getClientOriginalName(),
-                        ]);
-                    }
-                }
-            }
-
             foreach($files as $file){
                 $file_path = $file->store('tickets', ['disk' => 'file_uploads']);
                 Attachment::create(['ticket_id' => $ticket->id, 'name' => $file->getClientOriginalName(), 'size' => $file->getSize(), 'path' => $file_path]);
@@ -472,6 +502,23 @@ class TicketsController extends Controller
 
 
         return Redirect::route('tickets')->with('success', 'Ticket created.');
+    }
+
+    private function isValidContent(string $content, string $extension): bool
+    {
+        $allowed_image_extensions = ['jpg', 'jpeg', 'png'];
+        $allowed_document_extensions = ['pdf'];
+
+        if (in_array($extension, $allowed_image_extensions)) {
+            return @getimagesizefromstring($content) !== false;
+        }
+
+        if (in_array($extension, $allowed_document_extensions)) {
+            if ($extension === 'pdf') {
+                return strpos($content, '%PDF-') === 0;
+            }
+        }
+        return false;
     }
 
     public function edit(Request $request, $uid){

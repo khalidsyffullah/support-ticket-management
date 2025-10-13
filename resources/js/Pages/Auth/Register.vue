@@ -103,7 +103,7 @@ export default {
           if (this.site_key && this.disable_button) {
               return true;
           }
-          return !this.form.first_name || !this.form.last_name || !this.form.email || !this.form.organization_id || this.passwordStrength !== 'Strong' || this.form.password !== this.form.confirm_password;
+          return !this.form.first_name || !this.form.last_name || !this.form.email || !this.form.organization_id || this.passwordStrength !== 'Strong' || this.form.password.trim() !== this.form.confirm_password.trim();
       },
       formRequirements() {
           const requirements = [];
@@ -112,7 +112,7 @@ export default {
           if (!this.form.email) requirements.push('Email is required.');
           if (!this.form.organization_id) requirements.push('Organization is required.');
           if (this.passwordStrength !== 'Strong') requirements.push('Password must be strong.');
-          if (this.form.password !== this.form.confirm_password) requirements.push('Passwords do not match.');
+          if (this.form.password.trim() !== this.form.confirm_password.trim()) requirements.push('Passwords do not match.');
           if (this.site_key && this.disable_button) requirements.push('reCAPTCHA verification is required.');
           return requirements;
       }

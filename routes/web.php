@@ -86,6 +86,9 @@ Route::post('register', [AuthenticatedSessionController::class, 'registerStore']
 Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])
     ->name('logout');
 
+Route::get('password/expired', [AuthenticatedSessionController::class, 'passwordExpired'])->name('password.expired')->middleware('auth');
+Route::post('password/expired', [AuthenticatedSessionController::class, 'passwordExpiredUpdate'])->name('password.expired.update')->middleware('auth');
+
 Route::get('/ticket/open', [HomeController::class, 'ticketOpen'])
     ->name('ticket_open');
 

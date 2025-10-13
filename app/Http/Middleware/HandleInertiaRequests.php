@@ -38,13 +38,17 @@ class HandleInertiaRequests extends Middleware
             \DB::connection()->getPdo();
 
             // Fetch settings only if the database is available
-            return cache()->remember('settings', now()->addMinutes(60), function () {
+            $settings = cache()->remember('settings', now()->addMinutes(60), function () {
                 return Setting::pluck('value', 'slug')->toArray();
             });
 
+            $settings['session_lifetime'] = config('session.lifetime');
+
+            return $settings;
+
         } catch (\Exception $e) {
             // If database is not connected, return an empty array
-            return [];
+            return ['session_lifetime' => config('session.lifetime')];
         }
     }
 

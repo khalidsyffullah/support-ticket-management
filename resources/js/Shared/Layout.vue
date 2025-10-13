@@ -261,6 +261,15 @@ export default {
         if(getActiveLanguage() !== this.locale){
             loadLanguageAsync(this.locale)
         }
-    }
+
+        if (this.$page.props.auth.user) {
+            this.sessionTimeout = setTimeout(() => {
+                this.$inertia.reload();
+            }, (this.$page.props.settings.session_lifetime * 60 * 1000));
+        }
+    },
+    beforeUnmount() {
+        clearTimeout(this.sessionTimeout);
+    },
 }
 </script>

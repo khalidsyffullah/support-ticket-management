@@ -87,7 +87,25 @@ class AuthenticatedSessionController extends Controller
             return Redirect::back()->with('error', 'Invalid email or token!');
         }
 
-        User::where('email', $requestData['email'])->update(['password' => Hash::make($requestData['password'])]);
+        $user = User::where('email', $requestData['email'])->first();
+
+        $latestPasswordHistory = DB::table('password_histories')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($latestPasswordHistory && Hash::check($requestData['password'], $latestPasswordHistory->password)) {
+            return Redirect::back()->with('error', 'You cannot use your old password.');
+        }
+
+        $hashedPassword = Hash::make($requestData['password']);
+        User::where('email', $requestData['email'])->update(['password' => $hashedPassword]);
+
+        DB::table('password_histories')->insert([
+            'user_id' => $user->id,
+            'password' => $hashedPassword,
+            'created_at' => Carbon::now(),
+        ]);
 
         DB::table('password_resets')->where(['email'=> $requestData['email']])->delete();
 
@@ -120,6 +138,28 @@ class AuthenticatedSessionController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return Redirect::back()->withErrors(['email' => 'Your account has been locked. Please contact an administrator.']);
+        }
+
+        $latestPasswordHistory = DB::table('password_histories')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$latestPasswordHistory) {
+            DB::table('password_histories')->insert([
+                'user_id' => $user->id,
+                'password' => $user->password,
+                'created_at' => $user->created_at,
+            ]);
+            $latestPasswordHistory = DB::table('password_histories')
+                ->where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+
+        if ($latestPasswordHistory && Carbon::parse($latestPasswordHistory->created_at)->addMonths(3)->isPast()) {
+            $request->session()->put('password_expired', true);
+            return redirect()->route('password.expired');
         }
 
         $request->session()->regenerate();
@@ -164,7 +204,17 @@ class AuthenticatedSessionController extends Controller
         $organization_id = $requestData['organization_id'];
         unset($requestData['organization_id']);
 
+        $hashedPassword = Hash::make($requestData['password']);
+        $requestData['password'] = $hashedPassword;
+
         $user = User::create($requestData);
+
+        DB::table('password_histories')->insert([
+            'user_id' => $user->id,
+            'password' => $hashedPassword,
+            'created_at' => Carbon::now(),
+        ]);
+
         $user->organizations()->attach($organization_id);
 
         return Redirect::route('login')->with('success', 'Registration successful! Your account is awaiting admin approval.');
@@ -184,5 +234,42 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return Inertia::location('/login');
+    }
+
+    public function passwordExpired()
+    {
+        return Inertia::render('Auth/PasswordExpired');
+    }
+
+    public function passwordExpiredUpdate(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string|min:6|confirmed',
+            'password_confirmation' => 'required',
+        ]);
+
+        $user = $request->user();
+
+        $latestPasswordHistory = DB::table('password_histories')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($latestPasswordHistory && Hash::check($request->password, $latestPasswordHistory->password)) {
+            return Redirect::back()->with('error', 'You cannot use your old password.');
+        }
+
+        $hashedPassword = Hash::make($request->password);
+        $user->update(['password' => $hashedPassword]);
+
+        DB::table('password_histories')->insert([
+            'user_id' => $user->id,
+            'password' => $hashedPassword,
+            'created_at' => Carbon::now(),
+        ]);
+
+        $request->session()->forget('password_expired');
+
+        return redirect()->intended(RouteServiceProvider::DASHBOARD);
     }
 }

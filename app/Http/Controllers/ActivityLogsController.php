@@ -24,11 +24,11 @@ class ActivityLogsController extends Controller
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $logsQuery->whereBetween('created_at', [$request->input('start_date'), $request->input('end_date')]);
         }
-
+        $perPage = $request->input('limit', 20);
         return Inertia::render('Logs/Index', [
             'title' => 'Activity Logs',
             'filters' => $request->all(),
-            'logs' => $logsQuery->paginate(20)->withQueryString(),
+            'logs' => $logsQuery->paginate($perPage)->withQueryString(),
             'users' => User::orderBy('first_name')->get()->map->only('id', 'name'),
             'activities' => ActivityLog::select('activity')->distinct()->get()->pluck('activity'),
         ]);

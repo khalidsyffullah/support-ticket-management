@@ -127,6 +127,16 @@ class UsersController extends Controller
 
         event(new UserCreated(['id' => $user->id, 'password' => $userRequest['password']]));
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'create',
+            "User {$user->first_name} ({$user->role->name}) created by {$authUserName}({$authUserRole}).",
+            $user
+        );
+
         return Redirect::route('users')->with('success', 'User created.');
     }
 
@@ -187,6 +197,8 @@ class UsersController extends Controller
             return Redirect::back()->with('error', 'Updating user is not allowed for the live demo.');
         }
 
+        $originalUser = $user->getOriginal(); // Get original data before validation and update
+
         Request::validate([
             'first_name' => ['required', 'max:50'],
             'last_name' => ['required', 'max:50'],
@@ -211,19 +223,83 @@ class UsersController extends Controller
             $user->departments()->detach();
         }
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        $fields = [
+            'first_name' => 'first name',
+            'last_name' => 'last name',
+            'phone' => 'phone',
+            'email' => 'email',
+            'city' => 'city',
+            'address' => 'address',
+            'country_id' => 'country',
+        ];
+
+        foreach ($fields as $field => $fieldName) {
+            if (Request::filled($field) && $originalUser[$field] != Request::get($field)) {
+                log_activity(
+                    'update',
+                    "User {$user->first_name} ({$user->role->name}) {$fieldName} updated by {$authUserName}({$authUserRole}).",
+                    $user
+                );
+            }
+        }
+
+        // Handle role_id change
         if (!empty(Request::get('role_id'))) {
+            $newRole = Role::find(Request::get('role_id'))->name;
+            log_activity(
+                'update',
+                "User {$user->first_name} ({$user->role->name}) role updated to {$newRole} by {$authUserName}({$authUserRole}).",
+                $user
+            );
             $user->update(['role_id' => Request::get('role_id')]);
         }
 
+        // Handle department_id change
+        if (!empty($departmentId) && ($user->departments->first()->id ?? null) != $departmentId) {
+            $newDepartment = Department::find($departmentId)->name;
+            log_activity(
+                'update',
+                "User {$user->first_name} ({$user->role->name}) department updated to {$newDepartment} by {$authUserName}({$authUserRole}).",
+                $user
+            );
+            $user->departments()->sync([$departmentId]);
+        } elseif (empty($departmentId) && ($user->departments->first()->id ?? null) != null) {
+            log_activity(
+                'update',
+                "User {$user->first_name} ({$user->role->name}) department removed by {$authUserName}({$authUserRole}).",
+                $user
+            );
+            $user->departments()->detach();
+        } else {
+            $user->departments()->detach(); // Original logic
+        }
+
+
+        // Handle photo_path change
         if (Request::file('photo')) {
             if (isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))) {
                 File::delete(public_path($user->photo_path));
             }
             $user->update(['photo_path' => '/files/' . Request::file('photo')->store('users', ['disk' => 'file_uploads'])]);
+            log_activity(
+                'update',
+                "User {$user->first_name} ({$user->role->name}) photo updated by {$authUserName}({$authUserRole}).",
+                $user
+            );
         }
 
+        // Handle password change
         if (Request::get('password')) {
             $user->update(['password' => Request::get('password')]);
+            log_activity(
+                'update',
+                "User {$user->first_name} ({$user->role->name}) password updated by {$authUserName}({$authUserRole}).",
+                $user
+            );
         }
 
         return Redirect::back()->with('success', 'Profile updated.');
@@ -236,6 +312,16 @@ class UsersController extends Controller
             return Redirect::back()->with('error', 'Deleting user is not allowed for the live demo.');
         }
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'delete',
+            "User {$user->first_name} ({$user->role->name}) deleted by {$authUserName}({$authUserRole}).",
+            $user
+        );
+
         $userId = $user->id;
         $user->delete();
         $this->removeUserFromRelatedTables($userId);
@@ -244,6 +330,15 @@ class UsersController extends Controller
     }
     public function restore(User $user)
     {
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'restore',
+            "User {$user->first_name} ({$user->role->name}) restored by {$authUserName}({$authUserRole}).",
+            $user
+        );
         $user->restore();
         return Redirect::back()->with('success', 'User restored!');
     }
@@ -263,12 +358,26 @@ class UsersController extends Controller
         $user->is_locked = !$user->is_locked;
         $user->save();
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
         if ($user->is_locked) {
+            log_activity(
+                'lock',
+                "User {$user->first_name} ({$user->role->name}) locked by {$authUserName}({$authUserRole}).",
+                $user
+            );
             $user->forceFill([
                 'last_logout_at' => now(),
             ])->save();
             return Redirect::back()->with('success', 'User locked successfully.');
         } else {
+            log_activity(
+                'unlock',
+                "User {$user->first_name} ({$user->role->name}) unlocked by {$authUserName}({$authUserRole}).",
+                $user
+            );
             return Redirect::back()->with('success', 'User unlocked successfully.');
         }
     }

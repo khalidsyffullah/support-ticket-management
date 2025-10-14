@@ -25,18 +25,22 @@ class AuthenticatedSessionController extends Controller
      *
      * @return \Inertia\Response
      */
-    public function create() {
+    public function create()
+    {
         $is_demo = (int)config('app.demo');
         $env = DotenvEditor::load();
-        $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
+        $siteKey = $env->keyExists('RE_CAPTCHA_KEY') ? $env->getValue('RE_CAPTCHA_KEY') : '';
         return Inertia::render('Auth/Login', ['is_demo' => $is_demo, 'site_key' => $siteKey]);
     }
 
-    public function register() {
+    public function register()
+    {
         $is_demo = (int)config('app.demo');
         $env = DotenvEditor::load();
-        $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
-        return Inertia::render('Auth/Register', ['is_demo' => $is_demo, 'site_key' => $siteKey,
+        $siteKey = $env->keyExists('RE_CAPTCHA_KEY') ? $env->getValue('RE_CAPTCHA_KEY') : '';
+        return Inertia::render('Auth/Register', [
+            'is_demo' => $is_demo,
+            'site_key' => $siteKey,
             'organizations' => \App\Models\Organization::orderBy('name')
                 ->get()
                 ->map
@@ -44,12 +48,14 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    public function forgotPassword() {
+    public function forgotPassword()
+    {
         $is_demo = (int)config('app.demo');
         return Inertia::render('Auth/ForgotPassword', ['is_demo' => $is_demo]);
     }
 
-    public function forgotPasswordMail(Request $request) {
+    public function forgotPasswordMail(Request $request)
+    {
         $requestData = $request->validate(['email' => 'required|email|exists:users']);
 
         $token = Str::random(64);
@@ -64,11 +70,13 @@ class AuthenticatedSessionController extends Controller
         return back()->with('success', 'We have e-mailed your password reset link!');
     }
 
-    public function forgotPasswordToken($token){
+    public function forgotPasswordToken($token)
+    {
         return Inertia::render('Auth/ForgotPasswordInput', ['token' => $token]);
     }
 
-    public function forgotPasswordStore(Request $request){
+    public function forgotPasswordStore(Request $request)
+    {
         $requestData = $request->validate([
             'email' => 'required|email|exists:users',
             'password' => 'required|string|min:6|confirmed',
@@ -83,7 +91,7 @@ class AuthenticatedSessionController extends Controller
             ])
             ->first();
 
-        if(!$updatePassword){
+        if (!$updatePassword) {
             return Redirect::back()->with('error', 'Invalid email or token!');
         }
 
@@ -107,10 +115,9 @@ class AuthenticatedSessionController extends Controller
             'created_at' => Carbon::now(),
         ]);
 
-        DB::table('password_resets')->where(['email'=> $requestData['email']])->delete();
+        DB::table('password_resets')->where(['email' => $requestData['email']])->delete();
 
         return Redirect::route('login')->with('success', 'Your password has been changed!');
-
     }
 
 
@@ -169,13 +176,19 @@ class AuthenticatedSessionController extends Controller
             'last_logout_at' => now(),
         ])->save();
 
-        log_activity('login', auth()->user()->first_name . auth()->user()->last_name .'-'.' . auth()->user()->role->name . '. ' logged in successfully. and the user role ');
+        log_activity(
+            'login',
+            auth()->user()->first_name . ' ' .
+                auth()->user()->last_name . ' - ' .
+                auth()->user()->role->name . ' logged in successfully.'
+        );
 
         return redirect()->intended(RouteServiceProvider::DASHBOARD);
     }
 
 
-    public function registerStore(Request $request) {
+    public function registerStore(Request $request)
+    {
 
         $requestData = $request->validate([
             'first_name' => ['required', 'max:50'],
@@ -195,9 +208,9 @@ class AuthenticatedSessionController extends Controller
         }
 
         $role = Role::where('slug', 'customer')->first();
-        if(!empty($role)){
+        if (!empty($role)) {
             $requestData['role_id'] = $role->id;
-        }else{
+        } else {
             $requestData['role_id'] = 2;
         }
 

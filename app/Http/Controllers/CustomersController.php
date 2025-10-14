@@ -112,6 +112,16 @@ class CustomersController extends Controller {
 
         Mail::to($user->email)->send(new NewUserWelcome($user, $plainPassword));
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'create',
+            "Customer {$user->first_name} created by {$authUserName}({$authUserRole}).",
+            $user
+        );
+
         return Redirect::route('customers')->with('success', 'User created.');
     }
 
@@ -159,6 +169,8 @@ class CustomersController extends Controller {
             return Redirect::back()->with('error', 'Updating customer is not allowed for the live demo.');
         }
 
+        $originalUser = $user->getOriginal();
+
         Request::validate([
             'first_name' => ['required', 'max:50'],
             'last_name' => ['required', 'max:50'],
@@ -187,21 +199,76 @@ class CustomersController extends Controller {
 
         $user->update(Request::only('first_name', 'last_name', 'phone', 'email', 'city', 'address', 'country_id', 'role_id', 'approval_status'));
 
-        if (Request::get('organization_id')) {
-            $user->organizations()->sync(Request::get('organization_id'));
-        } else {
-            $user->organizations()->detach();
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        $fields = [
+            'first_name' => 'first name',
+            'last_name' => 'last name',
+            'phone' => 'phone',
+            'email' => 'email',
+            'city' => 'city',
+            'address' => 'address',
+            'country_id' => 'country',
+            'approval_status' => 'approval status',
+        ];
+
+        foreach ($fields as $field => $fieldName) {
+            if (Request::filled($field) && $originalUser[$field] != Request::get($field)) {
+                log_activity(
+                    'update',
+                    "Customer {$user->first_name} {$fieldName} updated by {$authUserName}({$authUserRole}).",
+                    $user
+                );
+            }
         }
 
+        // Handle organization_id change
+        if (Request::filled('organization_id') && ($user->organizations->first()->id ?? null) != Request::get('organization_id')) {
+            $newOrganization = Organization::find(Request::get('organization_id'))->name;
+            log_activity(
+                'update',
+                "Customer {$user->first_name} organization updated to {$newOrganization} by {$authUserName}({$authUserRole}).",
+                $user
+            );
+            $user->organizations()->sync(Request::get('organization_id'));
+        } elseif (!Request::filled('organization_id') && ($user->organizations->first()->id ?? null) != null) {
+            log_activity(
+                'update',
+                "Customer {$user->first_name} organization removed by {$authUserName}({$authUserRole}).",
+                $user
+            );
+            $user->organizations()->detach();
+        } else {
+            if (Request::get('organization_id')) {
+                $user->organizations()->sync(Request::get('organization_id'));
+            } else {
+                $user->organizations()->detach();
+            }
+        }
+
+        // Handle photo_path change
         if(Request::file('photo')){
             if(isset($user->photo_path) && !empty($user->photo_path) && File::exists(public_path($user->photo_path))){
                 File::delete(public_path($user->photo_path));
             }
             $user->update(['photo_path' => '/files/'.Request::file('photo')->store('users', ['disk' => 'file_uploads'])]);
+            log_activity(
+                'update',
+                "Customer {$user->first_name} photo updated by {$authUserName}({$authUserRole}).",
+                $user
+            );
         }
 
+        // Handle password change
         if (Request::get('password')) {
             $user->update(['password' => Hash::make(Request::get('password'))]);
+            log_activity(
+                'update',
+                "Customer {$user->first_name} password updated by {$authUserName}({$authUserRole}).",
+                $user
+            );
         }
 
         return Redirect::back()->with('success', 'Customer updated.');
@@ -213,10 +280,29 @@ class CustomersController extends Controller {
             return Redirect::back()->with('error', 'Deleting customer is not allowed for the live demo.');
         }
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'delete',
+            "Customer {$user->first_name} deleted by {$authUserName}({$authUserRole}).",
+            $user
+        );
+
         $user->delete();
         return Redirect::route('customers')->with('success', 'Customer deleted.');
     }
     public function restore(User $user){
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'restore',
+            "Customer {$user->first_name} restored by {$authUserName}({$authUserRole}).",
+            $user
+        );
         $user->restore();
         return Redirect::back()->with('success', 'Customer restored!');
     }
@@ -235,6 +321,16 @@ class CustomersController extends Controller {
 
         $user->update(['approval_status' => User::STATUS_APPROVED]);
 
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'approve',
+            "Customer {$user->first_name} approved by {$authUserName}({$authUserRole}).",
+            $user
+        );
+
         return Redirect::back()->with('success', 'Customer approved.');
     }
 
@@ -245,6 +341,16 @@ class CustomersController extends Controller {
         }
 
         $user->update(['approval_status' => User::STATUS_REJECTED]);
+
+        $authUser = auth()->user();
+        $authUserName = $authUser->first_name;
+        $authUserRole = $authUser->role->name;
+
+        log_activity(
+            'reject',
+            "Customer {$user->first_name} rejected by {$authUserName}({$authUserRole}).",
+            $user
+        );
 
         return Redirect::back()->with('success', 'Customer rejected.');
     }

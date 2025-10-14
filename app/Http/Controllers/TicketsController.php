@@ -474,11 +474,11 @@ class TicketsController extends Controller
         if (isset($request_data['assigned_to'])) {
             $request_data['assigned_by'] = $user['id'];
         }
-        
+
         if(isset($request_data['files'])) {
             unset($request_data['files']);
         }
-        
+
         $ticket = Ticket::create($request_data);
 
         if($request->hasFile('files')){
@@ -506,7 +506,7 @@ class TicketsController extends Controller
             event(new AssignedUser($ticket->id));
         }
 
-        log_activity('create', 'Ticket created successfully.ticket no ' . $ticket->id . ' and created by ' . auth()->user()->first_name, $ticket);
+    log_activity('create', 'a new ticket is created by ' . auth()->user()->first_name . '(' . auth()->user()->role->name . ') and the ticket id is #' . $ticket->uid, $ticket);
 
         return Redirect::route('tickets')->with('success', 'Ticket created.');
     }
@@ -718,7 +718,34 @@ class TicketsController extends Controller
             return Redirect::route('tickets.edit', $ticket->uid)->with('success', 'Ticket forwarding request sent for approval.');
         }
 
+        $originalTicket = $ticket->getOriginal();
+
         $ticket->update($request_data);
+
+        $user = auth()->user();
+        $userName = $user->first_name;
+        $userRole = $user->role->name;
+
+        $fields = [
+            'status_id' => 'status',
+            'priority_id' => 'priority',
+            'category_id' => 'category',
+            'sub_category_id' => 'sub category',
+            'assigned_to' => 'assigned to',
+            'subject' => 'subject',
+            'type_id' => 'ticket type',
+            'department_id' => 'department',
+        ];
+
+        foreach ($fields as $field => $fieldName) {
+            if (isset($request_data[$field]) && $originalTicket[$field] != $request_data[$field]) {
+                log_activity(
+                    'update',
+                    "ticket #{$ticket->uid} {$fieldName} updated by {$userName}({$userRole})",
+                    $ticket
+                );
+            }
+        }
 
         if ($departmentChanged) {
             $department = Department::find($request_data['department_id']);
@@ -736,7 +763,6 @@ class TicketsController extends Controller
                 $query->where('slug', 'admin');
             })->get();
             Notification::send($admin_users, new TicketForwardedNotification($ticket, $message));
-            log_activity('update', $message, $ticket);
         }
 
         if($assigned){
@@ -755,12 +781,10 @@ class TicketsController extends Controller
                     'response_sla_starts_at' => Carbon::now(),
                 ]);
             }
-            log_activity('update', $message, $ticket);
         }
 
         if(!empty($update_message)){
             event(new TicketUpdated(['ticket_id' => $ticket->id, 'update_message' => $update_message]));
-            log_activity('update', $update_message, $ticket);
         }
 
         if(!empty($request->input('comment'))){
@@ -823,7 +847,7 @@ class TicketsController extends Controller
     }
 
     public function destroy(Ticket $ticket)
-    {        
+    {
         log_activity('delete', 'Ticket deleted successfully.', $ticket);
         $ticket->delete();
         return Redirect::route('tickets')->with('success', 'Ticket deleted.');

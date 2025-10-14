@@ -169,7 +169,7 @@ class AuthenticatedSessionController extends Controller
             'last_logout_at' => now(),
         ])->save();
 
-        log_activity('login', auth()->user()->first_name . ' logged in successfully. and the user role (' . auth()->user()->role->name . ')');
+        log_activity('login', auth()->user()->first_name . auth()->user()->last_name .'-'.' . auth()->user()->role->name . '. ' logged in successfully. and the user role ');
 
         return redirect()->intended(RouteServiceProvider::DASHBOARD);
     }

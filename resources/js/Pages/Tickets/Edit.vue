@@ -107,7 +107,7 @@
                         <div class="assigned_user pr-6 pb-8 w-full lg:w-full flex flex-col">
                             <div class="w-25 flex gap-3">
                                 <label class="form-label" >{{ $t('Request Details') }}</label>
-                                <icon v-if="!enableEditor && user_access.ticket.update && !ticket.closed" name="edit" @click="enableEditor=!enableEditor" class="w-4 h-4 mr-1 cursor-pointer" />
+                                <!-- <icon v-if="!enableEditor && user_access.ticket.update && !ticket.closed" name="edit" @click="enableEditor=!enableEditor" class="w-4 h-4 mr-1 cursor-pointer" /> -->
                             </div>
                             <div v-if="!enableEditor" class="font-light text-sm" v-html="ticket.details"></div>
                             <div v-if="enableEditor" class="w-25 flex items-center ticket_details_area">

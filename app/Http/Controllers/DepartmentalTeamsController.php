@@ -43,6 +43,7 @@ class DepartmentalTeamsController extends Controller
             $user = User::find($user_id);
             if (!$department->users()->where('user_id', $user->id)->exists()) {
                 $department->users()->attach($user);
+                log_activity('add_member', "Added team member {$user->name} to department {$department->name}.", $department);
             }
         }
 
@@ -51,6 +52,7 @@ class DepartmentalTeamsController extends Controller
 
     public function removeTeamMember(Request $request, Department $department, User $user)
     {
+        log_activity('remove_member', "Removed team member {$user->name} from department {$department->name}.", $department);
         $department->users()->detach($user);
         return redirect()->back()->with('success', 'Team member removed successfully.');
     }
@@ -64,6 +66,8 @@ class DepartmentalTeamsController extends Controller
         $department->users()->updateExistingPivot($user->id, [
             'team_head' => $request->team_head,
         ]);
+
+        log_activity('update_team_head', "Updated team head status for user {$user->name} in department {$department->name}.", $department);
 
         return redirect()->back()->with('success', 'Team head updated successfully.');
     }

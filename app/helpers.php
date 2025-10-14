@@ -44,3 +44,19 @@ function isActive($route, $className = 'active') {
         return $className;
     }
 }
+
+if (! function_exists('log_activity')) {
+    function log_activity($activity, $description, $model = null)
+    {
+        $log = new \App\Models\ActivityLog();
+        $log->user_id = auth()->id();
+        $log->activity = $activity;
+        $log->description = $description;
+
+        if ($model) {
+            $log->loggable()->associate($model);
+        }
+
+        $log->save();
+    }
+}

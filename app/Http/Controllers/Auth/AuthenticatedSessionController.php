@@ -169,6 +169,8 @@ class AuthenticatedSessionController extends Controller
             'last_logout_at' => now(),
         ])->save();
 
+        log_activity('login', auth()->user()->first_name . ' logged in successfully. and the user role (' . auth()->user()->role->name . ')');
+
         return redirect()->intended(RouteServiceProvider::DASHBOARD);
     }
 
@@ -217,6 +219,8 @@ class AuthenticatedSessionController extends Controller
 
         $user->organizations()->attach($organization_id);
 
+        log_activity('register', 'User registered successfully.', $user);
+
         return Redirect::route('login')->with('success', 'Registration successful! Your account is awaiting admin approval.');
     }
 
@@ -227,6 +231,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request)
     {
+        log_activity('logout', 'User logged out successfully.');
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

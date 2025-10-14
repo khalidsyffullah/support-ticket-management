@@ -126,7 +126,7 @@ class OrganizationsController extends Controller
 
     public function store()
     {
-        Organization::create(
+        $organization = Organization::create(
             Request::validate([
                 'name' => ['required', 'max:100'],
                 'email' => ['nullable', 'max:50', 'email'],
@@ -140,6 +140,8 @@ class OrganizationsController extends Controller
                 'parent_id' => ['nullable', 'exists:organizations,id'],
             ])
         );
+
+        log_activity('create', 'Organization created successfully.', $organization);
 
         return Redirect::route('organizations')->with('success', 'Organization created.');
     }
@@ -193,11 +195,14 @@ class OrganizationsController extends Controller
             ])
         );
 
+        log_activity('update', 'Organization updated successfully.', $organization);
+
         return Redirect::back()->with('success', 'Organization updated.');
     }
 
     public function destroy(Organization $organization)
     {
+        log_activity('delete', 'Organization deleted successfully.', $organization);
         $organization->delete();
 
         return Redirect::route('organizations')->with('success', 'Organization deleted.');

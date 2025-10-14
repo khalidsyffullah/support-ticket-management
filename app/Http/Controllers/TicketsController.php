@@ -506,6 +506,7 @@ class TicketsController extends Controller
             event(new AssignedUser($ticket->id));
         }
 
+        log_activity('create', 'Ticket created successfully.ticket no ' . $ticket->id . ' and created by ' . auth()->user()->first_name, $ticket);
 
         return Redirect::route('tickets')->with('success', 'Ticket created.');
     }
@@ -735,6 +736,7 @@ class TicketsController extends Controller
                 $query->where('slug', 'admin');
             })->get();
             Notification::send($admin_users, new TicketForwardedNotification($ticket, $message));
+            log_activity('update', $message, $ticket);
         }
 
         if($assigned){
@@ -753,10 +755,12 @@ class TicketsController extends Controller
                     'response_sla_starts_at' => Carbon::now(),
                 ]);
             }
+            log_activity('update', $message, $ticket);
         }
 
         if(!empty($update_message)){
             event(new TicketUpdated(['ticket_id' => $ticket->id, 'update_message' => $update_message]));
+            log_activity('update', $update_message, $ticket);
         }
 
         if(!empty($request->input('comment'))){
@@ -813,11 +817,15 @@ class TicketsController extends Controller
             $ticket->user->notify(new NewCommentNotification($ticket, $newComment->load('user')));
         }
 
+        log_activity('comment', 'New comment added to ticket.', $ticket);
+
         return response()->json($newComment);
     }
 
     public function destroy(Ticket $ticket)
-    {        $ticket->delete();
+    {        
+        log_activity('delete', 'Ticket deleted successfully.', $ticket);
+        $ticket->delete();
         return Redirect::route('tickets')->with('success', 'Ticket deleted.');
     }
 

@@ -102,6 +102,10 @@ export default {
             this.menu_items.push({'name': 'Manage Users', 'route': 'users', 'url': 'users', 'icon': 'users'})
         }
 
+        if(this.user.role.slug === 'admin'){
+            this.menu_items.push({'name': 'Activity Log', 'route': 'activity_logs', 'url': 'activity-logs', 'icon': 'activity'})
+        }
+
         const settingSubmenus = [];
         // if(this.user.role.slug === 'admin'){
         //     settingSubmenus.push({'name': 'License', 'route': 'license.settings', 'url': 'settings/license', 'icon': 'user_role'})

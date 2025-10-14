@@ -41,11 +41,13 @@ class DepartmentsController extends Controller
 
     public function store()
     {
-        Department::create(
+        $department = Department::create(
             Request::validate([
                 'name' => ['required', 'max:100'],
             ])
         );
+
+        log_activity('create', 'Department created successfully.', $department);
 
         return Redirect::route('departments')->with('success', 'Department created.');
     }
@@ -68,10 +70,13 @@ class DepartmentsController extends Controller
             ])
         );
 
+        log_activity('update', 'Department updated successfully.', $department);
+
         return Redirect::back()->with('success', 'Department updated.');
     }
 
     public function destroy(Department $department) {
+        log_activity('delete', 'Department deleted successfully.', $department);
         $department->delete();
         return Redirect::route('departments')->with('success', 'Department deleted.');
     }

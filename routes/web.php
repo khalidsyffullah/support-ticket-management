@@ -708,7 +708,7 @@ Route::prefix('dashboard')->group(function () {
 
 
     Route::resource('ticket-fields', TicketFieldsController::class);
-    Route::get('global', [\App\Http\Controllers\SettingsController::class, 'global'])->name('global');
+    Route::get('global', [\App\Http\Controllers\SettingsController::class, 'index'])->name('global');
 
     Route::get('activity-logs', [\App\Http\Controllers\ActivityLogsController::class, 'index'])->name('activity_logs');
     Route::delete('activity-logs', [\App\Http\Controllers\ActivityLogsController::class, 'destroy'])->name('activity_logs.destroy');

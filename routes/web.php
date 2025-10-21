@@ -810,8 +810,12 @@ Route::post('/language/{language}', [DashboardController::class, 'setLocale'])
     ->name('language');
 
 /** Site Front-Landing */
-Route::get('/', [HomeController::class, 'index'])
-    ->name('home');
+    Route::get('/', [DashboardController::class, 'index'])
+        ->name('home')
+        ->middleware('auth');
+
+// Route::get('/', [DashboardController::class, 'index'])
+//     ->name('home');
 
 Route::get('terms-of-services', [PageController::class, 'terms'])
     ->name('terms_service');

@@ -548,6 +548,12 @@ class TicketsController extends Controller
         if(empty($ticket)){
             abort(404);
         }
+
+        // Mark notifications as read when the ticket is viewed
+        $user->unreadNotifications
+            ->where('type', 'App\\Notifications\\NewCommentNotification')
+            ->where('data.ticket_id', $ticket->id)
+            ->markAsRead();
         $hiddenFields = Setting::where('slug', 'hide_ticket_fields')->first();
         $comment_access = 'read';
         if($user['role']['slug'] === 'admin'){

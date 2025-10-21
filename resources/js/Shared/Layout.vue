@@ -118,6 +118,33 @@
                           <span v-if="edit_route" class="b-item">/</span>
                           <span class="b-item">{{ $t(title || '') }}</span>
                       </div>
+                      <!-- Browser Navigation Buttons -->
+                      <div class="browser-navigation">
+                          <button
+                              type="button"
+                              class="nav-btn back-btn"
+                              :disabled="!canGoBack"
+                              @click="goBack"
+                              title="Go back"
+                          >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                  <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+                              </svg>
+                              <span>Back</span>
+                          </button>
+                          <button
+                              type="button"
+                              class="nav-btn forward-btn"
+                              :disabled="!canGoForward"
+                              @click="goForward"
+                              title="Go forward"
+                          >
+                              <span>Forward</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                              </svg>
+                          </button>
+                      </div>
                   </div>
                   <div class="ch-right cursor-pointer">
                       <button class="theme-toggle" id="theme-toggle" title="Toggles light & dark" :aria-label="current_mode" aria-live="polite" @click="switchMode">
@@ -158,7 +185,7 @@ import Logo from '@/Shared/Logo.vue'
 import Dropdown from '@/Shared/Dropdown.vue'
 import MainMenu from '@/Shared/MainMenu.vue'
 import FlashMessages from '@/Shared/FlashMessages.vue'
-import {Link, usePage} from '@inertiajs/vue3'
+import {Link, usePage, router} from '@inertiajs/vue3'
 import moment from 'moment'
 import { loadLanguageAsync, getActiveLanguage } from 'laravel-vue-i18n';
 import axios from 'axios'
@@ -185,6 +212,8 @@ export default {
             modes: ['dark', 'light'],
             edit_route: '',
             locale: this.$page.props.auth.user.locale || this.$page.props.settings.default_language,
+            navigationHistory: [],
+            currentIndex: 0,
         }
     },
     computed: {
@@ -193,6 +222,12 @@ export default {
         },
         languages_except_selected(){
             return this.$page.props.languages.filter(language => language.code !== this.$page.props.locale)
+        },
+        canGoBack() {
+            return this.currentIndex > 0;
+        },
+        canGoForward() {
+            return this.currentIndex < this.navigationHistory.length - 1;
         }
     },
     setup() {
@@ -242,6 +277,89 @@ export default {
             }
             this.edit_route = editString? editRoute : '';
         },
+        // Browser Navigation Methods
+        initNavigationHistory() {
+            try {
+                const history = sessionStorage.getItem('inertia_nav_history');
+                const index = sessionStorage.getItem('inertia_nav_index');
+
+                this.navigationHistory = history ? JSON.parse(history) : [];
+                this.currentIndex = index ? parseInt(index, 10) : 0;
+
+                // Ensure valid array
+                if (!Array.isArray(this.navigationHistory)) {
+                    this.navigationHistory = [];
+                }
+
+                // Add current URL if history is empty or different
+                const currentUrl = window.location.href;
+                const expectedUrl = this.navigationHistory[this.currentIndex];
+
+                if (expectedUrl !== currentUrl) {
+                    this.addToHistory(currentUrl);
+                }
+            } catch (e) {
+                this.navigationHistory = [window.location.href];
+                this.currentIndex = 0;
+            }
+        },
+        addToHistory(url) {
+            // Remove any forward history when navigating to a new page
+            this.navigationHistory = this.navigationHistory.slice(0, this.currentIndex + 1);
+
+            // Add new URL, but avoid consecutive duplicates
+            if (this.navigationHistory[this.navigationHistory.length - 1] !== url) {
+                this.navigationHistory.push(url);
+            }
+
+            this.currentIndex = this.navigationHistory.length - 1;
+
+            // Limit history size
+            if (this.navigationHistory.length > 100) {
+                this.navigationHistory.shift();
+                this.currentIndex--;
+            }
+
+            this.saveNavigationState();
+        },
+        saveNavigationState() {
+            try {
+                sessionStorage.setItem('inertia_nav_history', JSON.stringify(this.navigationHistory));
+                sessionStorage.setItem('inertia_nav_index', this.currentIndex.toString());
+            } catch (e) {
+                console.warn('Could not save navigation state');
+            }
+        },
+        goBack() {
+            if (this.canGoBack) {
+                this.currentIndex--;
+                const previousUrl = this.navigationHistory[this.currentIndex];
+                this.saveNavigationState();
+                window.location.href = previousUrl;
+            }
+        },
+        goForward() {
+            if (this.canGoForward) {
+                this.currentIndex++;
+                const nextUrl = this.navigationHistory[this.currentIndex];
+                this.saveNavigationState();
+                window.location.href = nextUrl;
+            }
+        },
+    },
+    watch: {
+        '$page.url': {
+            handler(newUrl) {
+                const fullUrl = window.location.href;
+                const expectedUrl = this.navigationHistory[this.currentIndex];
+
+                // Only add to history if it's a new navigation (not back/forward)
+                if (expectedUrl !== fullUrl) {
+                    this.addToHistory(fullUrl);
+                }
+            },
+            immediate: false
+        }
     },
     updated() {
         this.detectCurrentUrl()
@@ -267,9 +385,124 @@ export default {
                 this.$inertia.reload();
             }, (this.$page.props.settings.session_lifetime * 60 * 1000));
         }
+
+        // Initialize browser navigation
+        this.initNavigationHistory();
     },
     beforeUnmount() {
         clearTimeout(this.sessionTimeout);
     },
 }
 </script>
+
+<style scoped>
+/* Browser Navigation Styles */
+.browser-navigation {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.nav-btn {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: #495057;
+    padding: 0 12px;
+    gap: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.nav-btn:hover:not(:disabled) {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.nav-btn:active:not(:disabled) {
+    background-color: rgba(0, 123, 255, 0.2);
+    transform: scale(0.95);
+}
+
+.nav-btn:disabled {
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.5;
+    background-color: #f8f9fa;
+}
+
+.nav-btn:disabled:hover {
+    background-color: #f8f9fa;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.nav-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.back-btn {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.back-btn:hover:not(:disabled) {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.forward-btn {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.forward-btn:hover:not(:disabled) {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: #28a745;
+}
+
+/* Dark mode support */
+.dark .nav-btn {
+    background: #2d3748;
+    color: #e2e8f0;
+    border-color: #4a5568;
+}
+
+.dark .nav-btn:hover:not(:disabled) {
+    background-color: #4a5568;
+}
+
+.dark .nav-btn:disabled {
+    background-color: #1a202c;
+    color: #718096;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .browser-navigation {
+        gap: 6px;
+    }
+
+    .nav-btn {
+        padding: 0 8px;
+        font-size: 13px;
+        min-width: 28px;
+        height: 28px;
+    }
+
+    .nav-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+</style>

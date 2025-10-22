@@ -22,11 +22,11 @@
                             <li v-if="!!this.enable_option && this.enable_option.show_login">
                                 <a :href="route('register')" class="mb-2 inline-block text-base leading-loose text-[#f3f4fe] hover:text-primary"> {{ $t('Register') }}</a>
                             </li>
-                            <li v-if="!!this.enable_option && this.enable_option.blog">
+                            <!-- <li v-if="!!this.enable_option && this.enable_option.blog">
                                 <a :href="route('blog')" class="mb-2 inline-block text-base leading-loose text-[#f3f4fe] hover:text-primary">
                                     {{ $t('Blog') }}
                                 </a>
-                            </li>
+                            </li> -->
                         </ul>
                     </div>
                 </div>

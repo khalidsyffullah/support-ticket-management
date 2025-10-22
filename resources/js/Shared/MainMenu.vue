@@ -74,9 +74,9 @@ export default {
             this.menu_items.push({'name': 'FAQs', 'route': 'faqs', 'url': 'faqs', 'icon': 'faq'})
         }
 
-        if(enable_option.blog && (user_access.blog.read || user_access.blog.update || user_access.blog.create || user_access.blog.delete)){
-            this.menu_items.push({'name': 'Blog', 'route': 'posts', 'url': 'posts', 'icon': 'post'})
-        }
+        // if(enable_option.blog && (user_access.blog.read || user_access.blog.update || user_access.blog.create || user_access.blog.delete)){
+        //     this.menu_items.push({'name': 'Blog', 'route': 'posts', 'url': 'posts', 'icon': 'post'})
+        // }
 
         if(enable_option.kb && (user_access.knowledge_base.read || user_access.knowledge_base.update || user_access.knowledge_base.create || user_access.knowledge_base.delete)){
             this.menu_items.push({'name': 'Knowledge Base', 'route': 'knowledge_base', 'url': 'knowledge_base', 'icon': 'knowledge'})
@@ -215,3 +215,8 @@ export default {
     }
 }
 </script>
+<style scoped>
+.menu-item {
+    cursor: pointer;
+}
+</style>

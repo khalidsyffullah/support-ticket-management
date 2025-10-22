@@ -316,29 +316,29 @@ Route::prefix('dashboard')->group(function () {
         ->middleware('auth');
 
     /** Blog Route */
-    Route::get('posts', [BlogController::class, 'index'])
-        ->name('posts')
-        ->middleware('auth');
+    // Route::get('posts', [BlogController::class, 'index'])
+    //     ->name('posts')
+    //     ->middleware('auth');
 
-    Route::get('posts/create', [BlogController::class, 'create'])
-        ->name('posts.create')
-        ->middleware('auth');
+    // Route::get('posts/create', [BlogController::class, 'create'])
+    //     ->name('posts.create')
+    //     ->middleware('auth');
 
-    Route::post('posts', [BlogController::class, 'store'])
-        ->name('posts.store')
-        ->middleware('auth');
+    // Route::post('posts', [BlogController::class, 'store'])
+    //     ->name('posts.store')
+    //     ->middleware('auth');
 
-    Route::get('posts/{post}/edit', [BlogController::class, 'edit'])
-        ->name('posts.edit')
-        ->middleware('auth');
+    // Route::get('posts/{post}/edit', [BlogController::class, 'edit'])
+    //     ->name('posts.edit')
+    //     ->middleware('auth');
 
-    Route::put('posts/{post}', [BlogController::class, 'update'])
-        ->name('posts.update')
-        ->middleware('auth');
+    // Route::put('posts/{post}', [BlogController::class, 'update'])
+    //     ->name('posts.update')
+    //     ->middleware('auth');
 
-    Route::delete('posts/{post}', [BlogController::class, 'destroy'])
-        ->name('posts.destroy')
-        ->middleware('auth');
+    // Route::delete('posts/{post}', [BlogController::class, 'destroy'])
+    //     ->name('posts.destroy')
+    //     ->middleware('auth');
 // End - Blog
 
     /** Knowledge base */

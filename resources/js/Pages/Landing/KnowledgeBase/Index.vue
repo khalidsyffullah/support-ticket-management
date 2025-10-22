@@ -1,29 +1,7 @@
 <template>
     <div>
         <Head title="Knowledge Base" />
-        <!-- Start Hero -->
-        <section class="relative z-10 overflow-hidden bg-primary pt-[120px] pb-[100px] md:pt-[130px] lg:pt-[160px]">
-            <div class="container">
-                <div class="-mx-4 flex flex-wrap items-center">
-                    <div class="w-full px-4">
-                        <div class="text-center">
-                            <h1 class="text-4xl font-semibold text-white">{{ 'Knowledge Base' }}</h1>
-                        </div>
-                    </div>
-                </div><!--end grid-->
-            </div><!--end container-->
 
-            <div>
-                <span class="absolute top-0 left-0 z-[-1]">
-                    <img src="/landing/images/header/shape-1.svg" alt="" />
-                </span>
-                <span class="absolute top-0 right-0 z-[-1]">
-                    <img src="/landing/images/header/shape-2.svg" alt="" />
-                </span>
-            </div>
-
-        </section><!--end section-->
-        <!-- End Hero -->
 
         <!-- Start Section-->
         <section class="pt-20 pb-10 lg:pt-[120px] lg:pb-20">
@@ -64,7 +42,7 @@
     </div>
 </template>
 <script>
-import Layout from '@/Shared/Landing/Layout.vue'
+import Layout from '@/Shared/Layout.vue'
 import Icon from '@/Shared/Icon.vue'
 import SearchInput from '@/Shared/SearchInput.vue'
 import Pagination from '@/Shared/Landing/Pagination.vue'

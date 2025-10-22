@@ -827,28 +827,28 @@ Route::get('contact', [PageController::class, 'contact'])
     ->name('contact');
 
 Route::get('services', [PageController::class, 'services'])
-    ->name('services');
+    ->name('services')->middleware('auth');
 
 Route::post('contact', [PageController::class, 'contactPost'])
     ->name('contact.send');
 
 Route::get('faq', [PageController::class, 'faq'])
-    ->name('faq');
+    ->name('faq')->middleware('auth');
 
 Route::get('team', [PageController::class, 'team'])
     ->name('team');
 
 Route::get('kb', [PageController::class, 'kb'])
-    ->name('kb');
+    ->name('kb')->middleware('auth');
 
 Route::get('kb/{kb_item}', [PageController::class, 'kbDetails'])
-    ->name('kb.details');
+    ->name('kb.details')->middleware('auth');
 
 Route::get('blog/type/{typeId}', [PageController::class, 'blogByType'])
-    ->name('blog.by_type');
+    ->name('blog.by_type')->middleware('auth');
 
 Route::get('kb/type/{typeId}', [PageController::class, 'kbByType'])
-    ->name('kb.by_type');
+    ->name('kb.by_type')->middleware('auth');
 
 Route::get('blog', [PageController::class, 'blog'])
     ->name('blog');

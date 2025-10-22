@@ -15,10 +15,12 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Jackiedo\DotenvEditor\Facades\DotenvEditor;
 
-class PageController extends Controller {
+class PageController extends Controller
+{
 
-    public function blog(){
-        if(!$this->isEnabled('blog')){
+    public function blog()
+    {
+        if (!$this->isEnabled('blog')) {
             return abort(404);
         }
         return Inertia::render('Landing/Blog/Index', [
@@ -32,18 +34,19 @@ class PageController extends Controller {
                     return [
                         'id' => $post->id,
                         'title' => $post->title,
-                        'type' => $post->type?$post->type->name:'',
+                        'type' => $post->type ? $post->type->name : '',
                         'typeId' => $post->type_id,
                         'image' => $post->image,
                         'details' => strip_tags($post->details),
                         'created_at' => $post->created_at,
                         'updated_at' => $post->updated_at,
                     ];
-                } ),
+                }),
         ]);
     }
 
-    public function kbByType($typeId){
+    public function kbByType($typeId)
+    {
         $type = Type::where('id', $typeId)->first();
         return Inertia::render('Landing/KnowledgeBase/ByType', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
@@ -57,17 +60,18 @@ class PageController extends Controller {
                     return [
                         'id' => $post->id,
                         'title' => $post->title,
-                        'type' => $post->type?$post->type->name:'',
+                        'type' => $post->type ? $post->type->name : '',
                         'typeId' => $post->type_id,
                         'details' => strip_tags($post->details),
                         'created_at' => $post->created_at,
                         'updated_at' => $post->updated_at,
                     ];
-                } ),
+                }),
         ]);
     }
 
-    public function blogByType($typeId){
+    public function blogByType($typeId)
+    {
         $type = Type::where('id', $typeId)->first();
         return Inertia::render('Landing/Blog/ByType', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
@@ -81,19 +85,20 @@ class PageController extends Controller {
                     return [
                         'id' => $post->id,
                         'title' => $post->title,
-                        'isActive' => $post->is_active?'Yes':'No',
-                        'type' => $post->type?$post->type->name:'',
+                        'isActive' => $post->is_active ? 'Yes' : 'No',
+                        'type' => $post->type ? $post->type->name : '',
                         'typeId' => $post->type_id,
                         'image' => $post->image,
                         'details' => strip_tags($post->details),
                         'created_at' => $post->created_at,
                         'updated_at' => $post->updated_at,
                     ];
-                } ),
+                }),
         ]);
     }
 
-    public function blogDetails(Blog $post){
+    public function blogDetails(Blog $post)
+    {
         return Inertia::render('Landing/Blog/Details', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
             'title' => $post->title,
@@ -102,7 +107,7 @@ class PageController extends Controller {
                 'title' => $post->title,
                 'is_active' => $post->is_active,
                 'author_id' => $post->author_id,
-                'author' => $post->author?? null,
+                'author' => $post->author ?? null,
                 'type_id' => $post->type_id,
                 'image' => $post->image,
                 'details' => $post->details,
@@ -110,15 +115,15 @@ class PageController extends Controller {
                 'updated_at' => $post->updated_at,
             ],
             'types' => Type::whereHas('posts')->get(),
-            'recent_posts' => Blog::where( 'id', '!=', $post->id )
-                ->orderBy('created_at','desc')
+            'recent_posts' => Blog::where('id', '!=', $post->id)
+                ->orderBy('created_at', 'desc')
                 ->limit(5)
                 ->get()
                 ->map
                 ->only('id', 'title', 'created_at', 'details', 'image', 'updated_at'),
             'related_posts' => Blog::where('type_id', $post->type_id)
-                ->where( 'id', '!=', $post->id )
-                ->orderBy('created_at','desc')
+                ->where('id', '!=', $post->id)
+                ->orderBy('created_at', 'desc')
                 ->limit(3)
                 ->get()
                 ->map
@@ -126,13 +131,14 @@ class PageController extends Controller {
         ]);
     }
 
-    public function kb(){
-        if(!$this->isEnabled('kb')){
+    public function kb()
+    {
+        if (!$this->isEnabled('kb')) {
             return abort(404);
         }
         // Test Code
         $setting = Setting::where('slug', 'enable_options')->select('value')->first();
-        $options = $setting->value? json_decode($setting->value, true): null;
+        $options = $setting->value ? json_decode($setting->value, true) : null;
         $key = array_search('service', array_column($options, 'slug'));
         $option = $options[$key];
         // Test Code
@@ -140,6 +146,7 @@ class PageController extends Controller {
             'footer' => FrontPage::where('slug', 'footer')->first(),
             'types' => Type::orderBy('name')->get()->map->only('id', 'name'),
             'filters' => Request::only('search'),
+            'title' => 'Knowledge Base',
             'kb' => KnowledgeBase::orderBy('created_at', 'desc')
                 ->filter(Request::only('search'))
                 ->paginate(9)
@@ -148,18 +155,19 @@ class PageController extends Controller {
                     return [
                         'id' => $post->id,
                         'title' => $post->title,
-                        'type' => $post->type?$post->type->name:'',
+                        'type' => $post->type ? $post->type->name : '',
                         'typeId' => $post->type_id,
                         'updated_at' => $post->updated_at,
                         'created_at' => $post->created_at,
                         'details' => strip_tags($post->details),
                     ];
-                } ),
+                }),
         ]);
     }
 
-    public function faq(){
-        if(!$this->isEnabled('faq')){
+    public function faq()
+    {
+        if (!$this->isEnabled('faq')) {
             return abort(404);
         }
         return Inertia::render('Landing/FAQ', [
@@ -181,21 +189,22 @@ class PageController extends Controller {
         ]);
     }
 
-    public function kbDetails(KnowledgeBase $kb_item){
+    public function kbDetails(KnowledgeBase $kb_item)
+    {
         return Inertia::render('Landing/KnowledgeBase/Details', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
             'title' => $kb_item->title,
             'kb' => [
                 'id' => $kb_item->id,
                 'title' => $kb_item->title,
-                'type' => $kb_item->type?$kb_item->type->name:'',
+                'type' => $kb_item->type ? $kb_item->type->name : '',
                 'typeId' => $kb_item->type_id,
                 'updated_at' => $kb_item->updated_at,
                 'created_at' => $kb_item->created_at,
                 'details' => $kb_item->details,
             ],
             'types' => Type::whereHas('kb')->get(),
-            'random_kb' => KnowledgeBase::where( 'id', '!=', $kb_item->id )
+            'random_kb' => KnowledgeBase::where('id', '!=', $kb_item->id)
                 ->inRandomOrder()
                 ->limit(5)
                 ->get()
@@ -204,7 +213,8 @@ class PageController extends Controller {
         ]);
     }
 
-    public function privacy(){
+    public function privacy()
+    {
         $page = FrontPage::where('slug', 'privacy')->first();
         return Inertia::render('Landing/PrivacyPolicy', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
@@ -213,13 +223,14 @@ class PageController extends Controller {
         ]);
     }
 
-    public function contact(){
-        if(!$this->isEnabled('contact')){
+    public function contact()
+    {
+        if (!$this->isEnabled('contact')) {
             return abort(404);
         }
         $page = FrontPage::where('slug', 'contact')->first();
         $env = DotenvEditor::load();
-        $siteKey = $env->keyExists('RE_CAPTCHA_KEY')?$env->getValue('RE_CAPTCHA_KEY'):'';
+        $siteKey = $env->keyExists('RE_CAPTCHA_KEY') ? $env->getValue('RE_CAPTCHA_KEY') : '';
         return Inertia::render('Landing/Contact', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
             'site_key' => $siteKey,
@@ -228,8 +239,9 @@ class PageController extends Controller {
         ]);
     }
 
-    public function services(){
-        if(!$this->isEnabled('service')){
+    public function services()
+    {
+        if (!$this->isEnabled('service')) {
             return abort(404);
         }
         $page = FrontPage::where('slug', 'services')->first();
@@ -240,7 +252,8 @@ class PageController extends Controller {
         ]);
     }
 
-    public function terms(){
+    public function terms()
+    {
         $page = FrontPage::where('slug', 'terms')->first();
         return Inertia::render('Landing/TermsOfServices', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
@@ -249,7 +262,8 @@ class PageController extends Controller {
         ]);
     }
 
-    public function contactPost(){
+    public function contactPost()
+    {
         $contact_data = Request::validate([
             'name' => ['required', 'max:40'],
             'email' => ['required', 'max:60', 'email'],
@@ -260,268 +274,270 @@ class PageController extends Controller {
         event(new ContactMessage(['email' => $contact_data['email'], 'name' => $contact_data['name'], 'phone' => $contact_data['phone'], 'message' => $contact_data['message']]));
         return Redirect::back()->with('success', 'Your message has been sent!');
     }
-    private function isEnabled($slug){
+    private function isEnabled($slug)
+    {
         $setting = Setting::where('slug', 'enable_options')->select('value')->first();
-        $options = $setting->value? json_decode($setting->value, true): null;
+        $options = $setting->value ? json_decode($setting->value, true) : null;
         $key = array_search($slug, array_column($options, 'slug'));
-        if(empty($options)){
+        if (empty($options)) {
             return true;
         }
-        return $options[$key]?$options[$key]['value']:true;
+        return $options[$key] ? $options[$key]['value'] : true;
     }
 
-    public function getFlag($code){
+    public function getFlag($code)
+    {
         $flagItems = [
-            'AD'=>'🇦🇩',
-            'AE'=>'🇦🇪',
-            'AF'=>'🇦🇫',
-            'AG'=>'🇦🇬',
-            'AI'=>'🇦🇮',
-            'AL'=>'🇦🇱',
-            'AM'=>'🇦🇲',
-            'AO'=>'🇦🇴',
-            'AQ'=>'🇦🇶',
-            'AR'=>'🇦🇷',
-            'AS'=>'🇦🇸',
-            'AT'=>'🇦🇹',
-            'AU'=>'🇦🇺',
-            'AW'=>'🇦🇼',
-            'AX'=>'🇦🇽',
-            'AZ'=>'🇦🇿',
-            'BA'=>'🇧🇦',
-            'BB'=>'🇧🇧',
-            'BD'=>'🇧🇩',
-            'BE'=>'🇧🇪',
-            'BF'=>'🇧🇫',
-            'BG'=>'🇧🇬',
-            'BH'=>'🇧🇭',
-            'BI'=>'🇧🇮',
-            'BJ'=>'🇧🇯',
-            'BL'=>'🇧🇱',
-            'BM'=>'🇧🇲',
-            'BN'=>'🇧🇳',
-            'BO'=>'🇧🇴',
-            'BQ'=>'🇧🇶',
-            'BR'=>'🇧🇷',
-            'BS'=>'🇧🇸',
-            'BT'=>'🇧🇹',
-            'BV'=>'🇧🇻',
-            'BW'=>'🇧🇼',
-            'BY'=>'🇧🇾',
-            'BZ'=>'🇧🇿',
-            'CA'=>'🇨🇦',
-            'CC'=>'🇨🇨',
-            'CD'=>'🇨🇩',
-            'CF'=>'🇨🇫',
-            'CG'=>'🇨🇬',
-            'CH'=>'🇨🇭',
-            'CI'=>'🇨🇮',
-            'CK'=>'🇨🇰',
-            'CL'=>'🇨🇱',
-            'CM'=>'🇨🇲',
-            'CN'=>'🇨🇳',
-            'CO'=>'🇨🇴',
-            'CR'=>'🇨🇷',
-            'CU'=>'🇨🇺',
-            'CV'=>'🇨🇻',
-            'CW'=>'🇨🇼',
-            'CX'=>'🇨🇽',
-            'CY'=>'🇨🇾',
-            'CZ'=>'🇨🇿',
-            'DE'=>'🇩🇪',
-            'DJ'=>'🇩🇯',
-            'DK'=>'🇩🇰',
-            'DM'=>'🇩🇲',
-            'DO'=>'🇩🇴',
-            'DZ'=>'🇩🇿',
-            'EC'=>'🇪🇨',
-            'EE'=>'🇪🇪',
-            'EG'=>'🇪🇬',
-            'EH'=>'🇪🇭',
-            'ER'=>'🇪🇷',
-            'ES'=>'🇪🇸',
-            'ET'=>'🇪🇹',
-            'FI'=>'🇫🇮',
-            'FJ'=>'🇫🇯',
-            'FK'=>'🇫🇰',
-            'FM'=>'🇫🇲',
-            'FO'=>'🇫🇴',
-            'FR'=>'🇫🇷',
-            'GA'=>'🇬🇦',
-            'GB'=>'🇬🇧',
-            'GD'=>'🇬🇩',
-            'GE'=>'🇬🇪',
-            'GF'=>'🇬🇫',
-            'GG'=>'🇬🇬',
-            'GH'=>'🇬🇭',
-            'GI'=>'🇬🇮',
-            'GL'=>'🇬🇱',
-            'GM'=>'🇬🇲',
-            'GN'=>'🇬🇳',
-            'GP'=>'🇬🇵',
-            'GQ'=>'🇬🇶',
-            'GR'=>'🇬🇷',
-            'GS'=>'🇬🇸',
-            'GT'=>'🇬🇹',
-            'GU'=>'🇬🇺',
-            'GW'=>'🇬🇼',
-            'GY'=>'🇬🇾',
-            'HK'=>'🇭🇰',
-            'HM'=>'🇭🇲',
-            'HN'=>'🇭🇳',
-            'HR'=>'🇭🇷',
-            'HT'=>'🇭🇹',
-            'HU'=>'🇭🇺',
-            'ID'=>'🇮🇩',
-            'IE'=>'🇮🇪',
-            'IL'=>'🇮🇱',
-            'IM'=>'🇮🇲',
-            'IN'=>'🇮🇳',
-            'IO'=>'🇮🇴',
-            'IQ'=>'🇮🇶',
-            'IR'=>'🇮🇷',
-            'IS'=>'🇮🇸',
-            'IT'=>'🇮🇹',
-            'JE'=>'🇯🇪',
-            'JM'=>'🇯🇲',
-            'JO'=>'🇯🇴',
-            'JP'=>'🇯🇵',
-            'KE'=>'🇰🇪',
-            'KG'=>'🇰🇬',
-            'KH'=>'🇰🇭',
-            'KI'=>'🇰🇮',
-            'KM'=>'🇰🇲',
-            'KN'=>'🇰🇳',
-            'KP'=>'🇰🇵',
-            'KR'=>'🇰🇷',
-            'KW'=>'🇰🇼',
-            'KY'=>'🇰🇾',
-            'KZ'=>'🇰🇿',
-            'LA'=>'🇱🇦',
-            'LB'=>'🇱🇧',
-            'LC'=>'🇱🇨',
-            'LI'=>'🇱🇮',
-            'LK'=>'🇱🇰',
-            'LR'=>'🇱🇷',
-            'LS'=>'🇱🇸',
-            'LT'=>'🇱🇹',
-            'LU'=>'🇱🇺',
-            'LV'=>'🇱🇻',
-            'LY'=>'🇱🇾',
-            'MA'=>'🇲🇦',
-            'MC'=>'🇲🇨',
-            'MD'=>'🇲🇩',
-            'ME'=>'🇲🇪',
-            'MF'=>'🇲🇫',
-            'MG'=>'🇲🇬',
-            'MH'=>'🇲🇭',
-            'MK'=>'🇲🇰',
-            'ML'=>'🇲🇱',
-            'MM'=>'🇲🇲',
-            'MN'=>'🇲🇳',
-            'MO'=>'🇲🇴',
-            'MP'=>'🇲🇵',
-            'MQ'=>'🇲🇶',
-            'MR'=>'🇲🇷',
-            'MS'=>'🇲🇸',
-            'MT'=>'🇲🇹',
-            'MU'=>'🇲🇺',
-            'MV'=>'🇲🇻',
-            'MW'=>'🇲🇼',
-            'MX'=>'🇲🇽',
-            'MY'=>'🇲🇾',
-            'MZ'=>'🇲🇿',
-            'NA'=>'🇳🇦',
-            'NC'=>'🇳🇨',
-            'NE'=>'🇳🇪',
-            'NF'=>'🇳🇫',
-            'NG'=>'🇳🇬',
-            'NI'=>'🇳🇮',
-            'NL'=>'🇳🇱',
-            'NO'=>'🇳🇴',
-            'NP'=>'🇳🇵',
-            'NR'=>'🇳🇷',
-            'NU'=>'🇳🇺',
-            'NZ'=>'🇳🇿',
-            'OM'=>'🇴🇲',
-            'PA'=>'🇵🇦',
-            'PE'=>'🇵🇪',
-            'PF'=>'🇵🇫',
-            'PG'=>'🇵🇬',
-            'PH'=>'🇵🇭',
-            'PK'=>'🇵🇰',
-            'PL'=>'🇵🇱',
-            'PM'=>'🇵🇲',
-            'PN'=>'🇵🇳',
-            'PR'=>'🇵🇷',
-            'PS'=>'🇵🇸',
-            'PT'=>'🇵🇹',
-            'PW'=>'🇵🇼',
-            'PY'=>'🇵🇾',
-            'QA'=>'🇶🇦',
-            'RE'=>'🇷🇪',
-            'RO'=>'🇷🇴',
-            'RS'=>'🇷🇸',
-            'RU'=>'🇷🇺',
-            'RW'=>'🇷🇼',
-            'SA'=>'🇸🇦',
-            'SB'=>'🇸🇧',
-            'SC'=>'🇸🇨',
-            'SD'=>'🇸🇩',
-            'SE'=>'🇸🇪',
-            'SG'=>'🇸🇬',
-            'SH'=>'🇸🇭',
-            'SI'=>'🇸🇮',
-            'SJ'=>'🇸🇯',
-            'SK'=>'🇸🇰',
-            'SL'=>'🇸🇱',
-            'SM'=>'🇸🇲',
-            'SN'=>'🇸🇳',
-            'SO'=>'🇸🇴',
-            'SR'=>'🇸🇷',
-            'SS'=>'🇸🇸',
-            'ST'=>'🇸🇹',
-            'SV'=>'🇸🇻',
-            'SX'=>'🇸🇽',
-            'SY'=>'🇸🇾',
-            'SZ'=>'🇸🇿',
-            'TC'=>'🇹🇨',
-            'TD'=>'🇹🇩',
-            'TF'=>'🇹🇫',
-            'TG'=>'🇹🇬',
-            'TH'=>'🇹🇭',
-            'TJ'=>'🇹🇯',
-            'TK'=>'🇹🇰',
-            'TL'=>'🇹🇱',
-            'TM'=>'🇹🇲',
-            'TN'=>'🇹🇳',
-            'TO'=>'🇹🇴',
-            'TR'=>'🇹🇷',
-            'TT'=>'🇹🇹',
-            'TV'=>'🇹🇻',
-            'TW'=>'🇹🇼',
-            'TZ'=>'🇹🇿',
-            'UA'=>'🇺🇦',
-            'UG'=>'🇺🇬',
-            'UM'=>'🇺🇲',
-            'US'=>'🇺🇸',
-            'UY'=>'🇺🇾',
-            'UZ'=>'🇺🇿',
-            'VA'=>'🇻🇦',
-            'VC'=>'🇻🇨',
-            'VE'=>'🇻🇪',
-            'VG'=>'🇻🇬',
-            'VI'=>'🇻🇮',
-            'VN'=>'🇻🇳',
-            'VU'=>'🇻🇺',
-            'WF'=>'🇼🇫',
-            'WS'=>'🇼🇸',
-            'XK'=>'🇽🇰',
-            'YE'=>'🇾🇪',
-            'YT'=>'🇾🇹',
-            'ZA'=>'🇿🇦',
-            'ZM'=>'🇿🇲',
+            'AD' => '🇦🇩',
+            'AE' => '🇦🇪',
+            'AF' => '🇦🇫',
+            'AG' => '🇦🇬',
+            'AI' => '🇦🇮',
+            'AL' => '🇦🇱',
+            'AM' => '🇦🇲',
+            'AO' => '🇦🇴',
+            'AQ' => '🇦🇶',
+            'AR' => '🇦🇷',
+            'AS' => '🇦🇸',
+            'AT' => '🇦🇹',
+            'AU' => '🇦🇺',
+            'AW' => '🇦🇼',
+            'AX' => '🇦🇽',
+            'AZ' => '🇦🇿',
+            'BA' => '🇧🇦',
+            'BB' => '🇧🇧',
+            'BD' => '🇧🇩',
+            'BE' => '🇧🇪',
+            'BF' => '🇧🇫',
+            'BG' => '🇧🇬',
+            'BH' => '🇧🇭',
+            'BI' => '🇧🇮',
+            'BJ' => '🇧🇯',
+            'BL' => '🇧🇱',
+            'BM' => '🇧🇲',
+            'BN' => '🇧🇳',
+            'BO' => '🇧🇴',
+            'BQ' => '🇧🇶',
+            'BR' => '🇧🇷',
+            'BS' => '🇧🇸',
+            'BT' => '🇧🇹',
+            'BV' => '🇧🇻',
+            'BW' => '🇧🇼',
+            'BY' => '🇧🇾',
+            'BZ' => '🇧🇿',
+            'CA' => '🇨🇦',
+            'CC' => '🇨🇨',
+            'CD' => '🇨🇩',
+            'CF' => '🇨🇫',
+            'CG' => '🇨🇬',
+            'CH' => '🇨🇭',
+            'CI' => '🇨🇮',
+            'CK' => '🇨🇰',
+            'CL' => '🇨🇱',
+            'CM' => '🇨🇲',
+            'CN' => '🇨🇳',
+            'CO' => '🇨🇴',
+            'CR' => '🇨🇷',
+            'CU' => '🇨🇺',
+            'CV' => '🇨🇻',
+            'CW' => '🇨🇼',
+            'CX' => '🇨🇽',
+            'CY' => '🇨🇾',
+            'CZ' => '🇨🇿',
+            'DE' => '🇩🇪',
+            'DJ' => '🇩🇯',
+            'DK' => '🇩🇰',
+            'DM' => '🇩🇲',
+            'DO' => '🇩🇴',
+            'DZ' => '🇩🇿',
+            'EC' => '🇪🇨',
+            'EE' => '🇪🇪',
+            'EG' => '🇪🇬',
+            'EH' => '🇪🇭',
+            'ER' => '🇪🇷',
+            'ES' => '🇪🇸',
+            'ET' => '🇪🇹',
+            'FI' => '🇫🇮',
+            'FJ' => '🇫🇯',
+            'FK' => '🇫🇰',
+            'FM' => '🇫🇲',
+            'FO' => '🇫🇴',
+            'FR' => '🇫🇷',
+            'GA' => '🇬🇦',
+            'GB' => '🇬🇧',
+            'GD' => '🇬🇩',
+            'GE' => '🇬🇪',
+            'GF' => '🇬🇫',
+            'GG' => '🇬🇬',
+            'GH' => '🇬🇭',
+            'GI' => '🇬🇮',
+            'GL' => '🇬🇱',
+            'GM' => '🇬🇲',
+            'GN' => '🇬🇳',
+            'GP' => '🇬🇵',
+            'GQ' => '🇬🇶',
+            'GR' => '🇬🇷',
+            'GS' => '🇬🇸',
+            'GT' => '🇬🇹',
+            'GU' => '🇬🇺',
+            'GW' => '🇬🇼',
+            'GY' => '🇬🇾',
+            'HK' => '🇭🇰',
+            'HM' => '🇭🇲',
+            'HN' => '🇭🇳',
+            'HR' => '🇭🇷',
+            'HT' => '🇭🇹',
+            'HU' => '🇭🇺',
+            'ID' => '🇮🇩',
+            'IE' => '🇮🇪',
+            'IL' => '🇮🇱',
+            'IM' => '🇮🇲',
+            'IN' => '🇮🇳',
+            'IO' => '🇮🇴',
+            'IQ' => '🇮🇶',
+            'IR' => '🇮🇷',
+            'IS' => '🇮🇸',
+            'IT' => '🇮🇹',
+            'JE' => '🇯🇪',
+            'JM' => '🇯🇲',
+            'JO' => '🇯🇴',
+            'JP' => '🇯🇵',
+            'KE' => '🇰🇪',
+            'KG' => '🇰🇬',
+            'KH' => '🇰🇭',
+            'KI' => '🇰🇮',
+            'KM' => '🇰🇲',
+            'KN' => '🇰🇳',
+            'KP' => '🇰🇵',
+            'KR' => '🇰🇷',
+            'KW' => '🇰🇼',
+            'KY' => '🇰🇾',
+            'KZ' => '🇰🇿',
+            'LA' => '🇱🇦',
+            'LB' => '🇱🇧',
+            'LC' => '🇱🇨',
+            'LI' => '🇱🇮',
+            'LK' => '🇱🇰',
+            'LR' => '🇱🇷',
+            'LS' => '🇱🇸',
+            'LT' => '🇱🇹',
+            'LU' => '🇱🇺',
+            'LV' => '🇱🇻',
+            'LY' => '🇱🇾',
+            'MA' => '🇲🇦',
+            'MC' => '🇲🇨',
+            'MD' => '🇲🇩',
+            'ME' => '🇲🇪',
+            'MF' => '🇲🇫',
+            'MG' => '🇲🇬',
+            'MH' => '🇲🇭',
+            'MK' => '🇲🇰',
+            'ML' => '🇲🇱',
+            'MM' => '🇲🇲',
+            'MN' => '🇲🇳',
+            'MO' => '🇲🇴',
+            'MP' => '🇲🇵',
+            'MQ' => '🇲🇶',
+            'MR' => '🇲🇷',
+            'MS' => '🇲🇸',
+            'MT' => '🇲🇹',
+            'MU' => '🇲🇺',
+            'MV' => '🇲🇻',
+            'MW' => '🇲🇼',
+            'MX' => '🇲🇽',
+            'MY' => '🇲🇾',
+            'MZ' => '🇲🇿',
+            'NA' => '🇳🇦',
+            'NC' => '🇳🇨',
+            'NE' => '🇳🇪',
+            'NF' => '🇳🇫',
+            'NG' => '🇳🇬',
+            'NI' => '🇳🇮',
+            'NL' => '🇳🇱',
+            'NO' => '🇳🇴',
+            'NP' => '🇳🇵',
+            'NR' => '🇳🇷',
+            'NU' => '🇳🇺',
+            'NZ' => '🇳🇿',
+            'OM' => '🇴🇲',
+            'PA' => '🇵🇦',
+            'PE' => '🇵🇪',
+            'PF' => '🇵🇫',
+            'PG' => '🇵🇬',
+            'PH' => '🇵🇭',
+            'PK' => '🇵🇰',
+            'PL' => '🇵🇱',
+            'PM' => '🇵🇲',
+            'PN' => '🇵🇳',
+            'PR' => '🇵🇷',
+            'PS' => '🇵🇸',
+            'PT' => '🇵🇹',
+            'PW' => '🇵🇼',
+            'PY' => '🇵🇾',
+            'QA' => '🇶🇦',
+            'RE' => '🇷🇪',
+            'RO' => '🇷🇴',
+            'RS' => '🇷🇸',
+            'RU' => '🇷🇺',
+            'RW' => '🇷🇼',
+            'SA' => '🇸🇦',
+            'SB' => '🇸🇧',
+            'SC' => '🇸🇨',
+            'SD' => '🇸🇩',
+            'SE' => '🇸🇪',
+            'SG' => '🇸🇬',
+            'SH' => '🇸🇭',
+            'SI' => '🇸🇮',
+            'SJ' => '🇸🇯',
+            'SK' => '🇸🇰',
+            'SL' => '🇸🇱',
+            'SM' => '🇸🇲',
+            'SN' => '🇸🇳',
+            'SO' => '🇸🇴',
+            'SR' => '🇸🇷',
+            'SS' => '🇸🇸',
+            'ST' => '🇸🇹',
+            'SV' => '🇸🇻',
+            'SX' => '🇸🇽',
+            'SY' => '🇸🇾',
+            'SZ' => '🇸🇿',
+            'TC' => '🇹🇨',
+            'TD' => '🇹🇩',
+            'TF' => '🇹🇫',
+            'TG' => '🇹🇬',
+            'TH' => '🇹🇭',
+            'TJ' => '🇹🇯',
+            'TK' => '🇹🇰',
+            'TL' => '🇹🇱',
+            'TM' => '🇹🇲',
+            'TN' => '🇹🇳',
+            'TO' => '🇹🇴',
+            'TR' => '🇹🇷',
+            'TT' => '🇹🇹',
+            'TV' => '🇹🇻',
+            'TW' => '🇹🇼',
+            'TZ' => '🇹🇿',
+            'UA' => '🇺🇦',
+            'UG' => '🇺🇬',
+            'UM' => '🇺🇲',
+            'US' => '🇺🇸',
+            'UY' => '🇺🇾',
+            'UZ' => '🇺🇿',
+            'VA' => '🇻🇦',
+            'VC' => '🇻🇨',
+            'VE' => '🇻🇪',
+            'VG' => '🇻🇬',
+            'VI' => '🇻🇮',
+            'VN' => '🇻🇳',
+            'VU' => '🇻🇺',
+            'WF' => '🇼🇫',
+            'WS' => '🇼🇸',
+            'XK' => '🇽🇰',
+            'YE' => '🇾🇪',
+            'YT' => '🇾🇹',
+            'ZA' => '🇿🇦',
+            'ZM' => '🇿🇲',
         ];
-        return $flagItems[strtoupper($code)]??'🏳';
+        return $flagItems[strtoupper($code)] ?? '🏳';
     }
 }

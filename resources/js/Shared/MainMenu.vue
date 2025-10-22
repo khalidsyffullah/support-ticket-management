@@ -70,27 +70,11 @@ export default {
             this.menu_items.push({'name': 'Chat', 'route': 'chat', 'url': 'chat', 'icon': 'chat'})
         }
 
-        if(enable_option.faq && (user_access.faq.read || user_access.faq.update || user_access.faq.create || user_access.faq.delete)){
-            this.menu_items.push({'name': 'FAQs', 'route': 'faqs', 'url': 'faqs', 'icon': 'faq'})
-        }
+
 
         // if(enable_option.blog && (user_access.blog.read || user_access.blog.update || user_access.blog.create || user_access.blog.delete)){
         //     this.menu_items.push({'name': 'Blog', 'route': 'posts', 'url': 'posts', 'icon': 'post'})
         // }
-
-        if(enable_option.kb && (user_access.knowledge_base.read || user_access.knowledge_base.update || user_access.knowledge_base.create || user_access.knowledge_base.delete)){
-            this.menu_items.push({'name': 'Knowledge Base', 'route': 'knowledge_base', 'url': 'knowledge_base', 'icon': 'knowledge'})
-        }
-
-                if(enable_option.service && this.user.role.slug === 'customer'){
-            this.menu_items.push({'name': 'Services', 'route': 'services', 'url': 'services', 'icon': 'service'})
-        }
-        if(enable_option.service && this.user.role.slug === 'customer'){
-            this.menu_items.push({'name': 'faq', 'route': 'faq', 'url': 'faq', 'icon': 'faq'})
-        }
-        if(enable_option.service && this.user.role.slug === 'customer'){
-            this.menu_items.push({'name': 'Knowledge', 'route': 'kb', 'url': 'kb', 'icon': 'knowledge'})
-        }
 
         if(user_access.customer.read || user_access.customer.update || user_access.customer.create || user_access.customer.delete){
             this.menu_items.push({'name': 'Customers', 'route': 'customers', 'url': 'customers', 'icon': 'all_users'})
@@ -193,20 +177,42 @@ export default {
         if(settingSubmenus.length){
             this.menu_items.push({'name': 'Settings', 'route': '', 'url': 'settings', 'icon': 'settings', 'submenu': settingSubmenus })
         }
+        const otherPagesSubmenu = [];
 
-        if(user_access.front_page.read || user_access.front_page.update || user_access.front_page.create || user_access.front_page.delete){
-            this.menu_items.push(
-                {'name': 'Other Pages', 'route': '', 'url': 'front_pages', 'icon': 'gear',
-                    'submenu': [
-                        // {'name': 'Home', 'route': 'front_pages.page', 'url': 'front_pages/home', 'icon': 'page', 'param': 'home'},
-                        // {'name': 'Contact', 'route': 'front_pages.page', 'url': 'front_pages/contact', 'icon': 'page', 'param': 'contact'},
-                        {'name': 'Services', 'route': 'front_pages.page', 'url': 'front_pages/services', 'icon': 'page', 'param': 'services'},
-                        // {'name': 'Privacy Policy', 'route': 'front_pages.page', 'url': 'front_pages/privacy', 'icon': 'page', 'param': 'privacy'},
-                        // {'name': 'Terms of services', 'route': 'front_pages.page', 'url': 'front_pages/terms', 'icon': 'page', 'param': 'terms'},
-                        // {'name': 'Footer', 'route': 'front_pages.page', 'url': 'front_pages/footer', 'icon': 'page', 'param': 'footer'},
-                    ]
-                },
-            )
+        if(enable_option.faq && (user_access.faq.read || user_access.faq.update || user_access.faq.create || user_access.faq.delete)){
+            otherPagesSubmenu.push({'name': 'FAQs', 'route': 'faqs', 'url': 'faqs', 'icon': 'faq'})
+        }
+
+        if(enable_option.kb && (user_access.knowledge_base.read || user_access.knowledge_base.update || user_access.knowledge_base.create || user_access.knowledge_base.delete)){
+            otherPagesSubmenu.push({'name': 'Knowledge Base', 'route': 'knowledge_base', 'url': 'knowledge_base', 'icon': 'knowledge'})
+        }
+
+        if(enable_option.service && this.user.role.slug === 'customer'){
+            if (!otherPagesSubmenu.some(item => item.route === 'faq')) {
+              otherPagesSubmenu.push({'name': 'faq', 'route': 'faq', 'url': 'faq', 'icon': 'faq'});
+            }
+            if (!otherPagesSubmenu.some(item => item.route === 'kb')) {
+              otherPagesSubmenu.push({'name': 'Knowledge', 'route': 'kb', 'url': 'kb', 'icon': 'knowledge'});
+            }
+            if (!otherPagesSubmenu.some(item => item.route === 'services')) {
+              otherPagesSubmenu.push({'name': 'Services', 'route': 'services', 'url': 'services', 'icon': 'service'});
+            }
+        }
+
+        if (user_access.front_page.read || user_access.front_page.update || user_access.front_page.create || user_access.front_page.delete) {
+            if (!otherPagesSubmenu.some(item => item.route === 'front_pages.page' && item.param === 'services')) {
+                otherPagesSubmenu.push({'name': 'Services Page', 'route': 'front_pages.page', 'url': 'front_pages/services', 'icon': 'page', 'param': 'services'});
+            }
+        }
+
+        if (otherPagesSubmenu.length > 0) {
+            this.menu_items.push({
+                'name': 'Other Pages',
+                'route': '',
+                'url': 'other_pages',
+                'icon': 'page',
+                'submenu': otherPagesSubmenu
+            });
         }
 
         // if(this.user.role.slug === 'admin'){

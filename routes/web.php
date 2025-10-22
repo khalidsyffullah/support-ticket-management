@@ -817,20 +817,20 @@ Route::post('/language/{language}', [DashboardController::class, 'setLocale'])
 // Route::get('/', [DashboardController::class, 'index'])
 //     ->name('home');
 
-Route::get('terms-of-services', [PageController::class, 'terms'])
-    ->name('terms_service');
+// Route::get('terms-of-services', [PageController::class, 'terms'])
+//     ->name('terms_service');
 
-Route::get('privacy', [PageController::class, 'privacy'])
-    ->name('privacy');
+// Route::get('privacy', [PageController::class, 'privacy'])
+//     ->name('privacy');
 
-Route::get('contact', [PageController::class, 'contact'])
-    ->name('contact');
+// Route::get('contact', [PageController::class, 'contact'])
+//     ->name('contact');
 
 Route::get('services', [PageController::class, 'services'])
     ->name('services')->middleware('auth');
 
-Route::post('contact', [PageController::class, 'contactPost'])
-    ->name('contact.send');
+// Route::post('contact', [PageController::class, 'contactPost'])
+//     ->name('contact.send');
 
 Route::get('faq', [PageController::class, 'faq'])
     ->name('faq')->middleware('auth');
@@ -844,21 +844,21 @@ Route::get('kb', [PageController::class, 'kb'])
 Route::get('kb/{kb_item}', [PageController::class, 'kbDetails'])
     ->name('kb.details')->middleware('auth');
 
-Route::get('blog/type/{typeId}', [PageController::class, 'blogByType'])
-    ->name('blog.by_type')->middleware('auth');
+// Route::get('blog/type/{typeId}', [PageController::class, 'blogByType'])
+//     ->name('blog.by_type')->middleware('auth');
 
-Route::get('kb/type/{typeId}', [PageController::class, 'kbByType'])
-    ->name('kb.by_type')->middleware('auth');
+// Route::get('kb/type/{typeId}', [PageController::class, 'kbByType'])
+//     ->name('kb.by_type')->middleware('auth');
 
-Route::get('blog', [PageController::class, 'blog'])
-    ->name('blog');
+// Route::get('blog', [PageController::class, 'blog'])
+//     ->name('blog');
 
-Route::get('blog/{post}', [PageController::class, 'blogDetails'])
-    ->name('blog.details');
+// Route::get('blog/{post}', [PageController::class, 'blogDetails'])
+//     ->name('blog.details');
 
 
 /** Newsletter Subscribe */
-Route::post('subscribe/news', [SubscriptionController::class, 'subscribe'])->name('subscribe.news');
+// Route::post('subscribe/news', [SubscriptionController::class, 'subscribe'])->name('subscribe.news');
 /** Newsletter Subscribe */
 
 /** Installation Steps */

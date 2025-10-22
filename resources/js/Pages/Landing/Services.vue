@@ -12,7 +12,7 @@
                     <!-- New Code -->
                     <div v-for="service in page.services" class="w-full px-4 md:w-1/2 lg:w-1/3">
                         <div
-                            class="mb-8 rounded-[20px] bg-white p-10 shadow-md hover:shadow-lg md:px-7 xl:px-10"
+                            class="mb-8 rounded-[20px] bg-white p-10 shadow-md hover:shadow-lg md:px-7 xl:px-10 min-h-[270px]"
                         >
                             <div
                                 class="bg-primary mb-8 flex h-[70px] w-[70px] items-center justify-center rounded-2xl"

@@ -26,7 +26,13 @@
                                         <text-input v-model="service.name" class="pr-6 w-full lg:w-2/3" :label="$t('Name')" />
                                         <text-input v-model="service.icon" class=" w-full lg:w-1/3" :label="$t('Icon')" />
                                     </div>
-                                    <textarea-input name="content" v-model="service.details" class="pt-3 w-full" :rows="2" :label="$t('Details')"></textarea-input>
+                                    <text-input
+                                        name="content"
+                                        v-model="service.details"
+                                        class="pt-3 w-full"
+                                        :label="$t('Service URL')"
+                                        :error="errors[`services.${si}.details`]"
+                                    ></text-input>
                                 </fieldset>
                             </div>
 <!--                            <div class=" p-4 t-content" :class="{'active': tabs[1].active}">-->
@@ -85,6 +91,7 @@ export default {
                     'name': '', 'icon': '', 'details': ''
                 }
             ],
+            errors: {},
             form: this.$inertia.form({
                 title: 'Services',
                 slug: 'services',
@@ -94,7 +101,34 @@ export default {
         }
     },
     methods: {
+        isValidUrl(string) {
+            if (!string || string.trim() === '') {
+                return true; // Empty is valid
+            }
+            try {
+                const url = new URL(string);
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                return false;
+            }
+        },
+        validateServices() {
+            this.errors = {};
+            let isValid = true;
+
+            this.form.html.services.forEach((service, index) => {
+                if (service.details && !this.isValidUrl(service.details)) {
+                    this.errors[`services.${index}.details`] = 'Please enter a valid URL (e.g., https://example.com) or leave it empty';
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        },
         update() {
+            if (!this.validateServices()) {
+                return;
+            }
             this.form.put(this.route('front_pages.update', 'services'))
         },
         activeTab(index){

@@ -22,9 +22,28 @@
                             <h4 class="text-dark mb-3 text-xl font-semibold">
                                 {{ service.name }}
                             </h4>
-                            <p class="text-body-color">
-                                {{ service.details }}
-                            </p>
+                            <a
+                                v-if="service.details"
+                                :href="service.details"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-base font-medium text-white hover:bg-opacity-90 transition duration-300"
+                            >
+                                View Details
+                                <svg
+                                    class="ml-2 w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                    />
+                                </svg>
+                            </a>
                         </div>
                     </div>
                     <!-- New Code -->

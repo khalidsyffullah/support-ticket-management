@@ -113,7 +113,7 @@ export default {
         }
 
         if(this.user.role.slug === 'admin'){
-            this.menu_items.push({'name': 'Activity Log', 'route': 'activity_logs', 'url': 'activity-logs', 'icon': 'activity'})
+            this.menu_items.push({'name': 'Activity Log', 'route': 'activity_logs', 'url': 'activity-logs', 'icon': 'page'})
         }
 
         const settingSubmenus = [];
@@ -196,14 +196,14 @@ export default {
 
         if(user_access.front_page.read || user_access.front_page.update || user_access.front_page.create || user_access.front_page.delete){
             this.menu_items.push(
-                {'name': 'Front Pages', 'route': '', 'url': 'front_pages', 'icon': 'gear',
+                {'name': 'Other Pages', 'route': '', 'url': 'front_pages', 'icon': 'gear',
                     'submenu': [
-                        {'name': 'Home', 'route': 'front_pages.page', 'url': 'front_pages/home', 'icon': 'page', 'param': 'home'},
-                        {'name': 'Contact', 'route': 'front_pages.page', 'url': 'front_pages/contact', 'icon': 'page', 'param': 'contact'},
+                        // {'name': 'Home', 'route': 'front_pages.page', 'url': 'front_pages/home', 'icon': 'page', 'param': 'home'},
+                        // {'name': 'Contact', 'route': 'front_pages.page', 'url': 'front_pages/contact', 'icon': 'page', 'param': 'contact'},
                         {'name': 'Services', 'route': 'front_pages.page', 'url': 'front_pages/services', 'icon': 'page', 'param': 'services'},
-                        {'name': 'Privacy Policy', 'route': 'front_pages.page', 'url': 'front_pages/privacy', 'icon': 'page', 'param': 'privacy'},
-                        {'name': 'Terms of services', 'route': 'front_pages.page', 'url': 'front_pages/terms', 'icon': 'page', 'param': 'terms'},
-                        {'name': 'Footer', 'route': 'front_pages.page', 'url': 'front_pages/footer', 'icon': 'page', 'param': 'footer'},
+                        // {'name': 'Privacy Policy', 'route': 'front_pages.page', 'url': 'front_pages/privacy', 'icon': 'page', 'param': 'privacy'},
+                        // {'name': 'Terms of services', 'route': 'front_pages.page', 'url': 'front_pages/terms', 'icon': 'page', 'param': 'terms'},
+                        // {'name': 'Footer', 'route': 'front_pages.page', 'url': 'front_pages/footer', 'icon': 'page', 'param': 'footer'},
                     ]
                 },
             )

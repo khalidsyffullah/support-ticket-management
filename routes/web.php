@@ -61,6 +61,10 @@ use App\Http\Controllers\SlaController;
 */
 
 // Auth
+use App\Http\Controllers\TestMailController;
+
+Route::get('/test-mail', [TestMailController::class, 'showForm'])->name('test_mail.form');
+Route::post('/test-mail', [TestMailController::class, 'sendEmail'])->name('test_mail.send');
 
 Route::get('login', [AuthenticatedSessionController::class, 'create'])
     ->name('login')

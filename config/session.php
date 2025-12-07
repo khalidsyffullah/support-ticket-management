@@ -128,7 +128,7 @@ return [
 
     'cookie' => env(
         'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'w3bd'), '_').'_session'
+        Str::slug(env('APP_NAME', 'BDCCL Support System'), '_').'_session'
     ),
 
     /*

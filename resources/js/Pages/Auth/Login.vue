@@ -4,8 +4,11 @@
       <flash-messages />
     <div class="w-full max-w-md">
         <Link :href="route('home')"><logo class="block w-48 mx-auto fill-white" /></Link>
+                <h1 class="text-2xl font-bold text-center leading-tight mt-5">Welcome to BDCCL Support System</h1>
+
       <form class="auth mt-8 bg-white dark:bg-slate-900 border border-gray-100 rounded-lg shadow-xl overflow-hidden" @submit.prevent="login">
         <div class="px-8 py-5">
+
           <h2 class="text-center font-bold text-xl">{{ $t('Login') }}</h2>
           <div class="mx-auto mt-2 w-24 border-b" />
           <text-input v-model="form.email" :error="form.errors.email" class="mt-10" label="Email" type="email" autofocus autocapitalize="off" />

@@ -18,7 +18,7 @@ A ticket customer support online!
 
 ### Full Documentation:
 Open the Documentation folder and click on the "index.html" to open full documentation instructions in your browser. On the following website.
-https://helpdesk-doc.w3bd.com
+https://astrobondtech.com
 
 #### Clear All Cache
 ```

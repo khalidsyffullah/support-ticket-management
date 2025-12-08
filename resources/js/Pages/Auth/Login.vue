@@ -93,7 +93,7 @@
           <loading-button
             :disabled="disable_login_button && site_key"
             :loading="form.processing"
-            class="w-full btn-indigo py-3 rounded-lg font-semibold text-base transition-all duration-200 hover:shadow-lg"
+            class="flex items-center justify-center w-full btn-indigo py-3 rounded-lg font-semibold text-base transition-all duration-200 hover:shadow-lg"
             type="submit"
             :class="{'opacity-50 cursor-not-allowed': disable_login_button && site_key}"
           >

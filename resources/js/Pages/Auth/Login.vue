@@ -1,85 +1,186 @@
 <template>
     <Head title="Login" />
-  <div class="p-6 min-h-screen flex justify-center items-center light">
+  <div class="min-h-screen flex">
       <flash-messages />
-    <div class="w-full max-w-md">
-        <Link :href="route('home')"><logo class="block w-48 mx-auto fill-white" /></Link>
-                <h1 class="text-2xl font-bold text-center leading-tight mt-5">Welcome to BDCCL Support System</h1>
 
-      <form class="auth mt-8 bg-white dark:bg-slate-900 border border-gray-100 rounded-lg shadow-xl overflow-hidden" @submit.prevent="login">
-        <div class="px-8 py-5">
+    <!-- Left Side - Branding -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 relative overflow-hidden">
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+      </div>
 
-          <h2 class="text-center font-bold text-xl">{{ $t('Login') }}</h2>
-          <div class="mx-auto mt-2 w-24 border-b" />
-          <text-input v-model="form.email" :error="form.errors.email" class="mt-10" label="Email" type="email" autofocus autocapitalize="off" />
-          <text-input v-model="form.password" :error="form.errors.password" class="mt-6" label="Password" type="password" />
-          <label class="mt-6 select-none flex items-center" for="remember">
-            <input id="remember" v-model="form.remember" class="mr-1" type="checkbox" />
-            <span class="text-sm">{{ $t('Remember Me') }}</span>
-          </label>
-            <div class="flex justify-center items-center pt-4">
-                <vue-recaptcha v-if="site_key" :sitekey="site_key"
-                               size="normal"
-                               theme="light"
-                               @verify="recaptchaVerified"
-                               @expire="recaptchaExpired"
-                               @fail="recaptchaFailed"
-                               @error="recaptchaError"
-                               ref="vueRecaptcha">
-                </vue-recaptcha>
-            </div>
-            <loading-button :disabled="disable_login_button && site_key" :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center mt-4" type="submit" :class="{'opacity-50 cursor-not-allowed': disable_login_button && site_key}">{{ $t('Login') }}</loading-button>
-            <div class="mt-5 flex justify-center"><Link class="ml-2 " :href="route('password.reset')">{{ $t('Forgot your password?') }}</Link></div>
-            <div class="mt-5 flex justify-center">{{ $t('Don’t have account?') }} <Link class="ml-2 " :href="route('register')">{{ $t('Register') }}</Link></div>
+      <div class="relative z-10 flex flex-col justify-center px-16 text-white">
+        <Link :href="route('home')">
+          <logo class="block w-64 mb-8 fill-white" />
+        </Link>
+        <h1 class="text-5xl font-bold mb-6 leading-tight">Welcome to BDCCL Support System</h1>
+
+
+
+      </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-slate-800">
+      <div class="w-full max-w-md">
+        <!-- Mobile Logo -->
+        <div class="lg:hidden mb-8 text-center">
+          <Link :href="route('home')">
+            <logo class="block w-48 mx-auto fill-indigo-600 dark:fill-white" />
+          </Link>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-white mt-4">Welcome Back!</h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">Sign in to continue to BDCCL Support System</p>
         </div>
-          <div class="pb-2 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-gray-700 flex flex-col gap-1 login-as items-center" v-if="is_demo">
 
-                <table class="table-auto w-full text-sm text-left border border-collapse mb-1">
-                  <thead>
-                    <tr>
-                      <th class="border px-4 py-2">Role</th>
-                      <th class="border px-4 py-2">Email</th>
-                      <th class="border px-4 py-2">Password</th>
-                      <th class="border px-4 py-2">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="border px-4 py-2">Admin</td>
-                      <td class="border px-4 py-2">john.due.helo@mail.com</td>
-                      <td class="border px-4 py-2">w3bd.com</td>
-                      <td class="border px-4 py-2">
-                        <button @click="autofillLogin($event, 'admin')" class="btn btn-sm btn-gray">Copy</button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="border px-4 py-2">Manager</td>
-                      <td class="border px-4 py-2">robert.slaughter@mail.com</td>
-                      <td class="border px-4 py-2">w3bd.com</td>
-                      <td class="border px-4 py-2">
-                        <button @click="autofillLogin($event, 'manager')" class="btn btn-sm btn-gray">Copy</button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="border px-4 py-2">Customer</td>
-                      <td class="border px-4 py-2">mmarks@example.com</td>
-                      <td class="border px-4 py-2">w3bd.com</td>
-                      <td class="border px-4 py-2">
-                        <button @click="autofillLogin($event, 'customer')" class="btn btn-sm btn-gray">Copy</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+        <!-- Desktop Header -->
+        <div class="hidden lg:block mb-8">
+          <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Sign In</h2>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">Enter your credentials to access your account</p>
+        </div>
 
-              <h2 class="text-sm font-bold mb-1">Quick Login Without Captcha As: </h2>
-              <div class="action flex flex-col sm:flex-row gap-3">
-                  <button class=" btn-indigo" @click="autofillLogin($event, 'admin', true)">Admin</button>
-                  <button class=" btn-indigo" @click="autofillLogin($event,'manager', true)">Manager</button>
-                  <button class=" btn-indigo" @click="autofillLogin($event,'customer', true)">Customer</button>
-              </div>
+        <!-- Login Form -->
+        <form class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8" @submit.prevent="login">
+          <text-input
+            v-model="form.email"
+            :error="form.errors.email"
+            class="mb-6"
+            label="Email Address"
+            type="email"
+            autofocus
+            autocapitalize="off"
+          />
+
+          <text-input
+            v-model="form.password"
+            :error="form.errors.password"
+            class="mb-6"
+            label="Password"
+            type="password"
+          />
+
+          <div class="flex items-center justify-between mb-6">
+            <label class="select-none flex items-center cursor-pointer" for="remember">
+              <input
+                id="remember"
+                v-model="form.remember"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                type="checkbox"
+              />
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $t('Remember Me') }}</span>
+            </label>
+
+            <Link class="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium" :href="route('password.reset')">
+              {{ $t('Forgot Password?') }}
+            </Link>
           </div>
 
-      </form>
+          <!-- reCAPTCHA -->
+          <div class="flex justify-center mb-6" v-if="site_key">
+            <vue-recaptcha
+              :sitekey="site_key"
+              size="normal"
+              theme="light"
+              @verify="recaptchaVerified"
+              @expire="recaptchaExpired"
+              @fail="recaptchaFailed"
+              @error="recaptchaError"
+              ref="vueRecaptcha"
+            />
+          </div>
+
+          <!-- Login Button -->
+          <loading-button
+            :disabled="disable_login_button && site_key"
+            :loading="form.processing"
+            class="w-full btn-indigo py-3 rounded-lg font-semibold text-base transition-all duration-200 hover:shadow-lg"
+            type="submit"
+            :class="{'opacity-50 cursor-not-allowed': disable_login_button && site_key}"
+          >
+            {{ $t('Login') }}
+          </loading-button>
+
+          <!-- Register Link -->
+          <div class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+            {{ $t("Don't have account?") }}
+            <Link class="ml-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-semibold" :href="route('register')">
+              {{ $t('Create Account') }}
+            </Link>
+          </div>
+        </form>
+
+        <!-- Demo Credentials -->
+        <div v-if="is_demo" class="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
+          <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+            <h3 class="text-white font-bold text-lg">Demo Accounts</h3>
+            <p class="text-indigo-100 text-sm">Quick login for testing purposes</p>
+          </div>
+
+          <div class="p-6">
+            <div class="grid grid-cols-1 gap-4">
+              <!-- Admin -->
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                      <span class="text-purple-600 dark:text-purple-400 font-bold text-lg">A</span>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold text-gray-900 dark:text-white">Admin</h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">john.due.helo@mail.com</p>
+                    </div>
+                  </div>
+                  <button @click="autofillLogin($event, 'admin', true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    Login
+                  </button>
+                </div>
+              </div>
+
+              <!-- Manager -->
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 dark:text-blue-400 font-bold text-lg">M</span>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold text-gray-900 dark:text-white">Manager</h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">robert.slaughter@mail.com</p>
+                    </div>
+                  </div>
+                  <button @click="autofillLogin($event, 'manager', true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    Login
+                  </button>
+                </div>
+              </div>
+
+              <!-- Customer -->
+              <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <span class="text-green-600 dark:text-green-400 font-bold text-lg">C</span>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold text-gray-900 dark:text-white">Customer</h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">mmarks@example.com</p>
+                    </div>
+                  </div>
+                  <button @click="autofillLogin($event, 'customer', true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    Login
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <p class="text-xs text-amber-800 dark:text-amber-400">
+                <strong>Note:</strong> All demo accounts use password: <code class="px-2 py-1 bg-amber-100 dark:bg-amber-900 rounded">w3bd.com</code>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

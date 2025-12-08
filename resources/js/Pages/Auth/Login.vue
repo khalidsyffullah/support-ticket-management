@@ -12,7 +12,7 @@
 
       <div class="relative z-10 flex flex-col justify-center px-16 text-white">
         <Link :href="route('home')">
-          <logo class="block w-64 mb-8 fill-white" />
+          <logo class="block w-64 mb-8 fill-white bg-white" />
         </Link>
         <h1 class="text-5xl font-bold mb-6 leading-tight">Welcome to BDCCL Support System</h1>
 

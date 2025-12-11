@@ -29,7 +29,8 @@
           <Link :href="route('home')">
             <logo class="block w-48 mx-auto fill-indigo-600 dark:fill-white" />
           </Link>
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-white mt-4">Welcome Back!</h1>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-white mt-4">Welcome to BDCCL Support System</h1>
+
           <p class="text-gray-600 dark:text-gray-400 mt-2">Sign in to continue to BDCCL Support System</p>
         </div>
 

@@ -84,6 +84,12 @@ class TicketsController extends Controller
 
         $ticketQuery = Ticket::where($whereAll);
 
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+            $ticketQuery->whereBetween('tickets.created_at', [$startDate, $endDate]);
+        }
+
         if ($request->filled('organization_id')) {
             $organizationId = $request->input('organization_id');
             $userIds = User::whereHas('organizations', function ($query) use ($organizationId) {

@@ -62,6 +62,8 @@
                 <option :value="null">{{ $t('Status') }}</option>
                 <option v-for="s in statuses" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
+            <input v-model="form.start_date" type="date" class="date-placeholder mr-2 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5" :data-placeholder="$t('Start Date')" />
+            <input v-model="form.end_date" type="date" class="date-placeholder mr-2 w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5" :data-placeholder="$t('End Date')" />
             <select-input-filter :placeholder="$t('Assign To')" :onInput="doFilter" @focus="doFilter" :items="assignees"
                                  v-if="!(hidden_fields && hidden_fields.includes('assigned_to')) && user_access.ticket.update"
                                  v-model="form.assigned_to" :key="renderComponent" class="w-full">
@@ -209,6 +211,8 @@ export default {
                 organization_id: this.filters.organization_id ?? null,
                 assigned_by: this.filters.assigned_by ?? null,
                 assigned_to: this.filters.assigned_to ?? null,
+                start_date: this.filters.start_date ?? null,
+                end_date: this.filters.end_date ?? null,
             },
             renderComponent: 0,
         }
@@ -282,6 +286,10 @@ export default {
                 status_id: this.form.status_id,
                 assigned_to: this.form.assigned_to,
             };
+
+            if (this.form.start_date && this.form.end_date) {
+                filters.date_range = `${this.form.start_date} to ${this.form.end_date}`;
+            }
 
             for (const key in filters) {
                 const value = filters[key];

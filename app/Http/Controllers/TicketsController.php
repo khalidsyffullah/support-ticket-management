@@ -349,6 +349,93 @@ class TicketsController extends Controller
         return Response::make('', 200, $headers);
     }
 
+    public function csvExportFiltered(Request $request)
+    {
+        // Copy filtering logic from index() method
+        $byCustomer = null;
+        $byAssign = null;
+        $user = Auth()->user();
+        if(in_array($user['role']['slug'], ['customer'])){
+            $byCustomer = $user['id'];
+        }elseif(in_array($user['role']['slug'], ['manager'])){
+            $byAssign = $user['id'];
+        }else{
+            $byAssign = $request->input('assigned_to');
+        }
+        $whereAll = [];
+        $type = $request->input('type');
+        $customer = $request->input('customer_id');
+
+        if(!empty($customer)){
+            $whereAll[] = ['user_id', '=', $customer];
+        }
+
+        if($type == 'un_assigned'){
+            $whereAll[] = ['assigned_to', '=', null];
+        }elseif ($type == 'open'){
+            $opened_status = Status::where('slug', 'like', '%closed%')->first();
+            $whereAll[] = ['status_id', '!=', $opened_status->id];
+        }elseif ($type == 'new'){
+            $whereAll[] = ['created_at', '>=', date('Y-m-d').' 00:00:00'];
+        }
+
+        $ticketQuery = Ticket::where($whereAll);
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
+            $ticketQuery->whereBetween('tickets.created_at', [$startDate, $endDate]);
+        }
+
+        if ($request->filled('organization_id')) {
+            $organizationId = $request->input('organization_id');
+            $userIds = User::whereHas('organizations', function ($query) use ($organizationId) {
+                $query->where('organization_id', $organizationId);
+            })->pluck('id');
+            $ticketQuery->whereIn('user_id', $userIds);
+        }
+
+        if ($request->filled('assigned_by')) {
+            $ticketQuery->where('assigned_by', $request->input('assigned_by'));
+        }
+
+        $tickets = $ticketQuery
+            ->filter($request->only(['search', 'priority_id', 'status_id', 'type_id', 'category_id', 'department_id']))
+            ->byCustomer($byCustomer)
+            ->byAssign($byAssign)
+            ->get(); // Use get() instead of paginate()
+
+        // CSV generation logic (copied and adapted from csvExport())
+        $csvFileName = 'filtered_tickets.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $csvFileName . '"',
+        ];
+
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, ['UID', 'Subject', 'Priority', 'Category', 'Sub Category', 'Department', 'Status', 'Assigned To Email', 'Assigned To Name', 'Created']);
+
+        foreach ($tickets as $ticket) {
+            fputcsv($handle, [
+                $ticket->uid,
+                $ticket->subject,
+                $ticket->priority ? $ticket->priority->name : null,
+                $ticket->category ? $ticket->category->name: null,
+                $ticket->subCategory ? $ticket->subCategory->name: null,
+                $ticket->department ? $ticket->department->name: null,
+                $ticket->status ? $ticket->status->name : null,
+                $ticket->assignedTo? $ticket->assignedTo->email : null,
+                $ticket->assignedTo? $ticket->assignedTo->first_name.' '.$ticket->assignedTo->last_name : null,
+                $ticket->created_at
+            ]);
+        }
+
+        fclose($handle);
+
+        return Response::make('', 200, $headers);
+    }
+
     public function create(Request $request){
         $user = Auth()->user();
         $roles = Role::pluck('id', 'slug')->all();

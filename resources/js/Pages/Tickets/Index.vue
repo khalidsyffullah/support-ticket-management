@@ -18,6 +18,10 @@
                     <img class="w-6 h-6" src="/images/svg/export-csv.svg" alt="Export CSV" />
                     <span>{{ $t('Export') }}</span>
                 </a>
+                <a v-if="hasActiveFilters" class="uppercase gap-[1px] cursor-pointer text-sm px-3 py-1 flex items-center justify-center" @click="exportFilteredCSV">
+                    <img class="w-6 h-6" src="/images/svg/export-csv.svg" alt="Export Filtered CSV" />
+                    <span>{{ $t('Filtered Export') }}</span>
+                </a>
             </div>
             <div class="filter-add-new flex flex-col gap-3 md:flex-row items-center">
                 <search-input v-model="form.search" placeholder="Search by Key, Subject, Priority, Status, Assign to..." class="w-full max-w-md search" @reset="reset"></search-input>
@@ -250,6 +254,10 @@ export default {
             if(e.target.files.length){
                 this.$inertia.form({file: e.target.files[0]}).post(this.route('ticket.csv.import'))
             }
+        },
+        exportFilteredCSV() {
+            const queryString = new URLSearchParams(pickBy(this.form)).toString();
+            window.location.href = `/dashboard/ticket/csv/export/filtered?${queryString}`;
         },
         getStatusColor(slug) {
             const colors = {

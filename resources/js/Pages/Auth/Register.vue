@@ -12,7 +12,7 @@
                 <text-input v-model="form.first_name" :error="form.errors.first_name" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('First name')" type="text" autofocus autocapitalize="off" :is_required="true" required />
                 <text-input v-model="form.last_name" :error="form.errors.last_name" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Last name')" type="text" autofocus autocapitalize="off" :is_required="true" required />
                 <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Email')" type="email" autofocus autocapitalize="off" :is_required="true" required />
-                <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Phone')" type="text" autofocus autocapitalize="off" />
+                <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Phone')" type="text" autofocus autocapitalize="off" :is_required="true" required/>
                 <select-input v-model="form.country_id" :error="form.errors.country_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Country')" :disabled="true">
                     <option value="19">Bangladesh</option>
                 </select-input>

@@ -13,7 +13,7 @@
           <select-input v-model="form.country_id" :error="form.errors.country_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Country')" :disabled="true">
             <option value="19">Bangladesh</option>
           </select-input>
-          <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')" :is_required="true">
+          <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')" :is_required="true" required>
             <option :value="null" />
             <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
           </select-input>

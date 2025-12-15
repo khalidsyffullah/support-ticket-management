@@ -122,7 +122,7 @@ class CustomersController extends Controller {
             $user
         );
 
-        return Redirect::route('customers')->with('success', 'User created.');
+        return redirect()->route('customers')->with('success', 'User created.');
     }
 
     public function edit(User $user)
@@ -291,7 +291,7 @@ class CustomersController extends Controller {
         );
 
         $user->delete();
-        return Redirect::route('customers')->with('success', 'Customer deleted.');
+        return redirect()->route('customers')->with('success', 'Customer deleted.');
     }
     public function restore(User $user){
         $authUser = auth()->user();

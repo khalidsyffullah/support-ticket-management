@@ -550,7 +550,7 @@ class TicketsController extends Controller
             ->where(function($query) use ($uid){
                 $query->where('uid', $uid);
                 $query->orWhere('id', $uid);
-            })->with('createdBy.role', 'createdBy.departments', 'assignedBy')->first();
+            })->with('createdBy.role', 'createdBy.departments', 'assignedBy', 'user.organizations')->first();
         if(empty($ticket)){
             abort(404);
         }

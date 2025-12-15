@@ -9,7 +9,7 @@
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
-                <label for="importCSV" class="uppercase gap-[1px] cursor-pointer text-sm px-3 py-1 flex items-center justify-center">
+                <label v-if="auth.user.role.slug !== 'customer'" for="importCSV" class="uppercase gap-[1px] cursor-pointer text-sm px-3 py-1 flex items-center justify-center">
                     <img class="w-6 h-6" src="/images/svg/import-csv.svg" alt="Import CSV" />
                     <span>{{ $t('Import') }}</span>
                     <input @change="uploadImportCSV" class="hidden" id="importCSV" type="file" />
@@ -33,7 +33,7 @@
                 <option :value="null">{{ $t('Type') }}</option>
                 <option v-for="s in types" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
-            <select-input v-if="!(hidden_fields && hidden_fields.includes('category'))" v-model="form.category_id" :key="renderComponent" class="mr-2 w-full">
+            <select-input v-if="auth.user.role.slug !== 'customer' && !(hidden_fields && hidden_fields.includes('category'))" v-model="form.category_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Category') }}</option>
                 <option v-for="s in categories" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
@@ -41,7 +41,7 @@
                 <option :value="null">{{ $t('Department') }}</option>
                 <option v-for="s in departments" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select-input>
-            <select-input v-model="form.organization_id" :key="renderComponent" class="mr-2 w-full">
+            <select-input v-if="auth.user.role.slug !== 'customer'" v-model="form.organization_id" :key="renderComponent" class="mr-2 w-full">
                 <option :value="null">{{ $t('Organization') }}</option>
                 <optgroup v-for="org in organizations" :key="org.id" :label="org.name">
                     <option :value="org.id">{{ org.name }}</option>

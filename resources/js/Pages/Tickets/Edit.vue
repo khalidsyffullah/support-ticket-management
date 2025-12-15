@@ -13,6 +13,13 @@
                                            :value="ticket.user ? `${ticket.user.first_name} ${ticket.user.last_name}${ticket.user.phone ? ' (' + ticket.user.phone + ')' : ''}` : 'N/A'" :editable="user_access.ticket.update && !ticket.closed">
                         </select-edit-input>
 
+                        <div v-if="auth.user.role.slug !== 'customer' && ticket.user && ticket.user.organizations && ticket.user.organizations.length > 0" class="pr-6 pb-8 w-full lg:w-1/3">
+                            <div class="font-bold text-sm mb-1">{{ $t('Organization') }}</div>
+                            <a :href="route('organizations.edit', ticket.user.organizations[0].id)" target="_blank" class="text-gray-900 font-[700] hover:underline">
+                                {{ ticket.user.organizations[0].name }}
+                            </a>
+                        </div>
+
                         <select-edit-input placeholder="Search priority" :items="priorities"
                                            v-model="form.priority_id" :error="form.errors.priority_id"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Priority')"

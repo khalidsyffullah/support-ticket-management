@@ -611,7 +611,7 @@ class TicketsController extends Controller
                 'uid' => $ticket->uid,
                 'user_id' => $ticket->user_id,
                 'contact_id' => $ticket->contact_id,
-                'user' => $ticket->user?$ticket->user->name: 'N/A',
+                'user' => $ticket->user,
                 'created_by' => $ticket->createdBy,
                 'contact' => $ticket->contact?: null,
                 'priority_id' => $ticket->priority_id,

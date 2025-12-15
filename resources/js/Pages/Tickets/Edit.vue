@@ -10,7 +10,7 @@
                         <select-edit-input v-if="auth.user.role.slug !== 'customer'" placeholder="Search customer" :onInput="doFilter" :items="customers"
                                              v-model="form.user_id" :error="form.errors.user_id"
                                              class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Customer')"
-                                           :value="ticket.user" :editable="user_access.ticket.update && !ticket.closed">
+                                           :value="ticket.user ? `${ticket.user.first_name} ${ticket.user.last_name}${ticket.user.phone ? ' (' + ticket.user.phone + ')' : ''}` : 'N/A'" :editable="user_access.ticket.update && !ticket.closed">
                         </select-edit-input>
 
                         <select-edit-input placeholder="Search priority" :items="priorities"

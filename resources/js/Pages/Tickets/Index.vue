@@ -18,6 +18,10 @@
                     <img class="w-6 h-6" src="/images/svg/export-csv.svg" alt="Export CSV" />
                     <span>{{ $t('Export') }}</span>
                 </a>
+                <a v-if="auth.user.role.slug !== 'customer' && hasActiveFilters" :href="exportFilteredUrl" class="uppercase gap-[1px] cursor-pointer text-sm px-3 py-1 flex items-center justify-center">
+                    <img class="w-6 h-6" src="/images/svg/export-csv.svg" alt="Export Filtered CSV" />
+                    <span>{{ $t('Export Filtered') }}</span>
+                </a>
             </div>
             <div class="filter-add-new flex flex-col gap-3 md:flex-row items-center">
                 <search-input v-model="form.search" placeholder="Search by Key, Subject, Priority, Status, Assign to..." class="w-full max-w-md search" @reset="reset"></search-input>
@@ -272,6 +276,10 @@ export default {
     computed: {
         hasActiveFilters() {
             return Object.keys(this.activeFilters).length > 0;
+        },
+        exportFilteredUrl() {
+            const params = new URLSearchParams(pickBy(this.form));
+            return this.route('tickets.export.filtered') + '?' + params.toString();
         },
         activeFilters() {
             const active = {};

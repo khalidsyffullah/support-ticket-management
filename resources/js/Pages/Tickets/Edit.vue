@@ -26,7 +26,7 @@
                                            :value="ticket.priority" :editable="user_access.ticket.update && !ticket.closed">
                         </select-edit-input>
 
-                        <select-edit-input v-if="auth.user.role.slug !== 'customer' && !(hidden_fields && hidden_fields.includes('assigned_to'))" placeholder="Search user" :onInput="doFilterUsersExceptCustomer" :items="department_users"
+                        <select-edit-input  placeholder="Search user" :onInput="doFilterUsersExceptCustomer" :items="department_users"
                                            v-model="form.assigned_to" :error="form.errors.assigned_to"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Assigned to')"
                                            :value="ticket.assigned_user??'Not Assigned'" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head" :disabled="!form.department_id" :empty-message="emptyMessage" :key="form.department_id">
@@ -84,7 +84,7 @@
                             </div>
                         </div>
 
-                        <div v-if="ticket.assigned_by" class="assigned_user pr-6 pb-8 w-full lg:w-1/3 flex flex-col ">
+                        <div v-if="auth.user.role.slug !== 'customer' && !(hidden_fields && hidden_fields.includes('assigned_to')) && ticket.assigned_by" class="assigned_user pr-6 pb-8 w-full lg:w-1/3 flex flex-col ">
                             <div class="font-bold text-sm mb-1">{{ $t('Assigned By') }}</div>
                             <div class="font-light text-sm ">
                                 {{ ticket.assigned_by }}
@@ -129,9 +129,9 @@
                         <!-- Super Admin Comment -->
                         <input ref="file" type="file" accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf, .zip" class="hidden" multiple="multiple" @change="fileInputChange" />
                         <div class="pr-6 pb-8 w-full lg:w-full flex-col">
-                            <button type="button" class="btn flex justify-center items-center relative z-10 pb-3 border-0 pl-0" @click="fileBrowse">
+                            <!-- <button v-if="auth.user.role.slug !== 'customer'" type="button" class="btn flex justify-center items-center relative z-10 pb-3 border-0 pl-0" @click="fileBrowse">
                                 <icon name="file" class="flex-shrink-0 h-5 fill-gray-400 pr-1" /> <strong>{{ $t('Attach File') }}</strong>
-                            </button>
+                            </button> -->
                             <div v-if="attachments.length" class="flex items-center justify-between pr-6 pt-8 w-full" v-for="(file, fi) in attachments" :key="fi">
                                 <div class="flex-1 pr-1">
                                     {{ file.name }} <span class="text-gray-500 text-xs">({{ getFileSize(file.size) }})</span> <a v-if="file.user" class="text-sm" :href="this.route('users.edit', file.user.id)">{{ file.user.first_name }} {{ file.user.last_name }}</a> at <span class="text-sm">{{ file.created_at }}</span>
@@ -139,8 +139,8 @@
                                 <div class="a__buttons flex justify-end items-center ">
                                     <button type="button" class="btn flex items-center " @click="downloadAttachment(file)">
                                         {{ $t('Download') }}</button>
-                                    <button type="button" class="btn flex items-center ml-3" @click="removeAttachment(file, fi)">
-                                        {{ $t('Remove') }}</button>
+                                    <!-- <button v-if="auth.user.role.slug !== 'customer'" type="button" class="btn flex items-center ml-3" @click="removeAttachment(file, fi)">
+                                        {{ $t('Remove') }}</button> -->
                                 </div>
                             </div>
                             <div v-if="form.files.length" class="flex items-center justify-between pr-6 pt-8 w-full lg:w-1/2" v-for="(file, fi) in form.files" :key="fi">
@@ -184,7 +184,7 @@
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('approved')" class="btn-indigo mr-2">Accept</loading-button>
                         <loading-button :loading="form.processing" @click="handleForwardingRequest('rejected')" class="btn-red">Reject</loading-button>
                     </div>
-                     <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
+                     <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center" v-if="auth.user.role.slug !== 'customer'">
                         <a :href="`/dashboard/ticket/csv/export/${ticket.id}`" class="uppercase gap-[1px] cursor-pointer text-sm px-3 py-1 flex items-center justify-center">
                             <img class="w-6 h-6" src="/images/svg/export-csv.svg" alt="Export CSV" />
                             <span>{{ $t('Export') }}</span>

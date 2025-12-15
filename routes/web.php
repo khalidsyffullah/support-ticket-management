@@ -117,6 +117,7 @@ Route::prefix('dashboard')->group(function () {
         ->middleware('auth');
             Route::get('ticket/csv/export/{ticket}', [TicketsController::class, 'csvExportSingle'])->name('ticket.csv.export.single')->middleware('auth');
 
+            Route::get('/dashboard/ticket/csv/export-filtered', [TicketsController::class, 'csvExportFiltered'])->name('tickets.export.filtered');
     Route::get('tickets/create', [TicketsController::class, 'create'])
         ->name('tickets.create')
         ->middleware('auth');

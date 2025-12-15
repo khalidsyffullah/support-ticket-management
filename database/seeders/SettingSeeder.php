@@ -22,7 +22,7 @@ class SettingSeeder extends Seeder
         DB::table('settings')->insert(['name' => 'Main_favicon', 'slug' => 'main_favicon', 'type' => 'text', 'value' => '/favicon.png']);
         DB::table('settings')->insert(['name' => 'Hide_ticket_fields', 'slug' => 'hide_ticket_fields', 'type' => 'json', 'value' => \json_encode([])]);
         DB::table('settings')->insert(['name' => 'Required ticket fields', 'slug' => 'required_ticket_fields', 'type' => 'json', 'value' => \json_encode([])]);
-        DB::table('settings')->insert(['name' => 'Footer Text', 'slug' => 'footer_text', 'type' => 'text', 'value' => 'Help Desk © 2022 - Powered by W3BD']);
+        DB::table('settings')->insert(['name' => 'Footer Text', 'slug' => 'footer_text', 'type' => 'text', 'value' => 'Help Desk © 2025 - Powered by astrobondtech']);
         DB::table('settings')->insert(['name' => 'Enable Options', 'slug' => 'enable_options', 'type' => 'json',
             'value' => json_encode([
                 ['name' => 'Chat', 'slug' => 'chat', 'value' => true],

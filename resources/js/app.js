@@ -23,7 +23,7 @@ window.Echo = new Echo({
 
 
 createInertiaApp({
-    title: title => title ? `${title} - HelpDesk` : 'HelpDesk',
+    title: title => title ? `${title} - BDCCL` : 'BDCCL',
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })

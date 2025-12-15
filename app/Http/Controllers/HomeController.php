@@ -28,7 +28,7 @@ class HomeController extends Controller
 
     public function index(){
         return Inertia::render('Landing/Home', [
-            'title' => 'Home - Helpdesk',
+            'title' => 'Home - BDCCL',
             'page' => FrontPage::where('slug', 'home')->first(),
 //            'footer' => FrontPage::where('slug', 'footer')->first(),
             'custom_fields' => TicketField::get(),
@@ -66,7 +66,7 @@ class HomeController extends Controller
         }
         return Inertia::render('Landing/OpenTicket', [
             'footer' => FrontPage::where('slug', 'footer')->first(),
-            'title' => 'Open Ticket - Helpdesk',
+            'title' => 'Open Ticket - BDCCL',
             'custom_fields' => TicketField::get(),
             'hide_ticket_fields' => $hide_ticket_fields,
             'departments' => Department::orderBy('name')

@@ -1,4 +1,4 @@
-# HelpDesk
+# BDCCL
 
 A ticket customer support online!
 
@@ -7,13 +7,13 @@ A ticket customer support online!
 
 ### cPanel installation
 
-- Copy all files under HelpDesk folder to your server's root or public_html directory
+- Copy all files under BDCCL folder to your server's root or public_html directory
 - Just visit your website - and follow the installation process
 
 ### NGinx installation
 
-- Copy HelpDesk to your server
-- Set document root as per your directory location where you did put that HelpDesk files.
+- Copy BDCCL to your server
+- Set document root as per your directory location where you did put that BDCCL files.
 
 
 ### Full Documentation:

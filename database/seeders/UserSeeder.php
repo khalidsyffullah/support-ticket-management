@@ -17,11 +17,11 @@ class UserSeeder extends Seeder
     {
         DB::table('users')->truncate();
         User::factory()->createMany([
-            ['email' => 'john.due.helo@mail.com', 'password' => 'w3bd.com', 'role_id' => 1],
-            ['email' => 'robert.slaughter@mail.com', 'password' => 'w3bd.com', 'role_id' => 4],
-            ['email' => 'mmarks@example.com', 'password' => 'w3bd.com', 'role_id' => 2],
-            ['email' => 'pat@example.com', 'password' => 'w3bd.com', 'role_id' => 3],
-            ['email' => 'taylor@example.com', 'password' => 'w3bd.com', 'role_id' => 5]
+            ['email' => 'john.due.helo@mail.com', 'password' => 'astrobondtech.com', 'role_id' => 1],
+            ['email' => 'robert.slaughter@mail.com', 'password' => 'astrobondtech.com', 'role_id' => 4],
+            ['email' => 'mmarks@example.com', 'password' => 'astrobondtech.com', 'role_id' => 2],
+            ['email' => 'pat@example.com', 'password' => 'astrobondtech.com', 'role_id' => 3],
+            ['email' => 'taylor@example.com', 'password' => 'astrobondtech.com', 'role_id' => 5]
         ]);
         User::factory(100)->create();
     }

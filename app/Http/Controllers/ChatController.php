@@ -67,7 +67,7 @@ class ChatController extends Controller {
         if(empty($newConversation)){
             $newConversation = new Conversation;
             $newConversation->contact_id = $existingContact->id;
-            $initialMessage = "Hey ". $existingContact->first_name. ', welcome to HelpDesk support - how can I help?';
+            $initialMessage = "Hey ". $existingContact->first_name. ', welcome to BDCCL support - how can I help?';
             $newConversation->title = $initialMessage;
             $newConversation->save();
 

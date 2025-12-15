@@ -7,7 +7,7 @@ return [
      * Shared translations.
      *
      */
-    'title' => 'HelpDesk Installer',
+    'title' => 'BDCCL Installer',
     'next' => 'Next Step',
     'back' => 'Previous',
     'finish' => 'Install',
@@ -22,7 +22,7 @@ return [
      */
     'welcome' => [
         'templateTitle' => 'Welcome',
-        'title'   => 'HelpDesk Installer',
+        'title'   => 'BDCCL Installer',
         'message' => 'Easy Installation and Setup Wizard.',
         'next'    => 'Check Requirements',
     ],
@@ -182,7 +182,7 @@ return [
      *
      */
     'installed' => [
-        'success_log_message' => 'HelpDesk Installer successfully INSTALLED on ',
+        'success_log_message' => 'BDCCL Installer successfully INSTALLED on ',
     ],
 
     /*
@@ -247,7 +247,7 @@ return [
         ],
 
         'log' => [
-            'success_message' => 'HelpDesk Installer successfully UPDATED on ',
+            'success_message' => 'BDCCL Installer successfully UPDATED on ',
         ],
     ],
 ];

@@ -31,7 +31,7 @@
             "contact": {
                 "tag": "Available for freelance projects",
                 "title": "Do you have digital project? <br> Let's talk.",
-                "details": "Start working with HelpDesk that can provide everything you need to generate awareness, drive traffic, connect."
+                "details": "Start working with BDCCL that can provide everything you need to generate awareness, drive traffic, connect."
             },
             "services": [
                 {
@@ -83,12 +83,12 @@
         "html": {
             "sections": [
                 {
-                    "image": "/landing/images/dashboard-helpdesk.png",
-                    "title": "Make your working process easier with <span>HelpDesk</span>",
+                    "image": "/landing/images/dashboard-BDCCL.png",
+                    "title": "Make your working process easier with <span>BDCCL</span>",
                     "buttons": [
                         {
                             "link": "/login",
-                            "text": "Login HelpDesk",
+                            "text": "Login BDCCL",
                             "new_tab": "0"
                         },
                         {
@@ -97,13 +97,13 @@
                             "new_tab": "0"
                         }
                     ],
-                    "details": "It's much easier now to create, assign, manage and resolve tickets with HelpDesk. You just need to host this web application on any hosting server of your choice and use it.",
+                    "details": "It's much easier now to create, assign, manage and resolve tickets with BDCCL. You just need to host this web application on any hosting server of your choice and use it.",
                     "enable_ticket_section": ""
                 },
                 {
                     "tagline": "Process",
-                    "title": "HelpDesk Process",
-                    "details": "An example process about how HelpDesk work like.\n\n",
+                    "title": "BDCCL Process",
+                    "details": "An example process about how BDCCL work like.\n\n",
                     "features": [
                         {
                             "icon": "ticket",
@@ -140,8 +140,8 @@
         "is_active": 1,
         "html": {
             "title": "Footer Area",
-            "text": "Start working with HelpDesk that can provide everything you need to generate awareness, drive traffic, connect.",
-            "copyright": "@ Helpdesk Developed by <a href='https://w3bd.com/'>W3bd</a>."
+            "text": "Start working with BDCCL that can provide everything you need to generate awareness, drive traffic, connect.",
+            "copyright": "@ BDCCL Developed by <a href='https://atrobondtech.com/'>Astrobond Tech</a>."
         }
     }
 ]

@@ -174,11 +174,6 @@
               </div>
             </div>
 
-            <div class="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <p class="text-xs text-amber-800 dark:text-amber-400">
-                <strong>Note:</strong> All demo accounts use password: <code class="px-2 py-1 bg-amber-100 dark:bg-amber-900 rounded">w3bd.com</code>
-              </p>
-            </div>
           </div>
         </div>
       </div>
@@ -239,7 +234,7 @@ export default {
           e.preventDefault()
           const roleEmails = { 'admin': 'john.due.helo@mail.com', 'manager': 'robert.slaughter@mail.com', 'customer' : 'mmarks@example.com'}
           this.form.email = roleEmails[role]
-          this.form.password = 'w3bd.com'
+          this.form.password = 'support.bdccl.gov.bd'
           if(login){
               this.login();
           }

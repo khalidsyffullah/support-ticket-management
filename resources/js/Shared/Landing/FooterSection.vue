@@ -111,7 +111,7 @@ export default {
     data() {
         return {
             footer_content: this.footer ? JSON.parse(this.footer.html) : [],
-            footer_text: this.footer ? JSON.parse(this.footer.html).text: 'Start working with HelpDesk that can provide everything you need to generate awareness, drive traffic, connect.',
+            footer_text: this.footer ? JSON.parse(this.footer.html).text: 'Start working with BDCCL that can provide everything you need to generate awareness, drive traffic, connect.',
             form: this.$inertia.form({
                 email: '',
             }),

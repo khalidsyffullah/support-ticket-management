@@ -313,7 +313,7 @@
     </style>
 </head>
 <body>
-<span class="preheader">Helpdesk ticket update</span>
+<span class="preheader">BDCCL ticket update</span>
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="mail-body">
     <tr>
         <td></td>
@@ -384,12 +384,12 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                         <tr>
                             <td class="content-block">
-                                <span class="apple-link">HelpDesk - A online ticket support system</span>
+                                <span class="apple-link">BDCCL - online ticket support system</span>
                             </td>
                         </tr>
                         <tr>
                             <td class="content-block powered-by">
-                                © 2022 <a href="http://w3bd.com">W3BD</a> - All rights reserved.
+                                © 2025 <a href="https://support.bdccl.gov.bd">BDCCL</a> - All rights reserved. Powered by <a href="https://astrobondtech.com/">AstrobondTech</a>
                             </td>
                         </tr>
                     </table>

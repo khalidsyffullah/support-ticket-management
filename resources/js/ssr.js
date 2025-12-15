@@ -6,7 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy'
 import { i18nVue } from 'laravel-vue-i18n'
 
-const appName = import.meta.env.VITE_APP_NAME || 'HelpDesk'
+const appName = import.meta.env.VITE_APP_NAME || 'BDCCL'
 
 createServer((page) =>
     createInertiaApp({

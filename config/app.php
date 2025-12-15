@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => 'HelpDesk',
+    'name' => 'BDCCL',
 
     'installed' => env('APP_INSTALLED', false),
 

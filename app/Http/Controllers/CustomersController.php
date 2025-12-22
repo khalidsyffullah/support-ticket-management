@@ -145,6 +145,7 @@ class CustomersController extends Controller {
                 'address' => $user->address,
                 'country_id' => $user->country_id,
                 'organization_id' => $user->organizations->first() ? $user->organizations->first()->id : null,
+                'organization_name' => $user->organization_name,
                 'approval_status' => $user->approval_status,
                 'photo_path' => $user->photo_path,
             ],
@@ -353,6 +354,13 @@ class CustomersController extends Controller {
         );
 
         return Redirect::back()->with('success', 'Customer rejected.');
+    }
+
+    public function getOrganizationSuggestions(Request $request)
+    {
+        $query = $request->input('query');
+        $suggestions = Organization::where('name', 'like', "%{$query}%")->limit(5)->get(['id', 'name']);
+        return response()->json($suggestions);
     }
 
 }

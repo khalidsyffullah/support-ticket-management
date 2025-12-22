@@ -8,18 +8,27 @@
           <text-input v-model="form.last_name" :error="form.errors.last_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Last name')" :is_required="true" />
           <text-input v-model="form.email" :error="form.errors.email" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Email')" :is_required="true" />
           <text-input v-model="form.phone" :error="form.errors.phone" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Phone')" />
-            <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('City')"  />
+          <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('City')"  />
           <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Address')"  />
           <select-input v-model="form.country_id" :error="form.errors.country_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Country')" >
             <option value="19">Bangladesh</option>
           </select-input>
+          <text-input v-if="user.organization_name" v-model="user.organization_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Organization Name')" :readonly="true" />
           <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')" :is_required="true">
             <option :value="null" />
             <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
           </select-input>
-          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" :is_required="true" />
+            <div v-if="suggestions.length" class="pb-8 pr-6 w-full lg:w-1/3">
+                <p class="font-bold mb-2">Suggestions:</p>
+                <ul>
+                    <li v-for="suggestion in suggestions" :key="suggestion.id" @click="selectSuggestion(suggestion)" class="cursor-pointer hover:bg-gray-200 p-2 rounded">
+                        {{ suggestion.name }}
+                    </li>
+                </ul>
+            </div>
+          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
           <file-input v-model="form.photo_path" :error="form.errors.photo_path" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
-            <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
+          <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
         </div>
         <div class="flex items-center px-8 py-4 bg-gray-50 border-t border-gray-100">
           <select-input v-model="form.approval_status" :error="form.errors.approval_status" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Approval Status')" @change="updateApprovalStatus">
@@ -29,7 +38,7 @@
           </select-input>
           <button v-if="user.id !== auth.user.id && user_access.customer.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
             {{ $t('Delete') }}</button>
-          <loading-button :loading="form.processing" class="btn-indigo ml-auto" type="submit">{{ $t('Update') }}</loading-button>
+          <loading-button :loading="form.processing" :disabled="!form.organization_id" class="btn-indigo ml-auto" type="submit">{{ $t('Update') }}</loading-button>
         </div>
       </form>
     </div>
@@ -43,6 +52,7 @@ import TextInput from '@/Shared/TextInput.vue'
 import FileInput from '@/Shared/FileInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
+import axios from "axios";
 
 export default {
   components: {
@@ -80,12 +90,32 @@ export default {
         password: '',
           photo_path: null
       }),
+        suggestions: [],
     }
   },
-  created() {
-    // this.setDefaultValue(this.countries, 'country_id', 'United States')
+  watch: {
+      'user.organization_name': {
+          handler(newName) {
+              if (newName) {
+                  this.fetchSuggestions(newName);
+              }
+          },
+          immediate: true,
+      },
   },
   methods: {
+      async fetchSuggestions(query) {
+          try {
+              const response = await axios.get(route('customers.organization-suggestions', { query }));
+              this.suggestions = response.data;
+          } catch (error) {
+              console.error('Error fetching organization suggestions:', error);
+          }
+      },
+      selectSuggestion(suggestion) {
+          this.form.organization_id = suggestion.id;
+          this.suggestions = [];
+      },
     setDefaultValue(arr, key, value){
       const find = arr.find(i=>i.name.match(new RegExp(value + ".*")))
       if(find){
@@ -113,7 +143,7 @@ export default {
     },
     restore() {
       if (confirm('Are you sure you want to restore this user?')) {
-        this.$inertia.put(this.route('customers.restore', this.user.id))
+        this.form.put(this.route('customers.restore', this.user.id))
       }
     },
   },

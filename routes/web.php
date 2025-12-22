@@ -610,6 +610,10 @@ Route::prefix('dashboard')->group(function () {
         ->name('customers.reject')
         ->middleware('auth');
 
+    Route::get('customers/organization-suggestions', [CustomersController::class, 'getOrganizationSuggestions'])
+        ->name('customers.organization-suggestions')
+        ->middleware('auth');
+
 
 // Organizations
 

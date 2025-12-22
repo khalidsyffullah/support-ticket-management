@@ -18,13 +18,7 @@
                 </select-input>
                 <text-input v-model="form.city" :error="form.errors.city" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('City')" type="text" autofocus autocapitalize="off" />
                 <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full" :label="$t('Address')" type="text" autofocus autocapitalize="off" />
-                <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Organization')" :is_required="true">
-                    <option :value="null" />
-                    <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
-                </select-input>
-                <div v-if="organizations.length === 0" class="pb-8 pr-6 w-full lg:w-1/2 text-red-500">
-                    {{ $t('No organizations available. Please contact support.') }}
-                </div>
+                <text-input v-model="form.organization_name" :error="form.errors.organization_name" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Organization Name')" type="text" :is_required="true" required />
                 <password-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Password')" :is_required="true" @strength="updatePasswordStrength" />
                 <text-input v-model="form.confirm_password" :error="form.errors.confirm_password" class="pb-8 pr-6 w-full lg:w-1/2" :label="$t('Confirm Password')" type="password" :is_required="true" required />
                 <div class="flex justify-center items-center py-3 w-full">
@@ -94,7 +88,7 @@ export default {
         address: '',
         password: '',
         confirm_password: '',
-        organization_id: null,
+        organization_name: '',
       }),
     }
   },
@@ -103,14 +97,14 @@ export default {
           if (this.site_key && this.disable_button) {
               return true;
           }
-          return !this.form.first_name || !this.form.last_name || !this.form.email || !this.form.organization_id || this.passwordStrength !== 'Strong' || this.form.password.trim() !== this.form.confirm_password.trim();
+          return !this.form.first_name || !this.form.last_name || !this.form.email || !this.form.organization_name || this.passwordStrength !== 'Strong' || this.form.password.trim() !== this.form.confirm_password.trim();
       },
       formRequirements() {
           const requirements = [];
           if (!this.form.first_name) requirements.push('First name is required.');
           if (!this.form.last_name) requirements.push('Last name is required.');
           if (!this.form.email) requirements.push('Email is required.');
-          if (!this.form.organization_id) requirements.push('Organization is required.');
+          if (!this.form.organization_name) requirements.push('Organization is required.');
           if (this.passwordStrength !== 'Strong') requirements.push('Password must be strong.');
           if (this.form.password.trim() !== this.form.confirm_password.trim()) requirements.push('Passwords do not match.');
           if (this.site_key && this.disable_button) requirements.push('reCAPTCHA verification is required.');

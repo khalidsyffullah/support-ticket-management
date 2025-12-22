@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Events\ForgotPassword;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -40,11 +41,7 @@ class AuthenticatedSessionController extends Controller
         $siteKey = $env->keyExists('RE_CAPTCHA_KEY') ? $env->getValue('RE_CAPTCHA_KEY') : '';
         return Inertia::render('Auth/Register', [
             'is_demo' => $is_demo,
-            'site_key' => $siteKey,
-            'organizations' => \App\Models\Organization::orderBy('name')
-                ->get()
-                ->map
-                ->only('id', 'name')
+            'site_key' => $siteKey
         ]);
     }
 
@@ -193,19 +190,14 @@ class AuthenticatedSessionController extends Controller
         $requestData = $request->validate([
             'first_name' => ['required', 'max:50'],
             'last_name' => ['required', 'max:50'],
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'unique:users'],
             'password' => ['required', 'min:10'],
-            'phone' => ['nullable', 'max:20'],
+            'phone' => ['nullable', 'max:20', 'unique:users'],
             'country_id' => ['nullable', 'max:20'],
             'city' => ['nullable', 'max:30'],
             'address' => ['nullable'],
-            'organization_id' => ['required', 'exists:organizations,id'],
+            'organization_name' => ['required', 'string', 'max:255'],
         ]);
-
-        $organization = \App\Models\Organization::find($requestData['organization_id']);
-        if ($organization->users()->where('approval_status', \App\Models\User::STATUS_APPROVED)->count() >= $organization->max_customers) {
-            return Redirect::back()->with('error', 'Customer limit for this organization has been reached.');
-        }
 
         $role = Role::where('slug', 'customer')->first();
         if (!empty($role)) {
@@ -214,10 +206,7 @@ class AuthenticatedSessionController extends Controller
             $requestData['role_id'] = 2;
         }
 
-        $requestData['approval_status'] = \App\Models\User::STATUS_PENDING;
-
-        $organization_id = $requestData['organization_id'];
-        unset($requestData['organization_id']);
+        $requestData['approval_status'] = User::STATUS_PENDING;
 
         $hashedPassword = Hash::make($requestData['password']);
         $requestData['password'] = $hashedPassword;
@@ -229,8 +218,6 @@ class AuthenticatedSessionController extends Controller
             'password' => $hashedPassword,
             'created_at' => Carbon::now(),
         ]);
-
-        $user->organizations()->attach($organization_id);
 
         log_activity('register', 'User registered successfully.', $user);
 

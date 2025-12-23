@@ -11,6 +11,10 @@ class Department extends Model
 
     protected $table = 'departments';
 
+    protected $fillable=[
+        'name', 'is_managerial_dept'
+    ];
+
     public $timestamps = false;
 
     public function resolveRouteBinding($value, $field = null){

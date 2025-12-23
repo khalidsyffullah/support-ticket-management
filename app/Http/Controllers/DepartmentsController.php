@@ -58,6 +58,7 @@ class DepartmentsController extends Controller
             'department' => [
                 'id' => $department->id,
                 'name' => $department->name,
+                'is_managerial_dept' => $department->is_managerial_dept,
             ],
         ]);
     }
@@ -67,6 +68,7 @@ class DepartmentsController extends Controller
         $department->update(
             Request::validate([
                 'name' => ['required', 'max:100'],
+                'is_managerial_dept' => ['required', 'boolean'],
             ])
         );
 

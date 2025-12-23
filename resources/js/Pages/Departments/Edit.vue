@@ -5,6 +5,9 @@
       <form @submit.prevent="update">
           <div class="p-8 -mr-6 -mb-8 flex flex-wrap">
               <text-input v-model="form.name" :error="form.errors.name" class="pr-6 pb-8 w-full lg:w-1/2" :label="$t('Name')" />
+              <div class="pr-6 pb-8 w-full lg:w-1/2">
+                  <switch-input v-model="form.is_managerial_dept" :error="form.errors.is_managerial_dept" :label="$t('Managerial Department')" />
+              </div>
           </div>
         <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex items-center">
           <button class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">{{ $t('Delete Department') }}
@@ -22,6 +25,7 @@ import Layout from '@/Shared/Layout.vue'
 import { Link, Head } from '@inertiajs/vue3'
 import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
+import SwitchInput from '@/Shared/SwitchInput.vue'
 
 export default {
   metaInfo() {
@@ -32,6 +36,7 @@ export default {
     TextInput,
     Link,
     Head,
+    SwitchInput,
   },
   layout: Layout,
   props: {
@@ -43,6 +48,7 @@ export default {
     return {
       form: this.$inertia.form({
           name: this.department.name,
+          is_managerial_dept: this.department.is_managerial_dept,
       }),
     }
   },

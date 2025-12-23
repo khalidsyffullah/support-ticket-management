@@ -36,7 +36,7 @@
             </div>
           </div>
 
-          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
+          <password-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" autocomplete="new-password" :label="$t('Password')" @strength="passwordStrength = $event" />
           <file-input v-model="form.photo_path" :error="form.errors.photo_path" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
           <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
         </div>
@@ -76,6 +76,7 @@ import TextInput from '@/Shared/TextInput.vue'
 import FileInput from '@/Shared/FileInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
+import PasswordInput from '@/Shared/PasswordInput.vue'
 import axios from "axios";
 
 export default {
@@ -86,6 +87,7 @@ export default {
     LoadingButton,
     SelectInput,
     TextInput,
+    PasswordInput,
   },
   layout: Layout,
   props: {
@@ -116,6 +118,7 @@ export default {
       }),
       suggestions: [],
       organizationKey: 0,
+      passwordStrength: 'Weak',
     }
   },
   watch: {
@@ -149,6 +152,10 @@ export default {
       }
     },
     update() {
+      if (this.form.password && this.passwordStrength !== 'Strong') {
+        this.form.errors.password = 'Password is not strong enough.';
+        return;
+      }
       this.form.post(this.route('customers.update', this.user.id), {
         onSuccess: () => this.form.reset('password', 'photo'),
       })

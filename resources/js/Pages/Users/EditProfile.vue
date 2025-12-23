@@ -14,7 +14,7 @@
                 <option v-for="c in countries" :key="c.id" :value="c.id">{{ $t(c.name) }}</option>
             </select-input>
           <text-input v-model="form.address" :error="form.errors.address" class="pb-8 pr-6 w-full" :label="$t('Address')" />
-          <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
+          <password-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" autocomplete="new-password" :label="$t('Password')" @strength="passwordStrength = $event" />
           <file-input v-model="form.photo" :error="form.errors.photo" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
             <div class="w-full lg:w-1/3 flex items-center justify-start">
                 <img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" />
@@ -35,6 +35,7 @@ import TextInput from '@/Shared/TextInput.vue'
 import FileInput from '@/Shared/FileInput.vue'
 import SelectInput from '@/Shared/SelectInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
+import PasswordInput from '@/Shared/PasswordInput.vue'
 
 export default {
   components: {
@@ -44,6 +45,7 @@ export default {
     LoadingButton,
     SelectInput,
     TextInput,
+    PasswordInput,
   },
   layout: Layout,
   props: {
@@ -70,6 +72,7 @@ export default {
         role_id: this.user.role_id,
         photo: null
       }),
+      passwordStrength: 'Weak',
     }
   },
   created() {
@@ -83,6 +86,10 @@ export default {
       }
     },
     update() {
+      if (this.form.password && this.passwordStrength !== 'Strong') {
+        this.form.errors.password = 'Password is not strong enough.';
+        return;
+      }
       this.form.post(this.route('users.update', this.user.id), {
         onSuccess: () => this.form.reset('password', 'photo'),
       })

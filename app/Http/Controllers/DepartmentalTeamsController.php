@@ -19,7 +19,7 @@ class DepartmentalTeamsController extends Controller
 
     public function getTeamMembers(Request $request, Department $department)
     {
-        $members = $department->users()->withPivot('team_head')->get();
+        $members = $department->users()->withPivot('team_head', 'team_managers')->get();
         return response()->json($members);
     }
 
@@ -63,6 +63,11 @@ class DepartmentalTeamsController extends Controller
             'team_head' => 'required|boolean',
         ]);
 
+        if ($request->team_head) {
+            // Demote any existing team head
+            $department->users()->where('team_head', true)->update(['team_head' => false]);
+        }
+
         $department->users()->updateExistingPivot($user->id, [
             'team_head' => $request->team_head,
         ]);
@@ -76,5 +81,21 @@ class DepartmentalTeamsController extends Controller
     {
         $is_team_head = $department->users()->where('user_id', $user->id)->wherePivot('team_head', true)->exists();
         return response()->json($is_team_head);
+    }
+
+    public function toggleTeamManager(Request $request, Department $department, User $user)
+    {
+        $request->validate([
+            'team_managers' => 'required|boolean',
+        ]);
+
+        $department->users()->updateExistingPivot($user->id, [
+            'team_managers' => $request->team_managers,
+        ]);
+
+        $status = $request->team_managers ? 'promoted to' : 'demoted from';
+        log_activity('update_team_manager', "User {$user->name} was {$status} team manager in department {$department->name}.", $department);
+
+        return redirect()->back()->with('success', 'Team manager status updated successfully.');
     }
 }

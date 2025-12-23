@@ -65,6 +65,7 @@
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Member') }}</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Email') }}</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Team Head') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Team Manager') }}</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Actions') }}</th>
                             </tr>
                         </thead>
@@ -91,13 +92,16 @@
                                     <div class="text-sm text-gray-600">{{ member.email }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <label class="flex items-center cursor-pointer">
-                                        <input type="checkbox"
-                                               :checked="member.pivot.team_head"
-                                               @change="updateTeamHead(member, $event.target.checked)"
-                                               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded transition-colors" />
-                                        <span class="ml-2 text-sm text-gray-700">{{ member.pivot.team_head ? $t('Yes') : $t('No') }}</span>
-                                    </label>
+                                    <switch-input
+                                        :model-value="member.pivot.team_head"
+                                        @update:modelValue="updateTeamHead(member, $event)"
+                                    />
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <switch-input
+                                        :model-value="member.pivot.team_managers"
+                                        @update:modelValue="updateTeamManager(member, $event)"
+                                    />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button @click="removeMember(member)"
@@ -268,6 +272,7 @@ import { Head } from '@inertiajs/vue3'
 import Layout from '@/Shared/Layout.vue'
 import Modal from '@/Shared/Modal.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
+import SwitchInput from '@/Shared/SwitchInput.vue'
 import axios from 'axios'
 
 export default {
@@ -275,6 +280,7 @@ export default {
         Head,
         Modal,
         LoadingButton,
+        SwitchInput,
     },
     layout: Layout,
     props: {
@@ -422,7 +428,19 @@ export default {
                 },
             })
         },
+        async updateTeamManager(member, isTeamManager) {
+            await this.$inertia.put(this.route('departmental_teams.toggle_manager', { department: this.selectedDepartment.id, user: member.id }), { team_managers: isTeamManager }, {
+                onSuccess: () => {
+                    this.viewMembers(this.selectedDepartment)
+                    this.$page.props.flash.success = 'Team manager status updated successfully.'
+                },
+                onError: (errors) => {
+                    console.error(errors)
+                },
+            })
+        },
     },
+
 
     created() {
         this.fetchAvailableUsers()

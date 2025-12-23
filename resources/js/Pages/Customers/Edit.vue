@@ -14,18 +14,28 @@
             <option value="19">Bangladesh</option>
           </select-input>
           <text-input v-if="user.organization_name" v-model="user.organization_name" class="pb-8 pr-6 w-full lg:w-1/3" :label="$t('Organization Name')" :readonly="true" />
-          <select-input v-model="form.organization_id" :error="form.errors.organization_id" class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Organization')" :is_required="true">
-            <option :value="null" />
-            <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
-          </select-input>
-            <div v-if="suggestions.length" class="pb-8 pr-6 w-full lg:w-1/3">
-                <p class="font-bold mb-2">Suggestions:</p>
-                <ul>
-                    <li v-for="suggestion in suggestions" :key="suggestion.id" @click="selectSuggestion(suggestion)" class="cursor-pointer hover:bg-gray-200 p-2 rounded">
-                        {{ suggestion.name }}
-                    </li>
-                </ul>
+
+          <div class="pr-6 pb-8 w-full lg:w-1/3">
+            <select-input v-model="form.organization_id" :error="form.errors.organization_id" :label="$t('Organization')" :is_required="true" :key="organizationKey">
+              <option :value="null" />
+              <option v-for="o in organizations" :key="o.id" :value="o.id">{{ $t(o.name) }}</option>
+            </select-input>
+
+            <div v-if="suggestions.length" class="mt-2">
+              <p class="text-sm font-semibold text-gray-700 mb-1">Suggestions:</p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="suggestion in suggestions"
+                  :key="suggestion.id"
+                  @click="selectSuggestion(suggestion)"
+                  class="inline-block cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm px-3 py-1 rounded-full transition-colors duration-200"
+                >
+                  {{ suggestion.name }}
+                </span>
+              </div>
             </div>
+          </div>
+
           <text-input v-model="form.password" :error="form.errors.password" class="pb-8 pr-6 w-full lg:w-1/3" type="password" autocomplete="new-password" :label="$t('Password')" />
           <file-input v-model="form.photo_path" :error="form.errors.photo_path" class="pb-8 pr-6 w-full lg:w-1/3" type="file" accept="image/*" label="Photo" />
           <div class="w-full lg:w-1/3 flex items-center justify-start"><img v-if="user.photo_path" class="block mb-2 w-8 h-8 rounded-full" :src="user.photo_path" /></div>
@@ -36,9 +46,23 @@
             <option value="approved">{{ $t('Approved') }}</option>
             <option value="rejected">{{ $t('Rejected') }}</option>
           </select-input>
-          <button v-if="user.id !== auth.user.id && user_access.customer.delete" class="text-red-600 hover:underline" tabindex="-1" type="button" @click="destroy">
-            {{ $t('Delete') }}</button>
-          <loading-button :loading="form.processing" :disabled="!form.organization_id" class="btn-indigo ml-auto" type="submit">{{ $t('Update') }}</loading-button>
+          <button
+            v-if="user.id !== auth.user.id && user_access.customer.delete"
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200"
+            tabindex="-1"
+            type="button"
+            @click="destroy"
+          >
+            {{ $t('Delete') }}
+          </button>
+          <loading-button
+            :loading="form.processing"
+            :disabled="!form.organization_id"
+            class="btn-indigo ml-auto"
+            type="submit"
+          >
+            {{ $t('Update') }}
+          </loading-button>
         </div>
       </form>
     </div>
@@ -75,7 +99,7 @@ export default {
   remember: 'form',
   data() {
     return {
-        user_access: this.$page.props.auth.user.access,
+      user_access: this.$page.props.auth.user.access,
       form: this.$inertia.form({
         _method: 'put',
         first_name: this.user.first_name,
@@ -88,34 +112,36 @@ export default {
         organization_id: this.user.organization_id,
         approval_status: this.user.approval_status,
         password: '',
-          photo_path: null
+        photo_path: null
       }),
-        suggestions: [],
+      suggestions: [],
+      organizationKey: 0,
     }
   },
   watch: {
-      'user.organization_name': {
-          handler(newName) {
-              if (newName) {
-                  this.fetchSuggestions(newName);
-              }
-          },
-          immediate: true,
+    'user.organization_name': {
+      handler(newName) {
+        if (newName) {
+          this.fetchSuggestions(newName);
+        }
       },
+      immediate: true,
+    },
   },
   methods: {
-      async fetchSuggestions(query) {
-          try {
-              const response = await axios.get(route('customers.organization-suggestions', { query }));
-              this.suggestions = response.data;
-          } catch (error) {
-              console.error('Error fetching organization suggestions:', error);
-          }
-      },
-      selectSuggestion(suggestion) {
-          this.form.organization_id = suggestion.id;
-          this.suggestions = [];
-      },
+    async fetchSuggestions(query) {
+      try {
+        const response = await axios.get(route('customers.organization-suggestions', { query }));
+        this.suggestions = response.data;
+      } catch (error) {
+        console.error('Error fetching organization suggestions:', error);
+      }
+    },
+    selectSuggestion(suggestion) {
+      this.form.organization_id = suggestion.id;
+      // Force re-render of select input
+      this.organizationKey++;
+    },
     setDefaultValue(arr, key, value){
       const find = arr.find(i=>i.name.match(new RegExp(value + ".*")))
       if(find){

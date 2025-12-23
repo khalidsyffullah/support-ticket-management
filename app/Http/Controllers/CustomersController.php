@@ -359,7 +359,29 @@ class CustomersController extends Controller {
     public function getOrganizationSuggestions(Request $request)
     {
         $query = $request->input('query');
-        $suggestions = Organization::where('name', 'like', "%{$query}%")->limit(5)->get(['id', 'name']);
+        if (empty($query)) {
+            return response()->json([]);
+        }
+
+        $organizations = Organization::get(['id', 'name']);
+        $suggestions = $organizations->map(function ($organization) use ($query) {
+            $organization->distance = levenshtein(strtolower($query), strtolower($organization->name));
+            return $organization;
+        })
+        ->filter(function ($organization) {
+            return $organization->distance < 5; // Keep only reasonably close matches
+        })
+        ->sortBy('distance')
+        ->take(5)
+        ->values();
+
+        if ($suggestions->isEmpty()) {
+            $suggestions = Organization::where('name', 'like', '%' . $query . '%')
+                ->limit(5)
+                ->get(['id', 'name']);
+        }
+
+
         return response()->json($suggestions);
     }
 

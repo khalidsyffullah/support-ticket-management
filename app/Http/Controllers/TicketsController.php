@@ -53,10 +53,8 @@ class TicketsController extends Controller
     }
 
     public function index(Request $request){
-        $byCustomer = null;
-        $byAssign = null;
-        $user = Auth()->user();
-        $hiddenFields = Setting::where('slug', 'hide_ticket_fields')->first();
+        $user = Auth::user();
+        $user->load('departments');
         if(in_array($user['role']['slug'], ['customer'])){
             $byCustomer = $user['id'];
         }elseif(in_array($user['role']['slug'], ['manager'])){
@@ -64,6 +62,34 @@ class TicketsController extends Controller
         }else{
             $byAssign = $request->input('assigned_to');
         }
+
+        $hiddenFields = Setting::where('slug', 'hide_ticket_fields')->first();
+
+        $ticketQuery = Ticket::query();
+
+        $is_managerial = $user->departments->where('is_managerial_dept', true)->isNotEmpty();
+
+        if (!$is_managerial) {
+            $ticketQuery->where(function ($query) use ($user) {
+                $query->orWhere('created_by', $user->id)
+                    ->orWhere('assigned_to', $user->id)
+                    ->orWhere('assigned_by', $user->id);
+
+                if ($user->role->slug === 'customer') {
+                    $query->orWhere('user_id', $user->id);
+                }
+
+                $managed_department_ids = $user->departments->filter(function ($department) {
+                    return $department->pivot->team_head || $department->pivot->team_managers;
+                })->pluck('id');
+
+                if ($managed_department_ids->isNotEmpty()) {
+                    $query->orWhereIn('department_id', $managed_department_ids);
+                }
+            });
+        }
+
+
         $whereAll = [];
         $type = $request->input('type');
         $limit = $request->input('limit', 10);
@@ -82,7 +108,7 @@ class TicketsController extends Controller
             $whereAll[] = ['created_at', '>=', date('Y-m-d').' 00:00:00'];
         }
 
-        $ticketQuery = Ticket::where($whereAll);
+        $ticketQuery->where($whereAll);
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
@@ -159,8 +185,6 @@ class TicketsController extends Controller
                 ->only('id', 'name'),
             'tickets' => $ticketQuery
                 ->filter($request->only(['search', 'priority_id', 'status_id', 'type_id', 'category_id', 'department_id']))
-                ->byCustomer($byCustomer)
-                ->byAssign($byAssign)
                 ->paginate($limit)
                 ->withQueryString()
                 ->through(function ($ticket) use ($unread_notification_ticket_ids) {

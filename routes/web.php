@@ -48,6 +48,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\DepartmentalTeamsController;
 use App\Http\Controllers\SlaController;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
@@ -954,19 +955,29 @@ Route::get('/run-migration', function() {
     return "Migration complete!";
 });
 
-Route::get('/backup-database', function (Request $request) {
-    if ($request->password !== 'axdf@123!!') {
-        return response('Unauthorized.', 401);
-    }
-    Artisan::call('backup:run');
-    return response('Backup complete.');
+Route::get('/backup-database', function () {
+    basicAuthCheck();
+
+    $dbName = config('database.connections.mysql.database');
+    $dbUser = config('database.connections.mysql.username');
+    $dbPass = config('database.connections.mysql.password');
+    $dbHost = config('database.connections.mysql.host');
+
+    $date = now()->format('Y-m-d_H-i-s');
+    $fileName = "db-backup-{$date}.sql";
+    $filePath = storage_path("app/{$fileName}");
+
+    $command = "mysqldump -h {$dbHost} -u {$dbUser} -p\"{$dbPass}\" {$dbName} > {$filePath}";
+    exec($command);
+
+    return response()->download($filePath)->deleteFileAfterSend(true);
 });
 
-Route::get('/run-migration-in-production', function (Request $request) {
-    if ($request->password !== 'axdf@123!!') {
-        return response('Unauthorized.', 401);
-    }
+Route::get('/run-migration-in-production', function () {
+    basicAuthCheck();
+
     Artisan::call('migrate', ['--force' => true]);
+
     return response('Migration complete.');
 });
 
@@ -975,6 +986,26 @@ Route::get('/pstorage-link', function() {
     return "done!";
 });
 
+
+
+
+function basicAuthCheck()
+{
+    $USER = 'admin';
+    $PASS = 'axdf@123!!';
+
+    if (
+        !isset($_SERVER['PHP_AUTH_USER']) ||
+        !isset($_SERVER['PHP_AUTH_PW']) ||
+        $_SERVER['PHP_AUTH_USER'] !== $USER ||
+        $_SERVER['PHP_AUTH_PW'] !== $PASS
+    ) {
+        header('WWW-Authenticate: Basic realm="Restricted Area"');
+        header('HTTP/1.0 401 Unauthorized');
+        echo 'Unauthorized';
+        exit;
+    }
+}
 
 
 

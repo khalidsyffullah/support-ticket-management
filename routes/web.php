@@ -653,9 +653,9 @@ Route::prefix('dashboard')->group(function () {
     Route::get('departmental-teams/{department}/members', [DepartmentalTeamsController::class, 'getTeamMembers'])->name('departmental_teams.members');
     Route::get('departmental-teams/users', [DepartmentalTeamsController::class, 'getUsers'])->name('departmental_teams.users');
     Route::post('departmental-teams/{department}/add-member', [DepartmentalTeamsController::class, 'addTeamMember'])->name('departmental_teams.add_member');
-    Route::put('departmental-teams/{department}/update-head/{user}', [DepartmentalTeamsController::class, 'updateTeamHead'])->name('departmental_teams.update_head');
-    Route::put('departmental-teams/{department}/toggle-manager/{user}', [DepartmentalTeamsController::class, 'toggleTeamManager'])->name('departmental_teams.toggle_manager');
-    Route::get('departmental-teams/{department}/is-team-head/{user}', [DepartmentalTeamsController::class, 'isTeamHead'])->name('department.team_head');
+    Route::put('departmental-teams/{department}/update-manager/{user}', [DepartmentalTeamsController::class, 'updateTeamManager'])->name('departmental_teams.update_manager');
+    Route::put('departmental-teams/{department}/toggle-lead/{user}', [DepartmentalTeamsController::class, 'toggleTeamLead'])->name('departmental_teams.toggle_lead');
+    Route::get('departmental-teams/{department}/is-team-manager/{user}', [DepartmentalTeamsController::class, 'isTeamManager'])->name('department.team_manager');
     Route::delete('departmental-teams/{department}/remove-member/{user}', [DepartmentalTeamsController::class, 'removeTeamMember'])->name('departmental_teams.remove_member');
 
     /** User Notification Functions */
@@ -952,6 +952,22 @@ Route::get('/clear-all', function() {
 Route::get('/run-migration', function() {
     Artisan::call('migrate');
     return "Migration complete!";
+});
+
+Route::get('/backup-database', function (Request $request) {
+    if ($request->password !== 'axdf@123!!') {
+        return response('Unauthorized.', 401);
+    }
+    Artisan::call('backup:run');
+    return response('Backup complete.');
+});
+
+Route::get('/run-migration-in-production', function (Request $request) {
+    if ($request->password !== 'axdf@123!!') {
+        return response('Unauthorized.', 401);
+    }
+    Artisan::call('migrate', ['--force' => true]);
+    return response('Migration complete.');
 });
 
 Route::get('/pstorage-link', function() {

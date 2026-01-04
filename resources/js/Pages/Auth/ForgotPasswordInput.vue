@@ -9,9 +9,14 @@
           <h2 class="text-center font-bold text-xl">{{ $t('Reset Password') }}</h2>
           <div class="mx-auto mt-3 w-24 border-b" />
           <text-input v-model="form.email" :error="form.errors.email" class="mt-10" :label="$t('Email Address')" type="email" autofocus autocomplete="off" aria-autocomplete="none" />
-            <text-input v-model="form.password" :error="form.errors.password" class="mt-6" :label="$t('Password')" type="password" autocomplete="off" aria-autocomplete="none" />
+            <password-input v-model="form.password" :error="form.errors.password" class="mt-6" :label="$t('Password')" @strength="updatePasswordStrength" />
             <text-input v-model="form.password_confirmation" :error="form.errors.password_confirmation" class="mt-6" :label="$t('Confirm Password')" type="password" autocomplete="off" aria-autocomplete="none" />
-            <loading-button :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center mt-8" type="submit">{{ $t('Reset Password') }}</loading-button>
+            <div v-if="isFormInvalid" class="mt-4 text-sm text-red-600">
+                <ul>
+                    <li v-for="requirement in formRequirements" :key="requirement">{{ requirement }}</li>
+                </ul>
+            </div>
+            <loading-button :disabled="isFormInvalid" :loading="form.processing" class="ml-auto btn-indigo w-full items-center justify-center mt-8" type="submit">{{ $t('Reset Password') }}</loading-button>
         </div>
       </form>
     </div>
@@ -24,6 +29,7 @@ import TextInput from '@/Shared/TextInput.vue'
 import LoadingButton from '@/Shared/LoadingButton.vue'
 import { Head, Link } from '@inertiajs/vue3'
 import FlashMessages from '@/Shared/FlashMessages.vue'
+import PasswordInput from '@/Shared/PasswordInput.vue'
 
 export default {
   metaInfo: { title: 'Login' },
@@ -34,6 +40,7 @@ export default {
       Head,
       Link,
       FlashMessages,
+      PasswordInput,
   },
     props: {
         is_demo: Number,
@@ -41,6 +48,7 @@ export default {
     },
   data() {
     return {
+        passwordStrength: '',
       form: this.$inertia.form({
         email: '',
         password: '',
@@ -49,7 +57,21 @@ export default {
       }),
     }
   },
+    computed: {
+        isFormInvalid() {
+            return this.passwordStrength !== 'Strong' || this.form.password.trim() !== this.form.password_confirmation.trim();
+        },
+        formRequirements() {
+            const requirements = [];
+            if (this.passwordStrength !== 'Strong') requirements.push('Password must be strong.');
+            if (this.form.password.trim() !== this.form.password_confirmation.trim()) requirements.push('Passwords do not match.');
+            return requirements;
+        }
+    },
   methods: {
+      updatePasswordStrength(strength) {
+          this.passwordStrength = strength;
+      },
       resetPassword() {
           this.form.post(this.route('password.reset.store'))
       },

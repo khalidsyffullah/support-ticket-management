@@ -139,7 +139,7 @@ class User extends Authenticatable
 
     public function departments()
     {
-        return $this->belongsToMany(Department::class)->withPivot('team_head', 'team_managers');
+        return $this->belongsToMany(Department::class)->withPivot('team_manager', 'team_lead');
     }
 
     /**

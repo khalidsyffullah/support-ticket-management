@@ -80,7 +80,7 @@ class TicketsController extends Controller
                 }
 
                 $managed_department_ids = $user->departments->filter(function ($department) {
-                    return $department->pivot->team_head || $department->pivot->team_managers;
+                    return $department->pivot->team_manager || $department->pivot->team_lead;
                 })->pluck('id');
 
                 if ($managed_department_ids->isNotEmpty()) {

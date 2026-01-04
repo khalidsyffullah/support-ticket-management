@@ -30,9 +30,9 @@ class Department extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function teamHead()
+    public function teamManager()
     {
-        return $this->belongsToMany(User::class)->wherePivot('team_head', true)->first();
+        return $this->belongsToMany(User::class)->wherePivot('team_manager', true)->first();
     }
 
     public function scopeFilter($query, array $filters){

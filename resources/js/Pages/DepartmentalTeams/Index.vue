@@ -64,8 +64,8 @@
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Member') }}</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Email') }}</th>
-                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Team Head') }}</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Team Manager') }}</th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Team Leads') }}</th>
                                 <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $t('Actions') }}</th>
                             </tr>
                         </thead>
@@ -93,14 +93,14 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <switch-input
-                                        :model-value="member.pivot.team_head"
-                                        @update:modelValue="updateTeamHead(member, $event)"
+                                        :model-value="member.pivot.team_manager"
+                                        @update:modelValue="updateTeamManager(member, $event)"
                                     />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <switch-input
-                                        :model-value="member.pivot.team_managers"
-                                        @update:modelValue="updateTeamManager(member, $event)"
+                                        :model-value="member.pivot.team_lead"
+                                        @update:modelValue="updateTeamLead(member, $event)"
                                     />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -297,7 +297,7 @@ export default {
             selectedUsers: [],
             form: this.$inertia.form({
                 user_ids: [],
-                team_head: false,
+                team_manager: false,
             }),
         }
     },
@@ -417,22 +417,22 @@ export default {
             }
         },
 
-        async updateTeamHead(member, isTeamHead) {
-            await this.$inertia.put(this.route('departmental_teams.update_head', { department: this.selectedDepartment.id, user: member.id }), { team_head: isTeamHead }, {
+        async updateTeamManager(member, isTeamManager) {
+            await this.$inertia.put(this.route('departmental_teams.update_manager', { department: this.selectedDepartment.id, user: member.id }), { team_manager: isTeamManager }, {
                 onSuccess: () => {
                     this.viewMembers(this.selectedDepartment)
-                    this.$page.props.flash.success = 'Team head updated successfully.'
+                    this.$page.props.flash.success = 'Team manager updated successfully.'
                 },
                 onError: (errors) => {
                     console.error(errors)
                 },
             })
         },
-        async updateTeamManager(member, isTeamManager) {
-            await this.$inertia.put(this.route('departmental_teams.toggle_manager', { department: this.selectedDepartment.id, user: member.id }), { team_managers: isTeamManager }, {
+        async updateTeamLead(member, isTeamLead) {
+            await this.$inertia.put(this.route('departmental_teams.toggle_lead', { department: this.selectedDepartment.id, user: member.id }), { team_lead: isTeamLead }, {
                 onSuccess: () => {
                     this.viewMembers(this.selectedDepartment)
-                    this.$page.props.flash.success = 'Team manager status updated successfully.'
+                    this.$page.props.flash.success = 'Team lead status updated successfully.'
                 },
                 onError: (errors) => {
                     console.error(errors)

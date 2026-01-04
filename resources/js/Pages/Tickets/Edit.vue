@@ -29,7 +29,7 @@
                         <select-edit-input  placeholder="Search user" :onInput="doFilterUsersExceptCustomer" :items="department_users"
                                            v-model="form.assigned_to" :error="form.errors.assigned_to"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Assigned to')"
-                                           :value="ticket.assigned_user??'Not Assigned'" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_head" :disabled="!form.department_id" :empty-message="emptyMessage" :key="form.department_id">
+                                           :value="ticket.assigned_user??'Not Assigned'" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || is_team_manager" :disabled="!form.department_id" :empty-message="emptyMessage" :key="form.department_id">
                         </select-edit-input>
 
                         <select-edit-input placeholder="Select status to change" :items="statuses"
@@ -47,12 +47,12 @@
                         <select-edit-input v-if="!(hidden_fields && hidden_fields.includes('department'))" @change="getCategories()" placeholder="Search department" :items="departments"
                                            v-model="form.department_id" :error="form.errors.department_id"
                                            class="pr-6 pb-8 w-full lg:w-1/3" :label="$t('Department')"
-                                           :value="ticket.department" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || (is_team_head && (!forwarding_request || forwarding_request.status === 'approved'))">
+                                           :value="ticket.department" :editable="(user_access.ticket.update && !ticket.closed && auth.user.role.slug === 'admin') || (is_team_manager && (!forwarding_request || forwarding_request.status === 'approved'))">
                         </select-edit-input>
                         <div v-if="forwarding_request && forwarding_request.status === 'rejected'" class="pr-6 pb-8 w-full lg:w-1/3 text-red-600">
                             A forwarding request for this ticket has been rejected.
                         </div>
-                        <div v-if="is_team_head && forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full text-red-600">
+                        <div v-if="is_team_manager && forwarding_request && forwarding_request.status === 'pending'" class="pr-6 pb-8 w-full text-red-600">
                             A forward request was sent to the admin from your department. Waiting for admin review.
                         </div>
 
@@ -298,7 +298,7 @@ export default {
     data() {
         return {
             user: this.$page.props.auth.user,
-            is_team_head: false,
+            is_team_manager: false,
             type_status: [],
             categories: this.all_categories.filter(cat => cat.department_id === this.ticket.department_id),
             sub_categories: this.all_categories.filter(cat => cat.parent_id === this.ticket.category_id),
@@ -342,7 +342,7 @@ export default {
             this.type_status = this.statuses
         }
         this.moment = moment;
-        this.isTeamHead();
+        this.isTeamManager();
         this.startTimer();
         if(this.form.department_id){
             axios.get(this.route('departmental_teams.members', {department: this.form.department_id})).then((res)=>{
@@ -360,10 +360,10 @@ export default {
     }
   },
     methods: {
-        isTeamHead(){
+        isTeamManager(){
             if(this.ticket.department_id && this.auth.user.role.slug !== 'admin'){
-                axios.get(this.route('department.team_head', {department: this.ticket.department_id, user: this.user.id})).then((res)=>{
-                    this.is_team_head = res.data;
+                axios.get(this.route('department.team_manager', {department: this.ticket.department_id, user: this.user.id})).then((res)=>{
+                    this.is_team_manager = res.data;
                 })
             }
         },
